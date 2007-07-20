@@ -665,12 +665,12 @@ public final class Accessor<T> {
      *   Unwrap it using {@link Throwable#getCause}. 
      * @see #invoke(Class,Object,String,Object...)
      */
-    public static <T> T invokeStatic(Class aClass,
-				     String methodName,
-				     Object... parameters) 
+    public static Object invokeStatic(Class aClass,
+				      String methodName,
+				      Object... parameters) 
 	throws InvocationTargetException {
 
-	return (T)invoke(aClass,null,methodName,parameters);
+	return invoke(aClass,null,methodName,parameters);
     }
 
     /**
@@ -945,10 +945,10 @@ public final class Accessor<T> {
      */
     static Method getToBeInvoked(Class aClass,
 				 String methodName,
-				 Class... paramCls) {
+				 Class<?>... paramCls) {
 
 	Method toBeInvoked;
-	for (Class candClass = aClass; 
+	for (Class<?> candClass = aClass; 
 	     candClass != null;
 	     candClass = candClass.getSuperclass()) {
 	    try {
@@ -967,6 +967,18 @@ public final class Accessor<T> {
 
 	return null;
     }
+// cd /home/ernst/Software/src/eu/simuline/testhelpers/
+// /usr/local/java/latest/bin/javac -classpath /home/ernst/Software/cls:/home/ernst/Software/jars/junit-4.1.jar:/home/ernst/SysAdmin/JUnitExt/junitext-0.1.2/build/lib/junit-ui-runners-3.8.2.jar:/usr/local/java/latest/lib/tools.jar:/home/ernst/Software/jars/profile.jar -sourcepath /home/ernst/Software/src -encoding ISO-8859-1 -g:lines,vars,source -d /home/ernst/Software/cls -deprecation -target 1.6 -source 1.6 -Xlint Accessor.java
+
+// Accessor.java:955: warning: [unchecked] unchecked call to getDeclaredMethod(java.lang.String,java.lang.Class<?>...) as a member of the raw type java.lang.Class
+// 		toBeInvoked = candClass.getDeclaredMethod(methodName,paramCls);
+// 		                                         ^
+// Accessor.java:1017: warning: [unchecked] unchecked cast
+// found   : java.lang.reflect.Constructor<?>[]
+// required: java.lang.reflect.Constructor<T>[]
+// 			   (Constructor<T>[])aClass.getDeclaredConstructors(),
+// 			                                                   ^
+// 2 warnings
 
 
     /*----------------------------------------------------------------------*
@@ -1013,6 +1025,7 @@ public final class Accessor<T> {
 	Constructor<T> toBeInvoked = 
 	    getConstructor(aClass,
 			   // **** this is a weakness in the jdk5 (reported)
+			   // **** in jdk6 hardly any improvement (to be rep.)
 			   (Constructor<T>[])aClass.getDeclaredConstructors(),
 			   parameters);
 	// toBeInvoked may also be the default constructor, 
