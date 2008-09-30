@@ -319,13 +319,13 @@ public class Assert<E> extends junit.framework.Assert {
 
 	epsEquals = Accessor.getToBeInvoked(expected.getClass(),
 					    "equals",
-					    Object.class,
+					    expected.getClass(),
 					    Double.TYPE);
 	numArgs = 2;
 	if (epsEquals == null) {
 	    epsEquals = Accessor.getToBeInvoked(expected.getClass(),
 						"epsilonEquals",
-						Object.class,
+						expected.getClass(),
 						Double.TYPE,
 						Double.TYPE);
 	    numArgs = 3;
