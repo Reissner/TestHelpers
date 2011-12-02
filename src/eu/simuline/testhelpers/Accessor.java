@@ -1024,7 +1024,7 @@ public final class Accessor<T> {
 	
 	Constructor<T> toBeInvoked = 
 	    getConstructor(aClass,
-			   // **** this is a weakness in the jdk5 (reported)
+			   // **** the cast is a weakness in the jdk5 (reported)
 			   // **** in jdk6 hardly any improvement (to be rep.)
 			   (Constructor<T>[])aClass.getDeclaredConstructors(),
 			   parameters);
