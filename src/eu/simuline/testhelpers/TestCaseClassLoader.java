@@ -37,21 +37,47 @@ import java.net.URL;
 
 
 /**
- * A custom class loader which enables the reloading
- * of classes for each test run. 
+ * A custom class loader which allows to reload classes for each test run. 
  * The class loader can be configured with a list of package paths 
  * that should be excluded from loading. 
  * The loading of these packages is delegated to the system class loader. 
  * They will be shared across test runs. 
  * <p>
  * The list of excluded package paths 
- * is specified in a properties file "excluded.properties" 
+ * is either hardcoded in {@link #defaultExclusions}, 
+ * specified as property with key {@link #PROP_KEY_noClsReload}. 
+ * in a properties file {@link #EXCLUDED_FILE} 
  * that is located in the same place as the TestCaseClassLoader class.
  * <p>
  * <b>Known limitation:</b> 
+ * <ul>
+ * <li>
  * the TestCaseClassLoader cannot load classes from jar files. 
+ * <li>
+ * service providers must be excluded from reloading. 
+ * </ul>
  */
 public class TestCaseClassLoader extends ClassLoader {
+
+    /* -------------------------------------------------------------------- *
+     * class constants.                                                     *
+     * -------------------------------------------------------------------- */
+
+    /**
+     * Key of system property 
+     * containing a ":"-separated list of packages or classes 
+     * to be excluded from reloading. 
+     * Each is read into {@link #excluded}. 
+     */
+    private final static String PROP_KEY_noClsReload = "noClsReload";
+
+    /**
+     * Name of excluded properties file. 
+     * This shall be located in the same folder as this class loader. 
+     * The property keys shall have the form <code>exlude.xxx</code> 
+     * and are read in {@link #excluded}. 
+     */
+    static final String EXCLUDED_FILE = "noClsReload.properties";
 
     /* -------------------------------------------------------------------- *
      * fields.                                                              *
@@ -60,9 +86,6 @@ public class TestCaseClassLoader extends ClassLoader {
     // **** better done with instrumentation. 
     static boolean stop;// NOPMD
 
-
-    /** name of excluded properties file */
-    static final String EXCLUDED_FILE = "excluded.properties";
 
     /** scanned class path */
     private JavaPath jPath;
@@ -133,8 +156,8 @@ public class TestCaseClassLoader extends ClassLoader {
      *    starts with one of the prefixes given by {@link #excluded}. 
      *    In this case the corresponding class is not loaded. 
      */
-    public boolean isExcluded(String name) {
-	for (int i= 0; i < this.excluded.size(); i++) {
+    private boolean isExcluded(String name) {
+	for (int i = 0; i < this.excluded.size(); i++) {
 	    if (name.startsWith(this.excluded.get(i))) {
 		return true;
 	    }
@@ -171,6 +194,7 @@ public class TestCaseClassLoader extends ClassLoader {
 		cls = findSystemClass(name);
 		return cls;
 	    } catch (ClassNotFoundException e) {// NOPMD 
+System.out.println("keep searching **** although excluded. ");
 		// keep searching **** although excluded. 
 	    }
 	}
@@ -207,16 +231,20 @@ public class TestCaseClassLoader extends ClassLoader {
 	    throw new ClassNotFoundException();// NOPMD
 	}
     }
-	
+
     /**
-     * Initializes {@link #excluded} using {@link #defaultExclusions} 
-     * and {@link #EXCLUDED_FILE}. 
+     * Initializes {@link #excluded} using {@link #defaultExclusions}, 
+     * {@link #PROP_KEY_noClsReload} and {@link #EXCLUDED_FILE}. 
      * <ol>
      * <li>
      * First the entries of {@link #defaultExclusions} 
      * are added to {@link #excluded}. 
      * <li>
-     * Then {@link #EXCLUDED_FILE} is interpreted as filename 
+     * Then {@link #PROP_KEY_noClsReload} is interpreted 
+     * as a ":"-seprated list of entries 
+     * each of which is added to {@link #excluded}. 
+     * <li>
+     * Finally, {@link #EXCLUDED_FILE} is interpreted as filename 
      * and the file is interpreted as Properties File with property keys 
      * starting with <code>excluded.</code>; 
      * all the other properties are ignored. 
@@ -227,14 +255,26 @@ public class TestCaseClassLoader extends ClassLoader {
      */
     private void readExcludedPackages() {		
 	this.excluded = new ArrayList<String>(10);
-	for (int i= 0; i < this.defaultExclusions.length; i++) {
+	for (int i = 0; i < this.defaultExclusions.length; i++) {
 	    this.excluded.add(defaultExclusions[i]);
 	}
+	Properties prop;
+
+	String excludesPathProp = System.getProperty(PROP_KEY_noClsReload);
+	if (excludesPathProp != null) {
+	    String[] excludesProp = excludesPathProp.split(":");
+	    for (int i = 0; i < excludesProp.length; i++) {
+		this.excluded.add(excludesProp[i]);
+	    }
+	}
+
 	InputStream inStream = getClass().getResourceAsStream(EXCLUDED_FILE);
+	System.out.println("URL"+getClass().getResource(EXCLUDED_FILE));
 	if (inStream == null) {
 	    return;
 	}
-	Properties prop = new Properties();
+	//assert false;
+	prop = new Properties();
 	try {
 	    prop.load(inStream);
 	} catch (IOException e) {
@@ -246,6 +286,7 @@ public class TestCaseClassLoader extends ClassLoader {
 		// already closed *****?
 	    }
 	}
+	
 	for (Enumeration e = prop.propertyNames(); e.hasMoreElements(); ) {
 	    String key = (String)e.nextElement();
 	    if (key.startsWith("excluded.")) {
@@ -254,10 +295,11 @@ public class TestCaseClassLoader extends ClassLoader {
 		if (path.endsWith("*")) {
 		    path = path.substring(0, path.length()-1);
 		}
+		
 		if (path.length() > 0) {
 		    this.excluded.add(path);
 		}
-	    }
-	}
-    }
+	    } // if 
+	} // for 
+    } // readExcludedPackages() 
 }
