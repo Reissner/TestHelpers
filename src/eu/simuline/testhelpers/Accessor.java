@@ -4,8 +4,6 @@ package eu.simuline.testhelpers;
 import eu.simuline.util.BasicTypesCompatibilityChecker;
 
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Member;
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
