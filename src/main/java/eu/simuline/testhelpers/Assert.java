@@ -1222,6 +1222,51 @@ public class Assert<E> extends junit.framework.Assert {
     }
 
     /**
+     * Returns whether the relative deviation 
+     * between <code>expected</code> and <code>actual</code> 
+     * exceeds <code>reldiv</code> in absolute value. 
+     *
+      * @param expected 
+     *    the <code>double</code> value expected. 
+     *    This may be neither <code>0.0</code>, nor an infinite value 
+     *    nor <code>NaN</code>. 
+     * @param actual 
+     *    the actual <code>double</code> value. 
+     * @param reldev 
+     *    the maximum relative deviation 
+     *    between <code>expected</code> and <code>actual</code>. 
+     *    This must be a non-negative value; 
+     *    in particular, <code>NaN</code> is not allowed. 
+     * @throws IllegalArgumentException 
+     *    <ul>
+     *    <li>
+     *    if <code>expected</code> is either <code>0.0</code>, 
+     *    infinite or <code>NaN</code>. 
+     *    <li>
+     *    if <code>reldev</code> is negative or <code>NaN</code>. 
+     *    </ul>
+     * @see #assertRelEquals(String,double,double,double)
+     */
+   public static boolean testRelEquals(double expected,
+				       double actual,
+				       double reldev) {
+	if (expected == 0.0 || 
+	    Double.isInfinite(expected) || 
+	    Double.isNaN(expected)) {
+	    throw new IllegalArgumentException
+		("Relative deviation for expected value <" + 
+		 expected + "> is not defined. ");
+	}
+
+	if (Double.isNaN(reldev) || reldev < 0.0) {
+	    throw new IllegalArgumentException
+		("The relative deviation may not be <" + reldev + STR_ASTOP);
+	}
+	
+	return Math.abs((expected-actual)/expected) <= reldev;
+    }
+
+    /**
      * Fails if the relative deviation 
      * between <code>expected</code> and <code>actual</code> 
      * exceeds <code>reldiv</code> in absolute value. 
@@ -1248,25 +1293,13 @@ public class Assert<E> extends junit.framework.Assert {
      *    if <code>reldev</code> is negative or <code>NaN</code>. 
      *    </ul>
      * @see #assertRelEquals(double,double,double)
+     * @see #testRelEquals(double,double,double)
      */
     public static void assertRelEquals(String message,
 				       double expected,
 				       double actual,
 				       double reldev) {
-	if (expected == 0.0 || 
-	    Double.isInfinite(expected) || 
-	    Double.isNaN(expected)) {
-	    throw new IllegalArgumentException
-		("Relative deviation for expected value <" + 
-		 expected + "> is not defined. ");
-	}
-
-	if (Double.isNaN(reldev) || reldev < 0.0) {
-	    throw new IllegalArgumentException
-		("The relative deviation may not be <" + reldev + STR_ASTOP);
-	}
-	
-	if (Math.abs((expected-actual)/expected) > reldev) {
+	if (!testRelEquals(expected, actual,reldev)) {
 	    fail(message);
 	}
     }
