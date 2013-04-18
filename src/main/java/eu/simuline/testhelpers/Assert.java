@@ -415,13 +415,13 @@ public class Assert<E> extends junit.framework.Assert {
 	    throw new IllegalArgumentException
 		(expectedActual(expected,actual) + "; " +
 		 "could not prove whether deviation exceeds " + delta + 
-		 ". ");
+		 " in absolute value. ");
 	}
 
 	if (actual == null) {
 	    fail(expectedActual(expected,actual) + "; " +
 		 "could not prove whether deviation exceeds " + delta + 
-		 ". ");
+		 " in absolute value. ");
 	}
     }
 
@@ -453,7 +453,7 @@ public class Assert<E> extends junit.framework.Assert {
 				    Object actual, 
 				    double delta) {
 	assertEquals(expectedActual(expected,actual) + ": " + 
-		     " deviation exceeds " + delta + ". ",
+		     " deviation exceeds " + delta + " in absolute value. ",
 		     expected, actual, delta);
     }
 
@@ -779,7 +779,7 @@ public class Assert<E> extends junit.framework.Assert {
 	} catch(NoSuchMethodException e) {
 	    throw new IllegalStateException // NOPMD
 		("Comparator " + cmp + STR_DN_PROV + 
-		 "public int compare(Object,Object)\" - impossible. ");
+		 "public int compare(Object, Object)\" - impossible. ");
 	}
 	// this is necessary 
 	// despite compare(Object,Object) is supposed to be public, 
@@ -1083,7 +1083,7 @@ public class Assert<E> extends junit.framework.Assert {
 	message.append(actualEntry);
 	message.append(">: deviation exceeds ");
 	message.append(delta);
-	message.append(". ");
+	message.append(" in absolute value. ");
 	return message.toString();
     }
 
@@ -1336,7 +1336,7 @@ public class Assert<E> extends junit.framework.Assert {
 	assertRelEquals(expectedActual(expected,actual) + 
 			"; relative deviation <" + 
 			((expected-actual)/expected) + 
-			"> exceeds <" + reldev + STR_ASTOP,
+			"> exceeds <" + reldev + "> in absolute value. ",
 			expected,actual,reldev);
     }
 
