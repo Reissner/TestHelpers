@@ -9,7 +9,7 @@ import org.junit.runner.Result;
 
 /**
  * A RunListener which notifies the GUI {@link GUIRunner} 
- * of the eventss occuring while running a testsuite. 
+ * of the events occuring while running a testsuite. 
  *
  * Created: Sat Jun  3 17:17:23 2006
  *
