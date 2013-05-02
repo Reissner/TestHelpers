@@ -263,7 +263,7 @@ System.out.println("...Break"+Actions.this.coreRunner.interrupted());
 	}
 
 	public void runSingle() {
-	    Request request = Request.classes("All",newTestClass());//"All",
+	    Request request = Request.classes(newTestClass());
 	    // **** make sure that the shape of the testsuite 
 	    // remains unchanged. 
 	    request = request.filterWith(Actions.this.singTest.getDesc());
