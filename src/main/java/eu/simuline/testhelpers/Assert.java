@@ -238,6 +238,7 @@ public class Assert<E> extends junit.framework.Assert {
 //    private final static String STR_EXPECTED = "expected: <";
     private final static String STR_BUTWAS = "> but was: <";
     private final static String STR_ASTOP = ">. ";
+    private final static String STR_IN_ABS_VAL = " in absolute value. ";
 
     /* -------------------------------------------------------------------- *
      * thrower methods.                                                     *
@@ -415,13 +416,13 @@ public class Assert<E> extends junit.framework.Assert {
 	    throw new IllegalArgumentException
 		(expectedActual(expected,actual) + "; " +
 		 "could not prove whether deviation exceeds " + delta + 
-		 " in absolute value. ");
+		 STR_IN_ABS_VAL);
 	}
 
 	if (actual == null) {
 	    fail(expectedActual(expected,actual) + "; " +
 		 "could not prove whether deviation exceeds " + delta + 
-		 " in absolute value. ");
+		 STR_IN_ABS_VAL);
 	}
     }
 
@@ -453,7 +454,7 @@ public class Assert<E> extends junit.framework.Assert {
 				    Object actual, 
 				    double delta) {
 	assertEquals(expectedActual(expected,actual) + ": " + 
-		     " deviation exceeds " + delta + " in absolute value. ",
+		     " deviation exceeds " + delta + STR_IN_ABS_VAL,
 		     expected, actual, delta);
     }
 
@@ -1083,7 +1084,7 @@ public class Assert<E> extends junit.framework.Assert {
 	message.append(actualEntry);
 	message.append(">: deviation exceeds ");
 	message.append(delta);
-	message.append(" in absolute value. ");
+	message.append(STR_IN_ABS_VAL);
 	return message.toString();
     }
 

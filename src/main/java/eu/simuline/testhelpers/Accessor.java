@@ -121,6 +121,11 @@ public final class Accessor<T> {
      */
     private final static String UNSPECIFIED_CLASS = "<unspecified class>";
 
+    // several string literals occurring more than once. 
+    private final static String STR_DNE = " does not exist. ";
+    private final static String STR_IN_CLS = "\" in class \"";
+    private final static String STR_SPEC_NULL_CLS = "Specified null-class. ";
+
     /* -------------------------------------------------------------------- *
      * private constructor.                                                 *
      * -------------------------------------------------------------------- */
@@ -159,10 +164,11 @@ public final class Accessor<T> {
 		: paramCls[0].getName(); 
 	    ret.append(clsString);
 	    for (int i = 1; i < paramCls.length; i++) {
+		ret.append(", ");
 		clsString = paramCls[i] == null 
 		    ?  UNSPECIFIED_CLASS
 		    : paramCls[i].getName(); 
-		ret.append(", " +clsString);
+		ret.append(clsString);
 	    }
 	}
 	ret.append(")");
@@ -357,8 +363,7 @@ public final class Accessor<T> {
 	throws NoSuchFieldException {
 
 	if (aClass == null) {
-	    throw new IllegalArgumentException
-		("Specified null-class. ");
+	    throw new IllegalArgumentException(STR_SPEC_NULL_CLS);
 	}
 
 	Field[] cands;
@@ -450,7 +455,7 @@ public final class Accessor<T> {
 	    return aField.get(target);
 	} catch (IllegalAccessException e) {
 	    throw new IllegalStateException
-		("Field \"" + fieldName + "\" in class \"" + 
+		("Field \"" + fieldName + STR_IN_CLS + 
 		 (aClass != null ? aClass : target.getClass()).getName() + 
 		 "is not accessible although it should. ");
 	}
@@ -588,7 +593,7 @@ public final class Accessor<T> {
 	if (aField.getType().isPrimitive() && value == null) {
 	    throw new IllegalArgumentException
 		("Tried to assign null-value to field \"" + fieldName + 
-		 "\" in class \"" + 
+		 STR_IN_CLS + 
 		 (aClass != null ? aClass : target.getClass()).getName() + 
 		 "\" although its type \"" + aField.getType() + 
 		 "\" is primitive. ");
@@ -602,11 +607,11 @@ public final class Accessor<T> {
 			      : target.getClass()).getName();
 	    if (Modifier.isFinal(aField.getModifiers())) {
 		throw new IllegalArgumentException
-		    ("Field \"" + fieldName + "\" in class \"" + clsName + 
+		    ("Field \"" + fieldName + STR_IN_CLS + clsName + 
 		     "\" is declared final and is hence not accessible. ");
 	    }
 	    throw new IllegalStateException
-		("Field \"" + fieldName + "\" in class \"" + clsName + 
+		("Field \"" + fieldName + STR_IN_CLS + clsName + 
 		 "\" is not accessible although it should. ");
 	}
     }
@@ -794,8 +799,7 @@ public final class Accessor<T> {
 	throws InvocationTargetException {
 	
 	if (aClass == null) {
-	    throw new IllegalArgumentException
-		("Specified null-class. ");
+	    throw new IllegalArgumentException(STR_SPEC_NULL_CLS);
 	}
 
 	Method[] cands;
@@ -822,7 +826,7 @@ public final class Accessor<T> {
 
 	throw new IllegalArgumentException
 	    ("Method " + aClass.getName() + "." + methodName + 
-	     paramsToString(getParamCls(parameters)) + " does not exist. ");
+	     paramsToString(getParamCls(parameters)) + STR_DNE);
     }	
 
     /**
@@ -907,8 +911,7 @@ public final class Accessor<T> {
 	throws InvocationTargetException {
 
 	if (aClass == null) {
-	    throw new IllegalArgumentException
-		("Specified null-class. ");
+	    throw new IllegalArgumentException(STR_SPEC_NULL_CLS);
 	}
 	Method toBeInvoked = getToBeInvoked(aClass,methodName,paramCls);
 	if (toBeInvoked != null) {
@@ -918,7 +921,7 @@ public final class Accessor<T> {
 
 	throw new IllegalArgumentException
 	    ("Method " + aClass.getName() + "." + methodName + 
-	     paramsToString(getParamCls(parameters)) + " does not exist. ");
+	     paramsToString(getParamCls(parameters)) + STR_DNE);
     }
 
     /**
@@ -1033,7 +1036,7 @@ public final class Accessor<T> {
 	    throw new IllegalArgumentException
 		("Constructor " + aClass.getName() + 
 		 paramsToString(getParamCls(parameters)) + 
-		 " does not exist. ");
+		 STR_DNE);
 	}
 	return create(toBeInvoked,parameters);
     }
@@ -1140,7 +1143,7 @@ public final class Accessor<T> {
 	if (toBeInvoked == null) {
 	    throw new IllegalArgumentException
 		("Constructor " + aClass.getName() + 
-		 paramsToString(paramCls) + " does not exist. ");
+		 paramsToString(paramCls) + STR_DNE);
 	}
 	toBeInvoked.setAccessible(true);
 	return create(toBeInvoked,parameters);
@@ -1451,8 +1454,7 @@ public final class Accessor<T> {
 				      String innerClsName) {
 
 	if (enclosingCls == null) {
-	    throw new IllegalArgumentException
-		("Specified null-class. ");
+	    throw new IllegalArgumentException(STR_SPEC_NULL_CLS);
 	}
 	if (innerClsName == null) {
 	    throw new IllegalArgumentException

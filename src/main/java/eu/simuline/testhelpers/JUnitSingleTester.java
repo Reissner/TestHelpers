@@ -22,7 +22,7 @@ public class JUnitSingleTester {
      * Runs all testclasses in the directory given by the 0th argument 
      * in the package **** given by the second argument. 
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws ClassNotFoundException {
 	File baseDir = new File(args[0]+args[1]);
 	String dirName = baseDir.getAbsolutePath();
 	Finder finder = Finder.path(baseDir)
