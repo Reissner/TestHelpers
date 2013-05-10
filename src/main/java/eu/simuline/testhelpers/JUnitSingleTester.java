@@ -26,9 +26,10 @@ public class JUnitSingleTester {
 	File baseDir = new File(args[0]+args[1]);
 	String dirName = baseDir.getAbsolutePath();
 	Finder finder = Finder.path(baseDir)
-	    .name(".*arithmetics.*")
-//	    .not(Finder.nameFilter(".*arithmetics.*"))
+//	    .name(".*arithmetics.*")
+	    .not(Finder.nameFilter(".*arithmetics.*"))
 	    .not(Finder.nameFilter(".*graphDV.*"))
+//	    .name(".*class")
 	    .name(".*Test\\.class")
 //	    .print(System.out)
 	    ;
@@ -53,8 +54,7 @@ System.out.println("clsName"+clsName);
 	    tstCls = Class.forName(clsName);
 	    //Actions.run(tstCls);
 	    new RunnerThread(tstCls).start();
-
-	}
+	} // while 
 
     }
 } // class JUnitSingleTester 
