@@ -602,9 +602,10 @@ public final class Accessor<T> {
 	try {
 	    aField.set(target,value);
 	} catch (IllegalAccessException e) {
-	    String clsName = (aClass != null 
-			      ? aClass 
-			      : target.getClass()).getName();
+	    if (aClass == null) {
+		aClass = target.getClass();
+	    }
+	    String clsName = aClass.getName();
 	    if (Modifier.isFinal(aField.getModifiers())) {
 		throw new IllegalArgumentException
 		    ("Field \"" + fieldName + STR_IN_CLS + clsName + 

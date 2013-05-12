@@ -139,7 +139,9 @@ public class TestListCellRenderer
 		comp = comp.getParent(); 
 	    }
 	    // comp should now be the JList. 
-	    boolean colorMatch = (back != null) && (comp != null) && 
+	    boolean colorMatch = 
+		back != null && 
+		comp != null && 
 		back.equals(comp.getBackground()) && 
 		comp.isOpaque();
 	    return !colorMatch && super.isOpaque(); 
