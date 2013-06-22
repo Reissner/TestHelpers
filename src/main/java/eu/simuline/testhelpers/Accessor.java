@@ -456,7 +456,7 @@ public final class Accessor<T> {
 	} catch (IllegalAccessException e) {
 	    throw new IllegalStateException
 		("Field \"" + fieldName + STR_IN_CLS + 
-		 (aClass != null ? aClass : target.getClass()).getName() + 
+		 (aClass == null ? target.getClass() : aClass).getName() + 
 		 "is not accessible although it should. ");
 	}
     }
@@ -594,7 +594,7 @@ public final class Accessor<T> {
 	    throw new IllegalArgumentException
 		("Tried to assign null-value to field \"" + fieldName + 
 		 STR_IN_CLS + 
-		 (aClass != null ? aClass : target.getClass()).getName() + 
+		 (aClass == null ? target.getClass() : aClass).getName() + 
 		 "\" although its type \"" + aField.getType() + 
 		 "\" is primitive. ");
 	}

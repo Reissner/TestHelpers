@@ -58,7 +58,7 @@ import junit.framework.AssertionFailedError;
  *
  * @author <a href="mailto:">Ernst Reissner</a>
  */
-public class Assert<E> extends junit.framework.Assert {
+public abstract class Assert<E> extends junit.framework.Assert {
 
     /* -------------------------------------------------------------------- *
      * inner classes.                                                       *
