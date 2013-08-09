@@ -1431,6 +1431,123 @@ public abstract class Assert<E> extends junit.framework.Assert {
     }
 
     /**
+     * Returns whether the absolute deviation 
+     * between <code>expected</code> and <code>actual</code> 
+     * exceeds <code>absdiv</code> in absolute value. 
+     *
+      * @param expected 
+     *    the <code>double</code> value expected. 
+     *    This may not be <code>NaN</code>. 
+     * @param actual 
+     *    the actual <code>double</code> value. 
+     * @param absdev 
+     *    the maximum absolute deviation 
+     *    between <code>expected</code> and <code>actual</code>. 
+     *    This must be a non-negative value; 
+     *    in particular, <code>NaN</code> is not allowed. 
+     * @throws IllegalArgumentException 
+     *    <ul>
+     *    <li>
+     *    if <code>expected</code> is <code>NaN</code>. 
+     *    <li>
+     *    if <code>absdev</code> is negative or <code>NaN</code>. 
+     *    </ul>
+     * @see #assertAbsEquals(String,double,double,double)
+     */
+   public static boolean testAbsEquals(double expected,
+				       double actual,
+				       double absdev) {
+	if (Double.isNaN(expected)) {
+	    throw new IllegalArgumentException
+		("Absolute deviation for expected value <" + 
+		 expected + "> is not defined. ");
+	}
+
+	if (Double.isNaN(absdev) || absdev < 0.0) {
+	    throw new IllegalArgumentException
+		("The absolute deviation may not be <" + absdev + STR_ASTOP);
+	}
+
+	if (Double.isInfinite(expected)) {
+	    return expected == actual;
+	}
+
+	
+	return Math.abs(expected-actual) <= absdev;
+    }
+
+   /**
+     * Fails if the absolute deviation 
+     * between <code>expected</code> and <code>actual</code> 
+     * exceeds <code>absdiv</code> in absolute value. 
+     *
+     * @param message 
+     *    the error message used in case the assertion fails. 
+     * @param expected 
+     *    the <code>double</code> value expected. 
+     *    This may not be neither <code>NaN</code>. 
+     * @param actual 
+     *    the actual <code>double</code> value. 
+     * @param absdev 
+     *    the maximum absolute deviation 
+     *    between <code>expected</code> and <code>actual</code>. 
+     *    This must be a non-negative value; 
+     *    in particular, <code>NaN</code> is not allowed. 
+     * @throws IllegalArgumentException 
+     *    <ul>
+     *    <li>
+     *    if <code>expected</code> is <code>NaN</code>. 
+     *    <li>
+     *    if <code>absdev</code> is negative or <code>NaN</code>. 
+     *    </ul>
+     * @see #assertAbsEquals(double,double,double)
+     * @see #testAbsEquals(double,double,double)
+     */
+    public static void assertAbsEquals(String message,
+				       double expected,
+				       double actual,
+				       double absdev) {
+	if (!testAbsEquals(expected, actual,absdev)) {
+	    fail(message);
+	}
+    }
+
+   /**
+     * Fails if the absolute deviation 
+     * between <code>expected</code> and <code>actual</code> 
+     * exceeds <code>absdiv</code> in absolute value. 
+     *
+     * @param expected 
+     *    the <code>double</code> value expected. 
+     *    This may not be neither <code>NaN</code>. 
+     * @param actual 
+     *    the actual <code>double</code> value. 
+     * @param absdev 
+     *    the maximum absolute deviation 
+     *    between <code>expected</code> and <code>actual</code>. 
+     *    This must be a non-negative value; 
+     *    in particular, <code>NaN</code> is not allowed. 
+     * @throws IllegalArgumentException 
+     *    <ul>
+     *    <li>
+     *    if <code>expected</code> is <code>NaN</code>. 
+     *    <li>
+     *    if <code>absdev</code> is negative or <code>NaN</code>. 
+     *    </ul>
+     * @see #assertAbsEquals(Stringdouble,double,double)
+     */
+    public static void assertAbsEquals(double expected,
+				       double actual,
+				       double absdev) {
+	assertAbsEquals(expectedActual(expected,actual) + 
+			"; absolute deviation <" + 
+			((expected-actual)) + 
+			"> exceeds <" + absdev + "> in absolute value. ",
+			expected,actual,absdev);
+    }
+
+
+    /**
      * Special case of <code>assertEquals(Object,Object)</code> 
      * which provides an error message specifying the common prefix 
      * of <code>expected</code> with <code>actual</code>. 
