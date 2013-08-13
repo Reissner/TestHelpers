@@ -1534,7 +1534,7 @@ public abstract class Assert<E> extends junit.framework.Assert {
      *    <li>
      *    if <code>absdev</code> is negative or <code>NaN</code>. 
      *    </ul>
-     * @see #assertAbsEquals(Stringdouble,double,double)
+     * @see #assertAbsEquals(String,double,double,double)
      */
     public static void assertAbsEquals(double expected,
 				       double actual,
