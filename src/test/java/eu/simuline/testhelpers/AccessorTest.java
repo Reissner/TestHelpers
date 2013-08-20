@@ -197,6 +197,14 @@ public class AccessorTest {
 						null,
 						"aStaticPrimitiveField"));
 	     
+// java.lang.AssertionError: expected:<43> but was:<430>
+//         at org.junit.Assert.fail(Assert.java:91)
+//         at org.junit.Assert.failNotEquals(Assert.java:645)
+//         at org.junit.Assert.assertEquals(Assert.java:126)
+//         at org.junit.Assert.assertEquals(Assert.java:145)
+//         at eu.simuline.testhelpers.AccessorTest.testGetField(AccessorTest.java:195)
+//         at eu.simuline.testhelpers.AccessorTest$TestAll.testGetField(AccessorTest.java:41)
+
 	// testcase 10
 	//
 	// non-static field 
