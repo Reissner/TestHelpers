@@ -61,7 +61,7 @@ public class AccessorTest {
      * methods for tests.                                                   *
      * -------------------------------------------------------------------- */
 
-    Integer test = new Integer(0);
+    Integer test = Integer.valueOf(0);
 
     class NonStatic {
 	class NonStatic1 {
@@ -78,6 +78,9 @@ public class AccessorTest {
 	private int aPrimitiveField = 3;
 	private static int aStaticPrimitiveField = 4;
 	private final static int aFinalField = -1;
+	static {
+	    System.out.println("ForTests:static");
+	}
 
 	private int privateMethod(int i) {
 	    return aPrimitiveField*i;
@@ -94,6 +97,9 @@ public class AccessorTest {
     static class ForTestsB extends ForTests {
 	private int aPrimitiveField = 33;
 	private static int aStaticPrimitiveField = 43;
+	static {
+	    System.out.println("ForTestsB:static");
+	}
 
 	private int privateMethod(int i) {
 	    return aPrimitiveField*i;
@@ -106,6 +112,17 @@ public class AccessorTest {
 	}
     }
 
+    /**
+     * Initializes this class and all its inner classes
+     */
+    private void setUp() {
+	try {
+	    Class.forName("eu.simuline.testhelpers.AccessorTest");
+	} catch (ClassNotFoundException e) {
+	    throw new IllegalStateException("****");
+	}
+    }
+
 
     public void testGetField() throws Exception {
 	Object obj;
@@ -115,7 +132,7 @@ public class AccessorTest {
 	// non-static field 
 	//
 	obj = new ForTests();
-	assertEquals(new Integer(3),
+	assertEquals(Integer.valueOf(3),
 		     (Integer)Accessor.getField(obj,"aPrimitiveField"));
 
 
@@ -134,7 +151,7 @@ public class AccessorTest {
 	//
 	// static field 
 	//
-	assertEquals(new Integer(4),
+	assertEquals(Integer.valueOf(4),
 		     (Integer)Accessor.getField(ForTests.class,
 						"aStaticPrimitiveField"));
 
@@ -165,7 +182,7 @@ public class AccessorTest {
 	//
 	// non-static overwritten field 
 	//
-	assertEquals(new Integer(3),
+	assertEquals(Integer.valueOf(3),
 		     (Integer)Accessor.getField(ForTests.class,
 						new ForTestsB(),
 						"aPrimitiveField"));
@@ -174,7 +191,7 @@ public class AccessorTest {
 	//
 	// non-static not overwritten field 
 	//
-	assertEquals(new Integer(33),
+	assertEquals(Integer.valueOf(33),
 		     (Integer)Accessor.getField(ForTestsB.class,
 						new ForTestsB(),
 						"aPrimitiveField"));
@@ -183,7 +200,7 @@ public class AccessorTest {
 	//
 	// static field 
 	//
-	assertEquals(new Integer(4),
+	assertEquals(Integer.valueOf(4),
 		     (Integer)Accessor.getField(ForTests.class,
 						null,
 						"aStaticPrimitiveField"));
@@ -192,7 +209,7 @@ public class AccessorTest {
 	//
 	// static field 
 	//
-	assertEquals(new Integer(43),
+	assertEquals(Integer.valueOf(43),
 		     (Integer)Accessor.getField(ForTestsB.class,
 						null,
 						"aStaticPrimitiveField"));
@@ -257,9 +274,9 @@ public class AccessorTest {
 	// non-static field 
 	//
 	obj = new ForTests();
-	Accessor.setField(obj,"aPrimitiveField",new Integer(30));
+	Accessor.setField(obj,"aPrimitiveField",Integer.valueOf(30));
 
-	assertEquals(new Integer(30),
+	assertEquals(Integer.valueOf(30),
 		     (Integer)Accessor.getField(obj,"aPrimitiveField"));
 
 
@@ -281,8 +298,8 @@ public class AccessorTest {
 	//
 	Accessor.setField(ForTests.class,
 			  "aStaticPrimitiveField",
-			  new Integer(40));
-	assertEquals(new Integer(40),
+			  Integer.valueOf(40));
+	assertEquals(Integer.valueOf(40),
 		     (Integer)Accessor.getField(ForTests.class,
 						"aStaticPrimitiveField"));
 
@@ -294,7 +311,7 @@ public class AccessorTest {
 	try {
 	     Accessor.setField((Class)null,
 			       "aStaticPrimitiveField",
-			       new Integer(-1));
+			       Integer.valueOf(-1));
 	} catch (IllegalArgumentException e) {
 	    assertEquals("Specified null-class. ",e.getMessage());
 	} // end of try-catch
@@ -307,7 +324,7 @@ public class AccessorTest {
 	     Accessor.setField(null,
 			       null,
 			       "aStaticPrimitiveField",
-			       new Integer(-1));
+			       Integer.valueOf(-1));
 	} catch (IllegalArgumentException e) {
 	    assertEquals("Specified null-class. ",e.getMessage());
 	} // end of try-catch
@@ -321,8 +338,8 @@ public class AccessorTest {
 	Accessor.setField(ForTests.class,
 			  obj,
 			  "aPrimitiveField",
-			  new Integer(30));
-	assertEquals(new Integer(30),
+			  Integer.valueOf(30));
+	assertEquals(Integer.valueOf(30),
 		     (Integer)Accessor.getField(ForTests.class,
 						obj,
 						"aPrimitiveField"));
@@ -336,8 +353,8 @@ public class AccessorTest {
 	Accessor.setField(ForTestsB.class,
 			  obj,
 			  "aPrimitiveField",
-			  new Integer(330));
-	assertEquals(new Integer(330),
+			  Integer.valueOf(330));
+	assertEquals(Integer.valueOf(330),
 		     (Integer)Accessor.getField(ForTestsB.class,
 						obj,
 						"aPrimitiveField"));
@@ -349,8 +366,8 @@ public class AccessorTest {
 	Accessor.setField(ForTests.class,
 			  null,
 			  "aStaticPrimitiveField",
-			  new Integer(40));
-	assertEquals(new Integer(40),
+			  Integer.valueOf(40));
+	assertEquals(Integer.valueOf(40),
 		     (Integer)Accessor.getField(ForTests.class,
 						null,
 						"aStaticPrimitiveField"));
@@ -363,8 +380,8 @@ public class AccessorTest {
 	Accessor.setField(ForTestsB.class,
 			  null,
 			  "aStaticPrimitiveField",
-			  new Integer(430));
-	assertEquals(new Integer(430),
+			  Integer.valueOf(430));
+	assertEquals(Integer.valueOf(430),
 		     (Integer)Accessor.getField(ForTestsB.class,
 						null,
 						"aStaticPrimitiveField"));
@@ -377,7 +394,7 @@ public class AccessorTest {
 	     Accessor.setField(Integer.class,
 			       null,
 			       "aNonExistingField",
-			       new Integer(-1));
+			       Integer.valueOf(-1));
 	} catch (NoSuchFieldException e) {
 	    assertEquals("aNonExistingField",e.getMessage());
 	} // end of try-catch
@@ -391,7 +408,7 @@ public class AccessorTest {
 	     Accessor.setField(ForTests.class,
 			       new ForTests(),
 			       "aStaticPrimitiveField",
-			       new Integer(-1));
+			       Integer.valueOf(-1));
 	} catch (IllegalArgumentException e) {
 	    assertEquals("The specified field \"aStaticPrimitiveField\" should " + 
 			 "not be static. ",
@@ -407,7 +424,7 @@ public class AccessorTest {
 	     Accessor.setField(ForTests.class,
 			       null,
 			       "aPrimitiveField",
-			       new Integer(-1));
+			       Integer.valueOf(-1));
 	} catch (IllegalArgumentException e) {
 	    assertEquals("The specified field \"aPrimitiveField\" should " + 
 			 "be static. ",
@@ -422,7 +439,7 @@ public class AccessorTest {
 	try {
 	     Accessor.setField(ForTests.class,
 			       "aFinalField",
-			       new Integer(-1));
+			       Integer.valueOf(-1));
 	} catch (IllegalArgumentException e) {
 	    assertEquals("Field \"aFinalField\" in class \"" + 
 			 ForTests.class.getName() + 
@@ -478,7 +495,7 @@ public class AccessorTest {
 	//
 	result = ((Integer)Accessor.invoke(new ForTestsB(),
 					   "privateMethod",
-					   new Integer(2))
+					   Integer.valueOf(2))
 		      ).intValue();
 	assertEquals(66,result);
 
@@ -489,7 +506,7 @@ public class AccessorTest {
 	//
 	result = ((Integer)Accessor.invoke(new ForTests(),
 					   "privateMethod",
-					   new Integer(2))
+					   Integer.valueOf(2))
 		      ).intValue();
 	assertEquals(6,result);
 
@@ -500,7 +517,7 @@ public class AccessorTest {
 	//
 	result = ((Integer)Accessor.invoke(new ForTestsB(),
 					   "protectedMethod",
-					   new Integer(2))
+					   Integer.valueOf(2))
 		      ).intValue();
 	assertEquals(660,result);
 
@@ -511,7 +528,7 @@ public class AccessorTest {
 	//
 	result = ((Integer)Accessor.invoke(new ForTests(),
 					   "protectedMethod",
-					   new Integer(2))
+					   Integer.valueOf(2))
 		      ).intValue();
 	assertEquals(60,result);
 
@@ -522,10 +539,10 @@ public class AccessorTest {
 	//
 	Accessor.setField(ForTests.class,
 			  "aStaticPrimitiveField",
-			  new Integer(4));
+			  Integer.valueOf(4));
 	result = ((Integer)Accessor.invokeStatic(ForTests.class,
 						 "privateStaticMethod",
-						 new Integer(2))
+						 Integer.valueOf(2))
 		      ).intValue();
 	assertEquals(8,result);
 
