@@ -118,6 +118,10 @@ public class AccessorTest {
     private void setUp() {
 	try {
 	    Class.forName("eu.simuline.testhelpers.AccessorTest");
+	    Class.forName("eu.simuline.testhelpers.AccessorTest.Static");
+	    Class.forName("eu.simuline.testhelpers.AccessorTest.Static.Static2");
+	    Class.forName("eu.simuline.testhelpers.AccessorTest.ForTests");
+	    Class.forName("eu.simuline.testhelpers.AccessorTest.ForTestsB");
 	} catch (ClassNotFoundException e) {
 	    throw new IllegalStateException("****");
 	}
