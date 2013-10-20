@@ -8,8 +8,8 @@ import java.io.File;
 public class JUnitSingleTester {
 
     static class RunnerThread extends Thread {
-	Class tstCls;
-	RunnerThread(Class tstCls) {
+	Class<?> tstCls;
+	RunnerThread(Class<?> tstCls) {
 	    this.tstCls = tstCls;
 	}
 
@@ -36,7 +36,7 @@ public class JUnitSingleTester {
 
 	File clsFile;
 	String clsName;
-	Class tstCls;
+	Class<?> tstCls;
 
 	while (finder.hasNext()) {
 	    clsFile = finder.next();
@@ -58,3 +58,4 @@ System.out.println("clsName"+clsName);
 
     }
 } // class JUnitSingleTester 
+

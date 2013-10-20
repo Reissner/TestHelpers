@@ -63,7 +63,8 @@ public class Actions {
 	    assert clsName != null;
 
 	    try {
-		Class cls = new TestCaseClassLoader().loadClass(clsName,true);
+		Class<?> cls = new TestCaseClassLoader()
+		    .loadClass(clsName,true);
 		Actions.this.coreRunner = new CoreRunner(cls);
 	    } catch (ClassNotFoundException e) {
 		System.out.println
@@ -195,7 +196,7 @@ System.out.println("...Break"+Actions.this.coreRunner.interrupted());
 	/**
 	 * The class to be tested. 
 	 */
-	private final Class testClass;
+	private final Class<?> testClass;
 
 	/**
 	 * The classloader used. 
@@ -214,7 +215,7 @@ System.out.println("...Break"+Actions.this.coreRunner.interrupted());
 	/**
 	 * Creates a runner running all testcases in the given test class. 
 	 */
-	CoreRunner(Class testClass)  {
+	CoreRunner(Class<?> testClass)  {
 	    this.core = new JUnitCore();
 	    this.core.addListener(Actions.this.listener);
 	    this.testClass = testClass;
@@ -240,7 +241,7 @@ System.out.println("...Break"+Actions.this.coreRunner.interrupted());
 	 * @throws IllegalStateException
 	 *    in case the given class is not found. 
 	 */
- 	Class newTestClass() {
+ 	Class<?> newTestClass() {
 	    try {
 		this.classLd = new TestCaseClassLoader();
 		return classLd.loadClass(this.testClass.getName(), 
@@ -351,7 +352,7 @@ System.out.println("...Core run()"+this.core);
      * Creates a new <code>Actions</code> instance.
      *
      */
-    public Actions(Class testClass) {
+    public Actions(Class<?> testClass) {
 	this.coreRunner = new CoreRunner(testClass);
 	this.singTest = null;// leads to running all testcases 
 	this. openAction = new  OpenAction();
@@ -373,7 +374,7 @@ System.out.println("...Core run()"+this.core);
      * methods.                                                             *
      * -------------------------------------------------------------------- */
 
-    public static void run(Class testClass) {
+    public static void run(Class<?> testClass) {
 	// parameter null is nowhere used. 
 	new Actions(testClass).startAction.actionPerformed(null);
     }

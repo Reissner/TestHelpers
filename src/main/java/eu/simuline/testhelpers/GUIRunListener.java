@@ -39,7 +39,7 @@ public class GUIRunListener extends RunListener {
 	this((Actions)null);
     }
     // does not work, is just for compilation of testcases. !!!!
-    public GUIRunListener(Class cls) { // NOPMD
+    public GUIRunListener(Class<?> cls) { // NOPMD
 	this((Actions)null);
     }
 
@@ -424,3 +424,4 @@ System.out.println("msg is 'null'("+
     } // class Singular 
 
 }
+

@@ -84,7 +84,7 @@ public class TestCaseClassLoader extends ClassLoader {
      * -------------------------------------------------------------------- */
 
     // **** better done with instrumentation. 
-    static boolean stop;// NOPMD
+    static boolean STOP;
 
 
     /** scanned class path */
@@ -129,7 +129,7 @@ public class TestCaseClassLoader extends ClassLoader {
     private TestCaseClassLoader(String classPath) {
 	this.jPath = new JavaPath(classPath);
 	readExcludedPackages();
-	this.stop = false;
+	STOP = false;
     }
 
     /* -------------------------------------------------------------------- *
@@ -172,16 +172,16 @@ public class TestCaseClassLoader extends ClassLoader {
     }
 
     void pleaseBreak() {
-	this.stop = true;
+	STOP = true;
     }
 	
-    public synchronized Class loadClass(String name, boolean resolve)
+    public synchronized Class<?> loadClass(String name, boolean resolve)
 	throws ClassNotFoundException {
-	if (this.stop) {
+	if (STOP) {
 	    throw new RejectedExecutionException("User interrupt");// **** 
 	}
 
-	Class cls = findLoadedClass(name);
+	Class<?> cls = findLoadedClass(name);
 	if (cls != null) {
 	    return cls;
 	}
@@ -287,7 +287,8 @@ System.out.println("keep searching **** although excluded. ");
 	    }
 	}
 	
-	for (Enumeration e = prop.propertyNames(); e.hasMoreElements(); ) {
+	for (Enumeration<?> e = prop.propertyNames(); 
+	     e.hasMoreElements(); ) {
 	    String key = (String)e.nextElement();
 	    if (key.startsWith("excluded.")) {
 		String path = prop.getProperty(key);
@@ -303,3 +304,4 @@ System.out.println("keep searching **** although excluded. ");
 	} // for 
     } // readExcludedPackages() 
 }
+

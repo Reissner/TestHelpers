@@ -30,7 +30,7 @@ import java.io.Serializable;
  * for an item in a failure list. 
  */
 public class TestListCellRenderer 
-    implements ListCellRenderer, Serializable {
+    implements ListCellRenderer<TestCase>, Serializable {
 
     private static final long serialVersionUID = -2479143000061671589L;
 
@@ -71,13 +71,12 @@ public class TestListCellRenderer
 */
     }
 
-    public Component getListCellRendererComponent(JList list,
-						  Object value,
+    public Component getListCellRendererComponent(JList<? extends TestCase> list,
+						  TestCase testCase,
 						  int index,
 						  boolean isSelected,
 						  boolean cellHasFocus) {
 
-	TestCase testCase = (TestCase)value;
 	Box failureEntry = Box.createHorizontalBox();
 
 	Label iconLabel = new Label(testCase.getQuality().getIcon());
@@ -103,7 +102,7 @@ public class TestListCellRenderer
 	Label(String text) {
 	    super(text);
 	}
-	void setDetails(JList list,
+	void setDetails(JList<?> list,
 			boolean isSelected,
 			boolean cellHasFocus) {
 	    if (isSelected) {

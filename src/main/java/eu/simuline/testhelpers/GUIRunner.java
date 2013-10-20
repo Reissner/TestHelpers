@@ -746,7 +746,7 @@ public class GUIRunner {
 
 	private final ListSelectionModel failureSelection;
 
-	private final DefaultListModel failureListMod;
+	private final DefaultListModel<TestCase> failureListMod;
 
 	private final StackTraceLister stackTraceLister;
 
@@ -768,7 +768,7 @@ public class GUIRunner {
 	    this.failureSelection
 		.addListSelectionListener(TestCaseLister.this);
 	    // init failureListMod 
-	    this.failureListMod = new DefaultListModel();
+	    this.failureListMod = new DefaultListModel<TestCase>();
 	    // init stacktrace 
 	    this.stackTraceLister = new StackTraceLister();
 	}
@@ -778,8 +778,9 @@ public class GUIRunner {
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
-	JList getFailList() {
-	    JList jFailureList = new JList(this.failureListMod);
+	JList<TestCase> getFailList() {
+	    JList<TestCase> jFailureList = 
+		new JList<TestCase>(this.failureListMod);
 	    jFailureList.setCellRenderer(new TestListCellRenderer());
 	    jFailureList.setSelectionModel(this.failureSelection);
 	    return jFailureList;
@@ -878,8 +879,7 @@ public class GUIRunner {
 		return;
 	    }
 	    // Here, the selection consists of a single entry. 
-	    TestCase testCase = (TestCase)
-		this.failureListMod.getElementAt(selIndex);
+	    TestCase testCase = this.failureListMod.getElementAt(selIndex);
 	    this.sel.setSelection(testCase.getNum());
 	    this.stackTraceLister.setStack(testCase.getException());
 	    GUIRunner.this.splitPane.resetToPreferredSizes();
@@ -898,7 +898,7 @@ public class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	private final JLabel thrwMessager;
-	private final DefaultListModel stacktrace;
+	private final DefaultListModel<String> stacktrace;
 	private final ListSelectionModel stackElemSelection;
 	private Throwable thrw;
 
@@ -910,7 +910,7 @@ public class GUIRunner {
 	    this.thrwMessager = new JLabel("",SwingConstants.LEADING);
 
 	    // init stacktrace 
-	    this.stacktrace = new DefaultListModel();
+	    this.stacktrace = new DefaultListModel<String>();
 	    // init stackElemSelection 
 	    this.stackElemSelection = new DefaultListSelectionModel();
 	    this.stackElemSelection
@@ -928,7 +928,7 @@ public class GUIRunner {
 
 
 	Component getStackTraceBox() {
-	    JList stacktraceList = new JList(this.stacktrace);
+	    JList<String> stacktraceList = new JList<String>(this.stacktrace);
 	    stacktraceList.setSelectionModel(this.stackElemSelection);
 
 	    Box stackTraceBox = Box.createVerticalBox();
@@ -1379,3 +1379,16 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
     }
 
 } // NOPMD coupling is not that high!
+
+
+// sr/lib64/jvm/javaLatest/bin/javac -classpath /home/ernst/Software/target/test-classes:/home/ernst/Software/target/classes:/home/ernst/Software/jars/junitLatest.jar:/home/ernst/Software/jars/fastutilLatest.jar:/home/ernst/Software/jars/javaoctaveLatest.jar:/home/ernst/Software/jars/commons-loggingLatest.jar:/home/ernst/Software/jars/antlr-3.5-complete.jar:/home/ernst/Software/jars/jnaLatest.jar:/home/ernst/Software/jars/jnaPlatformLatest.jar -sourcepath /home/ernst/Software/src/main/java -encoding UTF-8 -d /home/ernst/Software/target/classes -deprecation -target 1.6 -source 1.6 -Xlint GUIRunner.java
+
+// warning: [options] bootstrap class path not set in conjunction with -source 1.6
+// GUIRunner.java:784: warning: [unchecked] unchecked conversion
+// 	    jFailureList.setCellRenderer(new TestListCellRenderer());
+// 	                                 ^
+//   required: ListCellRenderer<? super TestCase>
+//   found:    TestListCellRenderer
+// 2 warnings
+
+// Compilation finished at Mon Oct 21 00:56:15
