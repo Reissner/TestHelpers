@@ -172,6 +172,7 @@ public abstract class Assert<E> extends junit.framework.Assert {
 	 *    for <code>actual == null</code> without throwing an exception 
 	 *    as specified for {@link java.lang.Comparable#compareTo}. 
 	 */
+	// **** rawtype avoidable only if enum is not static. 
 	private boolean invokeCompareTo(Comparable expected,
 					Object actual) {
 
@@ -558,8 +559,8 @@ public abstract class Assert<E> extends junit.framework.Assert {
      *    is not in <code>expectedContainer</code>
      *    and in particular if it is <code>null</code>. 
      */
-    public static void assertIsIn(Collection expectedContainer, 
-				  Object actualElement) {
+    public static <E> void assertIsIn(Collection<E> expectedContainer, 
+				      Object actualElement) {
 	if (actualElement == null ||
 	    !expectedContainer.contains(actualElement)) {
 	    fail("Expected an element of <" + expectedContainer + 
@@ -628,10 +629,10 @@ public abstract class Assert<E> extends junit.framework.Assert {
      *    is not as specified by <code>cmpObj</code>. 
      * @see #assertIs(CmpObj,Comparable,Object)
      */
-    public static void assertIs(CmpObj cmpObj,
-				String message,
-				Comparable expected,
-				Object actual) {
+    public static <E> void assertIs(CmpObj cmpObj,
+				    String message,
+				    Comparable<E> expected,
+				    E actual) {
 	if (!(cmpObj.invokeCompareTo(expected,actual))) {
 	    fail(message);
 	}
@@ -660,11 +661,11 @@ public abstract class Assert<E> extends junit.framework.Assert {
      *    is not as specified by <code>cmpObj</code>. 
      * @see #assertIs(CmpObj,Object,Object,Comparator)
      */
-   public static void assertIs(CmpObj cmpObj,
+   public static <E> void assertIs(CmpObj cmpObj,
 			       String message,
-			       Object expected,
-			       Object actual,
-			       Comparator cmp) {
+			       E expected,
+			       E actual,
+			       Comparator<E> cmp) {
 	if (!(cmpObj.isValid(invokeCompare(expected,actual,cmp)))) {
 	    fail(message);
 	}
@@ -695,9 +696,9 @@ public abstract class Assert<E> extends junit.framework.Assert {
      *    is not as specified by <code>cmpObj</code>. 
      * @see #assertIs(CmpObj,String,Comparable,Object)
      */
-    public static void assertIs(CmpObj cmpObj,
-				Comparable expected,
-				Object actual) {
+    public static <E> void assertIs(CmpObj cmpObj,
+				    Comparable<E> expected,
+				    E actual) {
 
 	assertIs(cmpObj,
 		 "expected: <" + expected + 
@@ -725,10 +726,10 @@ public abstract class Assert<E> extends junit.framework.Assert {
      *    is not as specified by <code>cmpObj</code>. 
      * @see #assertIs(CmpObj,String,Object,Object,Comparator)
      */
-    public static void assertIs(CmpObj cmpObj,
-				Object expected,
-				Object actual,
-				Comparator cmp) {
+    public static <E> void assertIs(CmpObj cmpObj,
+				    E expected,
+				    E actual,
+				    Comparator<E> cmp) {
 
 	assertIs(cmpObj,
 		 "expected: <" + expected + 
@@ -761,9 +762,9 @@ public abstract class Assert<E> extends junit.framework.Assert {
      *    raises an exception. 
      *    </ul>
      */
-    private static int invokeCompare(Object obj1,
-				     Object obj2,
-				     Comparator cmp) {
+    private static <E> int invokeCompare(E obj1,
+					 E obj2,
+					 Comparator<E> cmp) {
 
 	// Check comparator. 
 	if (cmp == null) {
@@ -1184,7 +1185,7 @@ public abstract class Assert<E> extends junit.framework.Assert {
 	    } else {
 		// Here, neither of the objects are arrays 
 		// (but their types coincide). 
-		Class wrappedClass = BasicTypesCompatibilityChecker
+		Class<?> wrappedClass = BasicTypesCompatibilityChecker
 		    .getWrappedCls(expectedEntry.getClass());
 		if (wrappedClass == null) {
 		    // not primitive: use as is. 

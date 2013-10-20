@@ -246,8 +246,8 @@ public final class Accessor<T> {
      *    For a <code>null</code>-parameter, 
      *    the <code>null</code>-class is returned. 
      */
-    private static Class[] getParamCls(Object... parameters) {
-	Class[] paramCls = new Class[parameters.length];
+    private static Class<?>[] getParamCls(Object... parameters) {
+	Class<?>[] paramCls = new Class<?>[parameters.length];
 	for (int i = 0; i < parameters.length; i++) {
 	    paramCls[i] = parameters[i] == null 
 		? null 
@@ -324,7 +324,7 @@ public final class Accessor<T> {
      *    or if the specified field is not static. 
      * @see #setField(Class,String,Object)
      */
-    public static Object getField(Class aClass,
+    public static Object getField(Class<?> aClass,
 				  String fieldName) 
 	throws NoSuchFieldException {
 
@@ -357,7 +357,7 @@ public final class Accessor<T> {
      *    containd a field with the given name, 
      *    e.g. because <code>fieldName == null</code>. 
      */
-    private static Field getFieldObj(Class aClass,
+    private static Field getFieldObj(Class<?> aClass,
 				     String fieldName,
 				     boolean shouldBeStatic) 
 	throws NoSuchFieldException {
@@ -367,7 +367,7 @@ public final class Accessor<T> {
 	}
 
 	Field[] cands;
-	Class candClass = aClass;
+	Class<?> candClass = aClass;
 
 	do {
 	    // look for the specified field in candClass. 
@@ -444,7 +444,7 @@ public final class Accessor<T> {
      *    </ul>
      * @see #setField(Class,Object,String,Object)
      */
-    public static Object getField(Class aClass,
+    public static Object getField(Class<?> aClass,
 				  Object target,
 				  String fieldName) 
 	throws NoSuchFieldException {
@@ -534,7 +534,7 @@ public final class Accessor<T> {
      *    or if the specified field is declared <code>final</code>. 
      * @see #getField(Class,String)
      */
-    public static void setField(Class aClass,
+    public static void setField(Class<?> aClass,
 				String fieldName,
 				Object value) 
 	throws NoSuchFieldException {
@@ -582,7 +582,7 @@ public final class Accessor<T> {
      *    </ul>
      * @see #getField(Class,Object,String)
      */
-    public static void setField(Class aClass,
+    public static void setField(Class<?> aClass,
 				Object target,
 				String fieldName,
 				Object value) 
@@ -669,7 +669,7 @@ public final class Accessor<T> {
      *   Unwrap it using {@link Throwable#getCause}. 
      * @see #invoke(Class,Object,String,Object...)
      */
-    public static Object invokeStatic(Class aClass,
+    public static Object invokeStatic(Class<?> aClass,
 				      String methodName,
 				      Object... parameters) 
 	throws InvocationTargetException {
@@ -793,7 +793,7 @@ public final class Accessor<T> {
      *    if the specified method does not exist or is not unique. 
      *    </ul>
      */
-    public static Object invoke(Class aClass,
+    public static Object invoke(Class<?> aClass,
 				Object target,
 				String methodName,
 				Object... parameters) 
@@ -804,7 +804,7 @@ public final class Accessor<T> {
 	}
 
 	Method[] cands;
-	Class candClass = aClass;
+	Class<?> candClass = aClass;
 	Method toBeInvoked;
  
 	// Find out the methods matching the signature 
@@ -904,7 +904,7 @@ public final class Accessor<T> {
      *   Unwrap it using {@link Throwable#getCause}. 
      * @see #invoke(Class,Object,String,Class[],Object[])
      */
-    public static Object invoke(Class aClass,
+    public static Object invoke(Class<?> aClass,
 				Object target,
 				String methodName,
 				Class[] paramCls,
@@ -945,7 +945,7 @@ public final class Accessor<T> {
      *    and descends recursively until a method is found. 
      *    If no method is found, <code>null</code> is returned. 
      */
-    static Method getToBeInvoked(Class aClass,
+    static Method getToBeInvoked(Class<?> aClass,
 				 String methodName,
 				 Class<?>... paramCls) {
 
@@ -1238,8 +1238,8 @@ public final class Accessor<T> {
      * @throws IllegalStateException 
      *    if <code>cand</code> is neither a method nor a constructor. 
      */
-    private static boolean constructorMatches(Constructor cand,
-					      Object... parameters) {
+    private static <T> boolean constructorMatches(Constructor<T> cand,
+						  Object... parameters) {
 	return paramsMatch(cand.getParameterTypes(),parameters);
     }
 
@@ -1299,7 +1299,7 @@ public final class Accessor<T> {
      * @throws IllegalArgumentException 
      *    if the specified constructor or method is not unique. 
      */
-    private static Method getMethod(Class aClass,
+    private static Method getMethod(Class<?> aClass,
 				    String methodName,
 				    Method[] cands,
 				    Object... parameters) {
@@ -1414,9 +1414,9 @@ public final class Accessor<T> {
      *    if the specified class does not exist. 
      * @see #getInnerClass(Class,String)
      */
-    public static Class getInnerClass(Class enclosingCls,
+    public static Class<?> getInnerClass(Class<?> enclosingCls,
 				      String[] pathToInner) {
-	Class result = enclosingCls;
+	Class<?> result = enclosingCls;
 	for (int i = 0; i < pathToInner.length; i++) {
 	    result = getInnerClass(result,pathToInner[i]);
 	}
@@ -1451,7 +1451,7 @@ public final class Accessor<T> {
      *    if the specified class does not exist. 
      * @see #getInnerClass(Class,String[])
      */
-    public static Class getInnerClass(Class enclosingCls,
+    public static Class<?> getInnerClass(Class<?> enclosingCls,
 				      String innerClsName) {
 
 	if (enclosingCls == null) {
@@ -1463,7 +1463,7 @@ public final class Accessor<T> {
 	}
 
 	Class[] cands;
-	Class candCls = enclosingCls;
+	Class<?> candCls = enclosingCls;
 	String candClsName;
 
 	do {
@@ -1488,3 +1488,22 @@ public final class Accessor<T> {
     }
 }
 
+// usr/lib64/jvm/javaLatest/bin/javac -classpath /home/ernst/Software/target/test-classes:/home/ernst/Software/target/classes:/home/ernst/Software/jars/junitLatest.jar:/home/ernst/Software/jars/fastutilLatest.jar:/home/ernst/Software/jars/javaoctaveLatest.jar:/home/ernst/Software/jars/commons-loggingLatest.jar:/home/ernst/Software/jars/antlr-3.5-complete.jar:/home/ernst/Software/jars/jnaLatest.jar:/home/ernst/Software/jars/jnaPlatformLatest.jar -sourcepath /home/ernst/Software/src/main/java -encoding UTF-8 -d /home/ernst/Software/target/classes -deprecation -target 1.6 -source 1.6 -Xlint Accessor.java
+
+// warning: [options] bootstrap class path not set in conjunction with -source 1.6
+// Accessor.java:1031: warning: [unchecked] unchecked cast
+// 			   (Constructor<T>[])aClass.getDeclaredConstructors(),
+// 			                                                   ^
+//   required: Constructor<T>[]
+//   found:    Constructor<?>[]
+//   where T is a type-variable:
+//     T extends Object declared in method <T>create(Class<T>,Object...)
+// Accessor.java:1241: warning: [rawtypes] found raw type: Constructor
+//     private static boolean constructorMatches(Constructor cand,
+//                                               ^
+//   missing type arguments for generic class Constructor<T>
+//   where T is a type-variable:
+//     T extends Object declared in class Constructor
+// 3 warnings
+
+// Compilation finished at Mon Oct 21 00:27:10
