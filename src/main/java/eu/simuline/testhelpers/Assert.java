@@ -18,10 +18,12 @@ import junit.framework.AssertionFailedError;
  * provided by <code>junit.framework.Assert</code>. 
  * <ul>
  * <li>
- * The method {@link #assertEquals(Object,Object,double)} 
+ * The method {@link #assertNormAbsEquals(Object,Object,String,double)} 
  * generalizes the method 
  * <code>assertEquals(double expected, double actual, double delta)</code> 
- * to objects. 
+ * to objects with a metric defined by a method (name). 
+ * There is also a variant for relative precision, 
+ * {@link #assertNormRelEquals(Object,Object,String,double)}. 
  * <li>
  * The methods {@link #assertRelEquals(double,double,double)} 
  * provides relative tolerances suited to numerical applications. 
