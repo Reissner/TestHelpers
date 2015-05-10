@@ -172,8 +172,7 @@ public abstract class Assert<E> extends junit.framework.Assert {
 	 *    for <code>actual == null</code> without throwing an exception 
 	 *    as specified for {@link java.lang.Comparable#compareTo}. 
 	 */
-	// **** rawtype avoidable only if enum is not static. 
-	private boolean invokeCompareTo(Comparable expected,
+	private boolean invokeCompareTo(Comparable<?> expected,
 					Object actual) {
 
 	    // Check "expected". 
@@ -261,133 +260,293 @@ public abstract class Assert<E> extends junit.framework.Assert {
      * methods: assertEquals.                                               *
      * -------------------------------------------------------------------- */
 
+
+    // in fact, norm is more a metric. 
     /**
-     * Generalizes the methods 
-     * <code>assertEquals(double expected,double actual,double delta)</code> 
-     * and 
-     * <code>assertEquals(float expected, float actual, float delta)</code> 
-     * provided by the base class for arguments <code>expected</code> 
-     * with a method 
-     * <code>
-     * public boolean epsilonEquals(Object other,double rel,double abs)
-     * </code>. 
-     * This method returns the following: 
-     * <ul>
-     * <li>
-     * <code>false</code> 
-     * if this object and the other object have different runtime type 
-     * or if there is another reason why their deviation cannot be computed 
-     * (think of interval sets consisting of a different number of intervals 
-     * or think of an empty interval and a non-empty interval). 
-     * <li>
-     * <code>false</code> 
-     * if either the relative deviation 
-     * or the absolute one given in the parameter list are exceeded. 
-     * 
-     * </ul>
+     * Returns the distance 
+     * of the two objects <code>expected</code> and <code>actual</code> 
+     * defined by the metric defined by the method named <code>norm</code>; 
+     * typically something like the norm of a kind of difference. 
      *
-     * @param message 
-     *    the error message used in case the assertion fails. 
-     * @param expected 
-     *    an <code>Object</code> for which a method 
-     *    <code>public boolean epsilonEquals(Object,double)</code> 
-     *    is defined. 
-     * @param actual 
-     *    another <code>Object</code>. 
-     * @param delta 
-     *    the allowed deviation as a <code>double</code> value. 
-     * @exception IllegalArgumentException 
-     *    if there is no method 
-     *    <code>public boolean epsilonEquals(Object,double)</code> 
-     *    defined for <code>expected</code> (static methods not allowed) 
-     *    or if invoking <code>expected.epsilonEquals(actual,double)</code> 
-     *    causes an exception. 
-     * @exception IllegalStateException 
-     *    if the method 
-     *    <code>public boolean epsilonEquals(Object,double)</code> 
-     *    is not accessible or if it is provided with the wrong arguments. 
-     */
-    public static void assertEquals(String message,
-				    Object expected, 
-				    Object actual, 
-				    double delta) {
+     * @param norm
+     *    the non-null name of a metric method, 
+     *    i.e. of a member method of the form 
+     *    <code>public double norm(other)</code>  
+     *    with the properties of a metric: 
+     *    <ul>
+     *    <li><code>x.norm(x)</code> yields <code>0</code>
+     *    <li><code>x.norm(y)</code> and <code>y.norm(x)</code> 
+     *        yield the same result, 
+     *    <li><code>x.norm(y)+y.norm(z)\(\ge\) x.norm(z)</code>. 
+     *    </ul>
+     * @throws IllegalArgumentException
+     *    if the test cannot be performed, i.e. 
+     *    <ul>
+     *    <li>
+     *    <code>norm</code> does not represent a metric method, 
+     *    i.e. a member method of the form 
+     *    <code>public double norm(other)</code>. 
+     *    Of course, the properties of a metric cannot be proved. 
+     *    <li>
+     *    invoking <code>expected.norm(actual)</code> raises an exception 
+     *    </ul>
+     * @see #assertNormAbsEquals(String,Object,Object,String,double)
+     * @see #assertNormRelEquals(String,Object,Object,String,double)
+     * @see #computeNorm1(String,Object)
+     *///<code></code>
+    private static double computeNorm2(String norm, 
+				       Object expected, 
+				       Object actual
+				       //Object... actuals
+				       ) {
+
+	// get the norm2 method or null 
+	Method mNorm2 = Accessor.getToBeInvoked(expected.getClass(),
+						norm,
+						expected.getClass());
 
 
-	checkNulls(expected,actual,delta);
-	// Here, both "expected" and "actual" are not null. 
-
-	Method epsEquals;
-	int numArgs;
-
-	epsEquals = Accessor.getToBeInvoked(expected.getClass(),
-					    "equals",
-					    expected.getClass(),
-					    Double.TYPE);
-	numArgs = 2;
-	if (epsEquals == null) {
-	    epsEquals = Accessor.getToBeInvoked(expected.getClass(),
-						"epsilonEquals",
-						expected.getClass(),
-						Double.TYPE,
-						Double.TYPE);
-	    numArgs = 3;
-	    if (epsEquals == null) {
-		// ****** text is not ok. **** 
-		throw new IllegalArgumentException
-		    (STR_OBJECT + expected + STR_DN_PROV + 
-		     "public boolean epsilonEquals(Object,double,double)" + 
-		     "\" as expected " + 
-		     "(check the parameters and on the modifiers). ");
-	    }
-	}
-	// Here, epsEquals and numArgs are valid. 
-
-	if (!Boolean.TYPE.equals(epsEquals.getReturnType())) {
+	// ensure that a method with given signature exists 
+	if (mNorm2 == null) {
 	    throw new IllegalArgumentException
 		(STR_OBJECT + expected + STR_DN_PROV + 
-		 "public boolean equals(Object,double)\" " + 
-		 "as expected (have a look at the return type). ");
-	}
-	if (Modifier.isStatic(epsEquals.getModifiers())) {
-	    throw new IllegalArgumentException
-		(STR_OBJECT + expected + " provides a static method " + 
-		 "\"public static boolean equals(Object,double)\" " + 
-		 "not a member method as expected. ");
+		 "public ... " + norm + "(" + expected.getClass() + 
+		 ") as expected. ");
 	}
 
-	// Here, epsEquals contains the correct method epsilonEquals 
+	// ensure the right return type 
+	if (!Double.TYPE.equals(mNorm2.getReturnType())) {
+	    throw new IllegalArgumentException
+		(STR_OBJECT + expected + STR_DN_PROV + 
+		 "public double " + norm + "(" + expected.getClass() + 
+		 ") as expected (have a look at the return type). ");
+	}
+
+	// ensure that the method is a member method 
+	if (Modifier.isStatic(mNorm2.getModifiers())) {
+	    throw new IllegalArgumentException
+		(STR_OBJECT + expected + " provides a static method " + 
+		 "\"public static double " + norm + "(" + expected.getClass() + 
+		 ") not a member method as expected. ");
+	}
+
+	// Here, mNorm contains the correct method representing a norm 
+	// resp. a metric 
 	// (we expect this is unique). ***** 
 
 	try {
-	    Boolean result;
-	    switch (numArgs) {
-	    case 2:
-		result = (Boolean)
-		    epsEquals.invoke(expected, actual, delta);
-		break;
-	    case 3:
-		result = (Boolean)
-		    epsEquals.invoke(expected, actual, 0, delta);
-		break;
-				
-	    default:
-		throw new IllegalStateException
-		    ("Found " + numArgs + " instead of 2 or 3. ");
-	    }
-			
-	    if (!Boolean.TRUE.equals(result)) {
-		fail(message);
-	    }
+	    // invoke norm method 
+	    return (Double)mNorm2.invoke(expected, actual);
 	} catch(IllegalAccessException iace) {
-	    thrwAccessible(epsEquals);
-	} catch(IllegalArgumentException iage) {
-	    thrwWrongArgs(epsEquals);
+	    // throws IllegalStateException but shall never occur 
+	    thrwAccessible(mNorm2);
 	} catch(InvocationTargetException ite) {
 	    throw new IllegalArgumentException // NOPMD
-		("Could not test equality because method " + epsEquals + 
+		("Could not test deviation, because method " + mNorm2 + 
 		 STR_RAISED + ite.getTargetException() + ". ");
 	}
-    }
+	throw new IllegalStateException("Reached unreachable statement. ");
+    } // computeNorm2(...) 
+
+
+    /**
+     * Fails if <code>actual</code> is <code>null</code> 
+     * or <code>actual</code> deviates from <code>expected</code> 
+     * by at least <code>delta</code>, 
+     * provided the test can be executed at all. 
+     * The deviation is computed with respect to the metric 
+     * given by <code>expected.norm(actual)</code> 
+     * which is assumed to have signature <code>double norm(Cls actual)</code> 
+     * with <code>Cls</code> the class of <code>expected</code>. 
+     *
+     *
+     * @param norm
+     *    the name of a metric method, 
+     *    i.e. of a member method of the form 
+     *    <code>public double norm(other)</code>  
+     *    with the properties of a metric: 
+     *    <ul>
+     *    <li><code>x.norm(x)</code> yields <code>0</code>
+     *    <li><code>x.norm(y)</code> and <code>y.norm(x)</code> 
+     *        yield the same result, 
+     *    <li><code>x.norm(y)+y.norm(z)\(\ge\) x.norm(z)</code>. 
+     *    </ul>
+     * @throws IllegalArgumentException
+     *    if the test cannot be performed, i.e. 
+     *    <ul>
+     *    <li>
+     *    <code>norm</code> is <code>null</code> 
+     *    or does not represent a metric method, 
+     *    i.e. a member method of the form 
+     *    <code>public double norm(other)</code>. 
+     *    Of course, the properties of a metric cannot be proved. 
+     *    <li>
+     *    invoking <code>expected.norm(actual)</code> raises an exception 
+     *    </ul>
+     * @throws IllegalArgumentException 
+     *    if <code>expected==null</code>. 
+     * @throws AssertionFailedError
+     *    if the test can be performed, 
+     *    i.e. no IllegalArgumentException is thrown but 
+     *    <ul>
+     *    <li>
+     *    <code>actual==null</code> or 
+     *    <li>the distance returned by the metric exceeds <code>delta</code>. 
+     *    </ul>
+      *///<code></code>
+    public static void assertNormAbsEquals(String message,
+					   Object expected, 
+					   Object actual, 
+					   String norm,
+					   double delta) {
+       
+	checkNullsB(norm, expected, actual);
+	double diff = computeNorm2(norm, expected, actual);
+
+	if (diff > delta) {
+	    fail(message);
+	}
+
+    } // assertNormAbsEquals(...) 
+
+    public static void assertNormAbsEquals(Object expected, 
+					   Object actual, 
+					   String norm,
+					   double delta) {
+       
+	assertNormAbsEquals(expectedActual(expected,actual) + ":  deviation " + 
+			    computeNorm2(norm, expected, actual) + 
+			    " exceeds " + delta + STR_IN_ABS_VAL,
+			    expected, 
+			    actual, 
+			    norm,
+			    delta);
+
+    } // assertNormAbsEquals(...) 
+
+
+    /**
+     * Returns the norm of <code>expected</code>
+     * defined by the method named <code>norm</code>. 
+     *
+     * @param norm
+     *    the non-null name of a norm method, 
+     *    i.e. of a member method of the form 
+     *    <code>public double norm()</code>  
+     *    with the properties of a norm: 
+     *    <ul>
+     *    <li>
+     *    <code>x.norm()</code> yields <code>0</code> 
+     *    iff <code>x</code> represents the zero vector. 
+     *    <li>
+     *    <code>(sx).norm()=s(x.norm())</code> 
+     *    where <code>sx</code> and <code>s(...)</code> 
+     *    represent scalar multiplication. 
+     *    <li>
+     *    <code>x.norm()+y.norm()\(\ge (x+y)\).norm(z)</code>, 
+     *    where \(x+y\) represents the sum of vectors. 
+     *    </ul>
+     * @throws IllegalArgumentException
+     *    if the test cannot be performed, i.e. 
+     *    <ul>
+     *    <li>
+     *    <code>norm</code> does not represent a norm method, 
+     *    i.e. a member method of the form 
+     *    <code>public double norm(other)</code>. 
+     *    Of course, the properties of a norm cannot be proved. 
+     *    <li>
+     *    invoking <code>expected.norm()</code> raises an exception 
+     *    </ul>
+     *///<code></code>
+    private static double computeNorm1(String norm, 
+				       Object expected) {
+	Object[] actuals = new Object[0];
+	//checkNullsB(norm, expected); checked by computeNorm2 already
+	//assert expected != null && norm != null;
+
+	// get the norm1 method or null 
+	Method mNorm1 = Accessor.getToBeInvoked(expected.getClass(),
+						norm);
+
+	// ensure that a method with given signature exists 
+	if (mNorm1 == null) {
+	    throw new IllegalArgumentException
+		(STR_OBJECT + expected + STR_DN_PROV + 
+		 "public ... " + norm + "(" + expected.getClass() + 
+		 ") as expected. ");
+	}
+
+	// ensure the right return type 
+	if (!Double.TYPE.equals(mNorm1.getReturnType())) {
+	    throw new IllegalArgumentException
+		(STR_OBJECT + expected + STR_DN_PROV + 
+		 "public double " + norm + 
+		 "() as expected (have a look at the return type). ");
+	}
+
+	// ensure that the method is a member method 
+	if (Modifier.isStatic(mNorm1.getModifiers())) {
+	    throw new IllegalArgumentException
+		(STR_OBJECT + expected + " provides a static method " + 
+		 "\"public static double " + norm + 
+		 "() not a member method as expected. ");
+	}
+
+	// Here, mNorm1 contains the correct method representing a norm 
+	// (we expect this is unique). ***** 
+
+	try {
+	    // invoke norm method 
+	    return (Double)mNorm1.invoke(expected);
+	} catch(IllegalAccessException iace) {
+	    // throws IllegalStateException but shall never occur 
+	    thrwAccessible(mNorm1);
+	} catch(InvocationTargetException ite) {
+	    throw new IllegalArgumentException // NOPMD
+		("Could not test deviation, because method " + mNorm1 + 
+		 STR_RAISED + ite.getTargetException() + ". ");
+	}
+	throw new IllegalStateException("Reached unreachable statement. ");
+    } // computeNorm1(...) 
+
+
+    /**
+     * Fails if <code>actual</code> is <code>null</code> 
+     * or <code>actual</code> deviates from <code>expected</code> 
+     * by at least <code>delta</code>, 
+     * provided the test can be executed at all. 
+     */
+    public static void assertNormRelEquals(Object expected, 
+					   Object actual, 
+					   String norm,
+					   double reldev) {
+	assertNormRelEquals(expectedActual(expected,actual) + 
+			    ":  relative deviation " + 
+			    computeNorm2(norm, expected, actual)/
+			    computeNorm1(norm, expected) + 
+			    " exceeds " + reldev + STR_IN_ABS_VAL,
+			    expected, 
+			    actual, 
+			    norm,
+			    reldev);
+    } // assertNormEquals(...) 
+
+    public static void assertNormRelEquals(String message,
+					   Object expected, 
+					   Object actual, 
+					   String norm,
+					   double reldev) {
+
+	checkNullsB(norm, expected, actual);
+	double diff = computeNorm2(norm, expected, actual);
+	// get the norm method 
+	Method mNorm1 = Accessor.getToBeInvoked(expected.getClass(), norm);
+	double dNorm = computeNorm1(norm, expected);
+
+	if (diff/dNorm > reldev) {
+	    fail(message);
+	}
+    } // assertNormEquals(...) 
 
     private static String expectedActual(Object expected, 
 					 Object actual) {
@@ -395,75 +554,47 @@ public abstract class Assert<E> extends junit.framework.Assert {
     }
 
     /**
-     * Fails if at least one of the parameters given is <code>null</code>. 
+     * Fails if the test can be executed, i.e. 
+     * neither <code>norm</code> nor <code>expected</code> 
+     * is <code>null</code>, and <code>actual</code> is <code>null</code>. 
      *
+     * @param norm 
+     *    name of a member method in class <code>Cls</code>
+     *    with signature <code>double norm(Cls actual)</code>. 
      * @param expected 
-     *    an <code>Object</code>; in particular not <code>null</code>. 
+     *    an <code>Object</code> with type <code>Cls</code>; 
+     *    in particular not <code>null</code>. 
      * @param actual 
      *    another <code>Object</code>; in particular not <code>null</code>. 
-     * @param delta 
-     *    a <code>double</code> standing for the deviation. 
      * @throws IllegalArgumentException 
-     *    for <code>expected == null</code>. 
+     *    if <code>norm==null</code> or <code>expected==null</code>. 
      * @throws AssertionFailedError
-     *    for <code>expected != null</code> but <code>actual == null</code>. 
-     * @see #assertEquals(String,Object,Object,double)
+     *    if <code>norm,expected!=null</code> but <code>actual==null</code>. 
+     * @see #assertNormAbsEquals(String,Object,Object,String,double)
+     * @see #assertNormRelEquals(String,Object,Object,String,double)
+     * @see #checkNulls(String,Object,Object)
      */
-    private static void checkNulls(Object expected, 
-				   Object actual,
-				   double delta) {
+    private static void checkNullsB(String norm, 
+				    Object expected, 
+				    Object actual) {
 
+	if (norm == null) {
+	    throw new IllegalArgumentException
+	    ("Norm is " + norm + 
+	     "; could not prove whether deviation exceeds some threshold. ");
+	}
+ 
 	if (expected == null) {
 	    throw new IllegalArgumentException
 		(expectedActual(expected,actual) + "; " +
-		 "could not prove whether deviation exceeds " + delta + 
-		 STR_IN_ABS_VAL);
+		 "could not prove whether deviation exceeds some threshold. ");
 	}
 
 	if (actual == null) {
 	    fail(expectedActual(expected,actual) + "; " +
-		 "could not prove whether deviation exceeds " + delta + 
-		 STR_IN_ABS_VAL);
+		 "could not prove whether deviation exceeds some threshold. ");
 	}
-    }
-
-    /**
-     * Is equivalent with {@link #assertEquals(String,Object,Object,double)} 
-     * with the message <tt>expected: <...> but was <...>: 
-     * deviation exceeds .... "</tt>. 
-     *
-     * @param expected 
-     *    an <code>Object</code> for which a method 
-     *    <code>public boolean epsilonEquals(Object,double)</code> 
-     *    is defined. 
-     * @param actual 
-     *    another <code>Object</code>. 
-     * @param delta 
-     *    the allowed deviation as a <code>double</code> value. 
-     * @exception IllegalArgumentException 
-     *    if there is no method 
-     *    <code>public boolean epsilonEquals(Object,double)</code> 
-     *    defined for <code>expected</code> (static methods not allowed) 
-     *    or if invoking <code>expected.epsilonEquals(actual,double)</code> 
-     *    causes an exception. 
-     * @exception IllegalStateException 
-     *    if the method 
-     *    <code>public boolean epsilonEquals(Object,double)</code> 
-     *    is not accessible or if it is provided with the wrong arguments. 
-     */
-    public static void assertEquals(Object expected, 
-				    Object actual, 
-				    double delta) {
-	assertEquals(expectedActual(expected,actual) + ": " + 
-		     " deviation exceeds " + delta + STR_IN_ABS_VAL,
-		     expected, actual, delta);
-    }
-
-    public static void assertEquals(Object expected, 
-				    Object actual, 
-				    int digits) {
-	throw new eu.simuline.util.NotYetImplementedException();
-    }
+   }
 
     /**
      * Fails for <code>!expected.equals(actual)</code> 
@@ -662,10 +793,10 @@ public abstract class Assert<E> extends junit.framework.Assert {
      * @see #assertIs(CmpObj,Object,Object,Comparator)
      */
    public static <E> void assertIs(CmpObj cmpObj,
-			       String message,
-			       E expected,
-			       E actual,
-			       Comparator<E> cmp) {
+				   String message,
+				   E expected,
+				   E actual,
+				   Comparator<E> cmp) {
 	if (!(cmpObj.isValid(invokeCompare(expected,actual,cmp)))) {
 	    fail(message);
 	}
@@ -1189,10 +1320,15 @@ public abstract class Assert<E> extends junit.framework.Assert {
 		    .getWrappedCls(expectedEntry.getClass());
 		if (wrappedClass == null) {
 		    // not primitive: use as is. 
-		    assertEquals(failMessage(expectedEntry,
-					     actualEntry,
-					     newInd),
-				 expectedEntry,actualEntry,delta);
+		    // **** no, this requires a special norm or metric 
+		    // and can thus not be handled uniformly. 
+		    throw new IllegalArgumentException
+			("Primitive type expected; found " + 
+			 expectedEntry.getClass() + ". ");
+		    // assertEquals(failMessage(expectedEntry,
+		    // 			     actualEntry,
+		    // 			     newInd),
+		    // 		 expectedEntry,actualEntry,delta);
 		} else {
 		    // primitive: unwrap before use. 
 		    if (wrappedClass == Double.TYPE) {
@@ -1589,5 +1725,14 @@ public abstract class Assert<E> extends junit.framework.Assert {
 		("Expected: <" + expected + 
 		 "> but was prefix <" + actual + STR_ASTOP);
 	}
+    }
+
+
+    public static double test() {
+	return Double.NaN;
+    }
+
+    public static void main(String[] args) throws Exception {
+	Double res = (Double)Assert.class.getMethod("test").invoke(null);
     }
 }
