@@ -269,6 +269,11 @@ public abstract class Assert<E> extends junit.framework.Assert {
      * of the two objects <code>expected</code> and <code>actual</code> 
      * defined by the metric defined by the method named <code>norm</code>; 
      * typically something like the norm of a kind of difference. 
+     * <p>
+     * CAUTION: This method shall be designed to compute values close to zero, 
+     * i.e. is applied to <code>actual</code> cloase to <code>expected</code>. 
+     * This must be reflected in the definition 
+     * of the method given by <code>norm</code>. 
      *
      * @param norm
      *    the non-null name of a metric method, 
@@ -281,6 +286,11 @@ public abstract class Assert<E> extends junit.framework.Assert {
      *        yield the same result, 
      *    <li><code>x.norm(y)+y.norm(z)\(\ge\) x.norm(z)</code>. 
      *    </ul>
+     *    CAUTION: This method must be designed to be applied 
+     *    to <code>actual</code> close to <code>expected</code> 
+     *    i.e. with a lot of extinction. 
+     *    For certain arithmetic types, this requires care 
+     *    to obtain reasonable performance. 
      * @throws IllegalArgumentException
      *    if the test cannot be performed, i.e. 
      *    <ul>
@@ -343,6 +353,7 @@ public abstract class Assert<E> extends junit.framework.Assert {
 	    // throws IllegalStateException but shall never occur 
 	    thrwAccessible(mNorm2);
 	} catch(InvocationTargetException ite) {
+ite.getTargetException().printStackTrace();
 	    throw new IllegalArgumentException // NOPMD
 		("Could not test deviation, because method " + mNorm2 + 
 		 STR_RAISED + ite.getTargetException() + ". ");
