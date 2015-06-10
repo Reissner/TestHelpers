@@ -7,6 +7,7 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
@@ -374,9 +375,16 @@ System.out.println("...Core run()"+this.core);
      * methods.                                                             *
      * -------------------------------------------------------------------- */
 
-    public static void run(Class<?> testClass) {
-	// parameter null is nowhere used. 
-	new Actions(testClass).startAction.actionPerformed(null);
+    public static void run(final Class<?> testClass) {
+      Runnable guiCreator = new Runnable() {
+		public void run() {
+		    // parameter null is nowhere used. 
+		    new Actions(testClass).startAction.actionPerformed(null);
+		}
+        };
+ 
+        // execute in Event-Dispatch-Thread 
+        SwingUtilities.invokeLater(guiCreator);
     }
 
     GUIRunner getRunner() {
