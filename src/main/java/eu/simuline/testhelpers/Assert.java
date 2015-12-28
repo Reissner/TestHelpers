@@ -1745,7 +1745,7 @@ ite.getTargetException().printStackTrace();
 	return Double.NaN;
     }
 
-    public static void main(String[] args) throws Exception {
-	Double res = (Double)Assert.class.getMethod("test").invoke(null);
-    }
+    // public static void main(String[] args) throws Exception {
+    // 	Double res = (Double)Assert.class.getMethod("test").invoke(null);
+    // }
 }
