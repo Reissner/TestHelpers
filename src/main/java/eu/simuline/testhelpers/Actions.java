@@ -147,7 +147,7 @@ System.out.println("...Break"+Actions.this.coreRunner.interrupted());
 	}
 
 	public void actionPerformed(ActionEvent event) {
-	    setState(false);// !isRunning
+	    //setState(false);// !isRunning **** wrong: does not stop imm. 
 	    Actions.this.coreRunner.pleaseStop();
 	}
     } // class StopAction 
@@ -242,10 +242,10 @@ System.out.println("...Break"+Actions.this.coreRunner.interrupted());
 	 * @throws IllegalStateException
 	 *    in case the given class is not found. 
 	 */
- 	Class<?> newTestClass() {
+ 	private Class<?> newTestClass() {
+	    this.classLd = new TestCaseClassLoader();
 	    try {
-		this.classLd = new TestCaseClassLoader();
-		return classLd.loadClass(this.testClass.getName(), 
+		return this.classLd.loadClass(this.testClass.getName(), 
 					 true);
 	    } catch (ClassNotFoundException e) {
 		throw new IllegalStateException// NOPMD
@@ -257,39 +257,22 @@ System.out.println("...Break"+Actions.this.coreRunner.interrupted());
 	}
 
 	public void run() {
-	    if (Actions.this.singTest == null) {
-		runAll();
-	    } else {
-		runSingle();
-	    }
-	}
-
-	public void runSingle() {
+System.out.println("Core run()"+this.core);
 	    Request request = Request.classes(newTestClass());
-	    // **** make sure that the shape of the testsuite 
-	    // remains unchanged. 
-	    request = request.filterWith(Actions.this.singTest.getDesc());
+	    if (Actions.this.singTest != null) {
+		request = request.filterWith(Actions.this.singTest.getDesc());
+	    }
 	    try {
 		this.core.run(request);
-	    } catch (StoppedByUserException e) {
-		Actions.this.listener.testRunAborted();
-	    }
-	}
-
-	public void runAll() {
-System.out.println("Core run()"+this.core);
-	    //System.out.println("Core run()"+this.testClass);
-	    try {
-
-		this.core.run(newTestClass());
 	    } catch (StoppedByUserException e) {
 		Actions.this.listener.testRunAborted();
 	    }
 System.out.println("...Core run()"+this.core);
 	}
 
+	// **** does not work properly 
 	public void pleaseBreak() {
-	    this.classLd. pleaseBreak();
+	    this.classLd.pleaseBreak();
 	}
 
 	public void pleaseStop() {
@@ -451,3 +434,18 @@ System.out.println("...Core run()"+this.core);
     }
 
 }
+
+
+// cd /home/ernst/Software/src/main/java/eu/simuline/testhelpers/
+// /usr/lib64/jvm/javaLatest/bin/javac -classpath /home/ernst/Software/target/test-classes:/home/ernst/Software/target/classes:/home/ernst/Software/jars/junitLatest.jar:/home/ernst/Software/jars/javaoctaveLatest.jar:/home/ernst/Software/jars/commons-loggingLatest.jar:/home/ernst/Software/jars/antlr-4.5-complete.jar:/home/ernst/Software/jars/jnaLatest.jar:/home/ernst/Software/jars/jnaPlatformLatest.jar:/usr/share/ant/lib/ant.jar -sourcepath /home/ernst/Software/src/main/java -encoding UTF-8 -d /home/ernst/Software/target/classes -deprecation -target 1.6 -source 1.6 -Xlint Actions.java
+
+// warning: [options] bootstrap class path not set in conjunction with -source 1.6
+// Actions.java:125: warning: [static] static method should be qualified by type name, Thread, instead of by an expression
+// 	    setState(!Actions.this.coreRunner.interrupted());
+// 	                                     ^
+// Actions.java:126: warning: [static] static method should be qualified by type name, Thread, instead of by an expression
+// System.out.println("...Break"+Actions.this.coreRunner.interrupted());   
+//                                                      ^
+// 3 warnings
+
+// Compilation finished at Wed Apr 27 16:39:52
