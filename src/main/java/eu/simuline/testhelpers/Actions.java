@@ -418,21 +418,20 @@ System.out.println("...Core run()"+this.core);
 	return this.singTest;
     }
 
-    // **** at the moment boolean: true for: running. 
+    /**
+     * Updates the actions according to whether a test is running or not. 
+     *
+     *
+     * @param isRunning
+     *    whether a test is running. 
+     */
     void setState(boolean isRunning) {	
 	assert this.isRunning ^ isRunning;
 	this.isRunning = isRunning;
-	if (this.isRunning) {
-	    Actions.this. openAction.setEnabled(false);
-	    Actions.this.startAction.setEnabled(false);
-	    Actions.this. stopAction.setEnabled(true);
-	    Actions.this.breakAction.setEnabled(true);//.setEnabled(true);
-	} else {
-	    Actions.this. openAction.setEnabled(true);
-	    Actions.this.startAction.setEnabled(true);
-	    Actions.this. stopAction.setEnabled(false);
-	    Actions.this.breakAction.setEnabled(false);//.setEnabled(true);
-	}
+	Actions.this. openAction.setEnabled(!this.isRunning);
+	Actions.this.startAction.setEnabled(!this.isRunning);
+	Actions.this. stopAction.setEnabled( this.isRunning);
+	Actions.this.breakAction.setEnabled( this.isRunning);//.setEnabled(true);
     }
 
     AbstractAction getOpenAction() {
