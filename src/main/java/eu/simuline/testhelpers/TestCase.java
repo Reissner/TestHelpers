@@ -7,8 +7,12 @@ import org.junit.runner.notification.Failure;
 import junit.framework.AssertionFailedError;
 
 /**
- * Represents a testcase during its livetime 
+ * Represents a test which may be a single case or a suite 
+ * during its lifetime 
  * from being scheduled to having runned successfully or not. 
+ * It is a wrapper around a Description {@link #desc} 
+ * but includes also the phase given by th quality {@link #qual}. 
+ * Depending on the phase, ****
  * 
  * @see Quality
  *
@@ -25,7 +29,6 @@ class TestCase {
 
     private final Description desc;
     private Failure failure;
-    private Throwable thrw;
     private Quality qual;
     private final int testCaseCount;
 
@@ -50,7 +53,6 @@ class TestCase {
 	this.desc = desc;
 	this.qual = Quality.Scheduled;
 	this.failure = null;
-	this.thrw = null;
 	this.testCaseCount = -1;
 	this.time = -1;
     }
@@ -61,14 +63,12 @@ class TestCase {
 
     void setFailure(Failure failure) {
 	this.failure = failure;
-	this.thrw = this.failure.getException();
 	assert this.desc == this.failure.getDescription();
 	this.qual = isFailure()? Quality.Failure : Quality.Error;
     }
 
     void setFailure2(Failure failure) {
 	this.failure = failure;
-	this.thrw = this.failure.getException();
 	//assert this.desc == this.failure.getDescription();
 	this.qual = isFailure()? Quality.Failure : Quality.Error;
     }
@@ -90,13 +90,11 @@ class TestCase {
 	this.time = 0;
 
 	this.failure = null;
-	this.thrw = null;
     }
 
     final void setRetried() {
 	this.qual = Quality.Started;
 	this.failure = null;
-	this.thrw = null;
 	this.time = System.currentTimeMillis();
     }
 
@@ -109,9 +107,10 @@ class TestCase {
     }
 
     private boolean isFailure() {
+	Throwable thrw = this.failure.getException();
 	return 
-	    this.thrw instanceof AssertionFailedError ||
-	    this.thrw instanceof AssertionError;
+	    thrw instanceof AssertionFailedError ||
+	    thrw instanceof AssertionError;
     }
 
     Description getDesc() {
@@ -119,7 +118,8 @@ class TestCase {
     }
 
     Throwable getException() {
-	return this.thrw;
+
+	return this.failure == null ? null : this.failure.getException();
     }
 
     // **** ignore Ignored
