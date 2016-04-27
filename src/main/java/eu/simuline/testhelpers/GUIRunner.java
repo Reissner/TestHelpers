@@ -61,6 +61,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  * The GUI of a JUnit test-runner. 
@@ -165,23 +166,25 @@ public class GUIRunner {
 	/**
 	 * Represents the case that a testcase failed. 
 	 */
-	private static final Color COLOR_FAIL = Color.red;
+	private static final Color COLOR_FAIL    = Color.red;
 
 	/**
 	 * Represents the case that so far no testcase failed. 
 	 * Maybe: **** introduce yellow for ignored testcases. 
+	 * see COLOR_IGNORED
 	 */
-	private static final Color COLOR_OK   = Color.green;
+	private static final Color COLOR_OK      = Color.green;
+
+	/**
+	 * Represents the case that so far no testcase failed 
+	 * but some is ignored. **** not yet used. 
+	 */
+	private static final Color COLOR_IGNORED = Color.yellow;
 
 	/* ---------------------------------------------------------------- *
 	 * attributes.                                                      *
 	 * ---------------------------------------------------------------- */
 
-	/**
-	 * Does the main work. 
-	 * This object is only a wrapper. 
-	 */
-	private final DefaultBoundedRangeModel progressM;
 
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
@@ -191,12 +194,10 @@ public class GUIRunner {
 	 * Creates a new <code>TestProgressBar</code> instance. 
 	 */
 	public TestProgressBar() {
-	    super();
-	    this.progressM = new DefaultBoundedRangeModel();
-	    this.progressM.setValueIsAdjusting(true);
+	    super(new DefaultBoundedRangeModel());
+	    this.model.setValueIsAdjusting(true);
 	    //.setString("progress");//*** even better; fail or ok
 	    //.setStringPainted(true);
-	    setModel(this.progressM);
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -204,20 +205,20 @@ public class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	void start(Description desc) {
-	    this.progressM.setMinimum(0);
-	    this.progressM.setMaximum(desc.testCount());
-	    this.progressM.setExtent(0);/// **** how much is visible: 
+	    setMinimum(0);
+	    setMaximum(desc.testCount());
+	    //this.model.setExtent(0);/// **** how much is visible: 
 	    //   minimum <= value <= value+extent <= maximum 
 	    reset();
 	}
 
 	void reset() {
-	    this.progressM.setValue(0);
+	    setValue(0);
 	    setForeground(COLOR_OK);
 	}
 
 	void incNumRunsDone(TestCase testCase) {
-	    this.progressM.setValue(this.progressM.getValue ()+1);
+	    setValue(getValue() + 1);
 	    if (testCase.hasFailed()) {
 		setForeground(COLOR_FAIL);
 	    }
@@ -275,10 +276,14 @@ public class GUIRunner {
 
     /**
      * Minimal interface for notifying about singular selection events. 
-     * Implemented by {@link GUIRunner.HierarchyWrapper} 
-     * and by {@link GUIRunner.TestCaseLister}. 
+     * Implemented by {@link GUIRunner.HierarchyWrapper}, 
+     * by {@link GUIRunner.TestCaseLister} and 
+     * by {@link GUIRunner.TabChangeListener#EMPTY_SELECTOR}. 
+     *
+     * @see GUIRunner.TabChangeListener
      */
     static interface Selector {
+
 	/**
 	 * Sets selection of <code>index</code>th item 
 	 * and clears other selections. 
@@ -287,19 +292,31 @@ public class GUIRunner {
 	 *    a non-negative <code>int</code> value representing an index. 
 	 */
 	void setSelection(int index);
+
 	/**
 	 * Clears the selection.  
 	 */
 	void clearSelection();
+
 	/**
-	 * Acquaints this selectior with another one 
+	 * Acquaints this selector with another one 
 	 * which is notified of the selection events 
-	 * of this <code>Selector</code>.  
+	 * of this <code>Selector</code>. 
+	 * The one in the foreground is notified directly by a mouse event, 
+	 * whereas the one in the background is selected via registration. 
+	 * The one in the background in turn 
+	 * notifies the empty selector 
+	 * {@link GUIRunner.TabChangeListener#EMPTY_SELECTOR} 
+	 * which takes no actions. 
 	 *
 	 * @param sel 
 	 *    another <code>Selector</code>. 
+	 * @throws IllegalStateException
+	 *    only for {@link GUIRunner.TabChangeListener#EMPTY_SELECTOR}. 
+	 * @see GUIRunner.TabChangeListener#setSelUnSel(int)
 	 */
 	void registerSelector(Selector sel);
+
     } // interface Selector 
 
     static class TreePathIncrementor {
@@ -317,6 +334,7 @@ public class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	TreePathIncrementor(JTree tree) {
+	    this.currPath = null;// formally only 
 	    this.treeModel = tree.getModel();
 	}
 
@@ -325,18 +343,16 @@ public class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	void setFirstPath() {
-	    TreeNode lastNode = (TreeNode)
-		this.treeModel.getRoot();
+	    TreeNode lastNode = (TreeNode) this.treeModel.getRoot();
 	    this.currPath = prolonguePath(new TreePath(lastNode));
 	}
 
 	// prolongues path as long as possible 
 	// in each step with minimal child 
 	private static TreePath prolonguePath(TreePath path) {
-	    TreeNode lastNode = (TreeNode)path
-		.getLastPathComponent();
+	    TreeNode lastNode = (TreeNode)path.getLastPathComponent();
 	    while (!lastNode.isLeaf()) {
-		// one has to add the first child of lastNode. 
+		// one has to add the 0th child of lastNode. 
 		lastNode = lastNode.getChildAt(0);
 		path = path.pathByAddingChild(lastNode);
 	    }
@@ -345,12 +361,13 @@ public class GUIRunner {
 	}
 
 	private int shortenPath() {
-	    TreeNode lastNode = 
-		(TreeNode)this.currPath.getLastPathComponent();
+	    TreeNode lastNode = (TreeNode)
+		this.currPath.getLastPathComponent();
 	    TreePath prefix = this.currPath.getParentPath();
-	    TreeNode lastButOneNode = 
-		(TreeNode)prefix.getLastPathComponent();
+	    TreeNode lastButOneNode = (TreeNode)
+		prefix.getLastPathComponent();
 	    int index = lastButOneNode.getIndex(lastNode);
+
 	    while (index == lastButOneNode.getChildCount()-1) {
 		this.currPath = prefix;
 		lastNode = lastButOneNode;
@@ -418,7 +435,7 @@ public class GUIRunner {
 	private final TreeSelectionModel treeSelection;
 
 	// selector to be influenced. 
-	private Selector sel;
+	private Selector selector;
 	private final Actions actions;
 	// the selected node. Is null if nothing selected. 
 	private DefaultMutableTreeNode singleSelectedNode;
@@ -554,8 +571,8 @@ public class GUIRunner {
 	    this.treeSelection.clearSelection();
 	}
 
-	public void registerSelector(Selector sel) {
-	    this.sel = sel;
+	public void registerSelector(Selector selector) {
+	    this.selector = selector;
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -596,7 +613,7 @@ public class GUIRunner {
 			testCase = (TestCase)lastNode.getUserObject();
 			if (!testCase.getQuality().isDecided()) {
 			    treeSelection.clearSelection();
-			    this.sel.clearSelection();
+			    this.selector.clearSelection();
 			    continue;
 			}
 
@@ -604,12 +621,12 @@ public class GUIRunner {
 			this.actions.setSingleTest(testCase);
 			this.singleSelectedNode = lastNode;
 			index = testCase.getNum();
-			this.sel.setSelection(index);
+			this.selector.setSelection(index);
 		    } else {
 			// **** for the moment: other selections: rebuild all 
 			this.actions.setSingleTest(null);
 			this.singleSelectedNode = null;
-			this.sel.clearSelection();
+			this.selector.clearSelection();
 		    }
 		    continue;
 		}
@@ -625,6 +642,13 @@ public class GUIRunner {
      * Represents the table displaying the number of runs, 
      * both, passed and to be performed altogether, 
      * the tests already ignored and those a failure or an error was found. 
+     * <p>
+     * The numbers {@link #numRunsDone}, {@link #numRuns}, {@link #numIgn},
+     * {@link #numFails} and {@link #numExc} 
+     * represent the numbe of runs done, the number of runs done, 
+     * the overall number of runs, done or not, 
+     * the number of ignored tests of failed tests and of tests in error, 
+     * i.e. which caused an error or an exception. 
      */
     static class RunsErrorsFailures extends JComponent {
 
@@ -640,10 +664,37 @@ public class GUIRunner {
 	private final JLabel failures;
 	private final JLabel errors;
 
+	/**
+	 * The number of runs already finished. 
+	 */
 	private int numRunsDone;
+
+	/**
+	 * The overall number of runs, to be done, 
+	 * in execution or not yet started. 
+	 * The constructor initializes this with <code>0</code>. 
+	 */
 	private int numRuns;
+
+	/**
+	 * The number of runs already identified as ignored. 
+	 */
 	private int numIgn;
+
+	/**
+	 * The number of runs already failed. 
+	 * This does not include the runs with exception or error. 
+	 *
+	 * @see #numExc
+	 */
 	private int numFails;
+
+	/**
+	 * The number of runs ended with exception or error. 
+	 * These tests did not fail, but the tests could not be executed. 
+	 *
+	 * @see #numFails
+	 */
 	private int numExc;
 
 	/* ---------------------------------------------------------------- *
@@ -658,7 +709,7 @@ public class GUIRunner {
 	    this.failures = new JLabel();
 	    this.errors   = new JLabel();
 
-	    this.numRuns  = 0;
+	    this.numRuns  = 0;// formally. This is set by #start()
 	    reset();
 	}
 
@@ -666,6 +717,12 @@ public class GUIRunner {
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
+	/**
+	 * Returns a horizontal box with the labels 
+	 * {@link #runs}, {@link #ignored}, 
+	 * {@link #failures} and {@link #errors} 
+	 * intermangled with according icons. 
+	 */
 	Box getBox() {
 	    Box res = Box.createHorizontalBox();
 	    res.add(this.runs);
@@ -673,25 +730,42 @@ public class GUIRunner {
 	    res.add(this.ignored);
 	    res.add(new JLabel(Quality.Failure.getIcon()));
 	    res.add(this.failures);
-	    res.add(new JLabel(Quality.Error.getIcon()));
+	    res.add(new JLabel(Quality.Error  .getIcon()));
 	    res.add(this.errors);
 	    res.add(Box.createGlue());
 	    return res;
 	}
 
+	/**
+	 * Initiates {@link #numRuns} 
+	 * with the testcount from <code>desc</code> 
+	 * and resets this component invoking {@link #reset()}. 
+	 */
 	void start(Description desc) {
 	    this.numRuns = desc.testCount();
 	    reset();
 	}
 
+	/**
+	 * Resets all counters to <code>0</code> except {@link #numRuns} 
+	 * and updates all labels invoking {@link #updateLabels()}. 
+	 */
 	void reset() {
 	    this.numRunsDone = 0;
-	    this. numIgn = 0;
-	    this.numFails = 0;
-	    this.numExc = 0;
-	    updateLabel();
+	    this.numIgn      = 0;
+	    this.numFails    = 0;
+	    this.numExc      = 0;
+	    updateLabels();
 	}
 
+	/**
+	 * Updates all counters and labels after a test has been run 
+	 * according to its <code>result</code>: 
+	 * It may succeed, be ignored, had a failure or 
+	 * could not be executed due to an exception or an error. 
+	 *
+	 * @see TestCase#getQuality()
+	 */
 	void incNumRunsDone(TestCase result) {
 	    this.numRunsDone++;
 	    switch (result.getQuality()) {
@@ -699,28 +773,32 @@ public class GUIRunner {
 		    // nothing to Do
 		    break;
 		case Ignored:
-		    numIgn++;
+		    this.numIgn++;
 		    break;
 		case Failure:
-		    numFails++;
+		    this.numFails++;
 		    break;
 		case Error:
-		    numExc++;
+		    this.numExc++;
 		    break;
 		default:
 		    throw new IllegalStateException();
 
 	    }
-	    updateLabel();
+	    updateLabels();
 	}
 
-
-	private void updateLabel() {
-	    this.runs.setText("Runs: " + this.numRunsDone + 
-			      "/" + this.numRuns + "    ");
+	/**
+	 * Updates all labels if a counter has changed. 
+	 * This is invoked by {@link #reset()} 
+	 * and by {@link #incNumRunsDone(TestCase)}. 
+	 */
+	private void updateLabels() {
+	    this.runs    .setText("Runs: "     + this.numRunsDone + 
+				  "/"          + this.numRuns + "    ");
 	    this.ignored .setText("Ignored: "  + this.numIgn + "    ");
 	    this.failures.setText("Failures: " + this.numFails + "    ");
-	    this.errors  .setText("Errors: " + this.numExc);
+	    this.errors  .setText("Errors: "   + this.numExc);
 
 /*
 	    setText("Runs: " + this.numRunsDone + "/" + this.numRuns + 
@@ -751,7 +829,7 @@ public class GUIRunner {
 	private final StackTraceLister stackTraceLister;
 
 	// selector to be influenced. 
-	private Selector sel;
+	private Selector selector;
 
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
@@ -800,9 +878,9 @@ public class GUIRunner {
 	}
 
 	void reset() {
-	    this.testsDoneList.clear();
+	    this.testsDoneList   .clear();
 	    this.failureSelection.clearSelection();
-	    this.failureListMod.clear();
+	    this.failureListMod  .clear();
 	    this.stackTraceLister.clear();
 	}
 
@@ -861,8 +939,8 @@ public class GUIRunner {
 	    this.stackTraceLister.clear();
 	}
 
-	public void registerSelector(Selector sel) {
-	    this.sel = sel;
+	public void registerSelector(Selector selector) {
+	    this.selector = selector;
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -875,12 +953,12 @@ public class GUIRunner {
 	    if (selIndex == -1) {
 		// Here, the selection is empty. 
 		this.stackTraceLister.clear();
-		this.sel.clearSelection();
+		this.selector.clearSelection();
 		return;
 	    }
 	    // Here, the selection consists of a single entry. 
 	    TestCase testCase = this.failureListMod.getElementAt(selIndex);
-	    this.sel.setSelection(testCase.getNum());
+	    this.selector.setSelection(testCase.getNum());
 	    this.stackTraceLister.setStack(testCase.getException());
 	    GUIRunner.this.splitPane.resetToPreferredSizes();
 	}
@@ -900,6 +978,7 @@ public class GUIRunner {
 	private final JLabel thrwMessager;
 	private final DefaultListModel<String> stacktrace;
 	private final ListSelectionModel stackElemSelection;
+	// is null initially 
 	private Throwable thrw;
 
 	/* ---------------------------------------------------------------- *
@@ -995,26 +1074,32 @@ public class GUIRunner {
 	}
     } // class StackTraceLister 
 
-    static class TabChangeListener implements  ChangeListener {
+    static class TabChangeListener implements ChangeListener {
 
 	/* ---------------------------------------------------------------- *
 	 * constants.                                                       *
 	 * ---------------------------------------------------------------- */
 
-	// may be 0 or 1 
+	/**
+	 * The index of the tab selected initially. 
+	 * This may be 0 or 1. 
+	 * Note that the failure list is the 0th tab for some reason 
+	 * It must be the one initially in the foreground. 
+	 */
 	private final static int SEL_IND1 = 1;
+
 	private final static Selector EMPTY_SELECTOR = 
-	new Selector() {
-	    public void setSelection(int index) {
-		// is empty. 
-	    }
-	    public void clearSelection() {
-		// is empty. 
-	    }
-	    public void registerSelector(Selector sel) { 
-		// is empty. 
-	    }
-	}; // EMPTY_SELECTOR
+	    new Selector() {
+		public void setSelection(int index) {
+		    // is empty. 
+		}
+		public void clearSelection() {
+		    // is empty. 
+		}
+		public void registerSelector(Selector sel) { 
+		    throw new IllegalStateException();
+		}
+	    }; // EMPTY_SELECTOR
 
 	/* ---------------------------------------------------------------- *
 	 * attributes.                                                      *
@@ -1028,16 +1113,42 @@ public class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	TabChangeListener(JTabbedPane tabbedPane,
-			  Selector[] selectors) {
+			  TestCaseLister testCaseLister,
+			  HierarchyWrapper testHierarchy) {
 	    this.tabbedPane = tabbedPane;
-	    this.selectors = selectors;
+	    this.selectors = new Selector[] {
+		testCaseLister,
+		testHierarchy,
+	    };
 	    setSelUnSel(SEL_IND1);
 	}
 
+	/**
+	 * Makes the tab with the given index in the foreground 
+	 * and the other one in the background. 
+	 * This must be invoked 
+	 * with the index of the tab initially in the foreground 
+	 * and if the tab is changed, this methd must be invoked accordingly. 
+	 * <p>
+	 * As described 
+	 * for {@link GUIRunner.Selector#registerSelector(Selector)}, 
+	 * the tab in the foreground receives its selection events directly, 
+	 * whereas the one in the background 
+	 * must be registered at the one in the foreground 
+	 * to receive the according selections. 
+	 * For sake of unification, the one in the background also sends 
+	 * selection events to the one which is registered, 
+	 * but this is just {@link #EMPTY_SELECTOR}. 
+	 *
+	 * @param index
+	 *   the index of the tab/Selector in the foreground. 
+	 *   This may be either 0 or 1. 
+	 */
 	private void setSelUnSel(int index) {
+	    assert index == 0 || index == 1;
 	    Selector    sel = selectors[  index];
 	    Selector notSel = selectors[1-index];
-	    sel.registerSelector(notSel);
+	    sel   .registerSelector(notSel);
 	    notSel.registerSelector(EMPTY_SELECTOR);
 	}
 
@@ -1046,11 +1157,15 @@ public class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	public void stateChanged(ChangeEvent che) {
-	    assert tabbedPane == che.getSource();
-	    setSelUnSel(tabbedPane.getSelectedIndex());
+	    assert this.tabbedPane == che.getSource();
+	    setSelUnSel(this.tabbedPane.getSelectedIndex());
 	}
     } // class TabChangeListener 
 
+    /**
+     * Provides a method to choose a test class. 
+     * This is triggered by clicking on the 'open' icon. 
+     */
     class ClassChooser {
 
 	/* ---------------------------------------------------------------- *
@@ -1094,7 +1209,10 @@ public class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 
-	// may return null 
+	/**
+	 * Returns the choosen class or <code>null</code> 
+	 * if the selected file either does not exist
+	 */
 	String getChosenClass() {
 	    if (this.clsFileChooser.showOpenDialog(GUIRunner.this.frame) != 
 		JFileChooser.APPROVE_OPTION) {
@@ -1180,7 +1298,7 @@ public class GUIRunner {
      * Creates a new <code>GUIRunner</code> instance.
      */
     public GUIRunner(Actions actions) {
-
+	assert SwingUtilities.isEventDispatchThread();
 	this.frame = new JFrame("JUnit GUI");
 System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 	this.frame.setIconImage(smallLogoIcon.getImage());
@@ -1192,8 +1310,6 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 
 
 	this.className = new JLabel("class name");
-
-
 
 
 	this.statusBar = new JLabel("status bar");
@@ -1298,17 +1414,17 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 	tabbedPane.addTab("Failures",
 			  Quality.Error.getIcon(),
 			  new JScrollPane(this.testCaseLister.getFailList()));
-	// add Tree 
+	// add Tree as second because otherwise a problem becomes visible 
 	this.testHierarchy = new HierarchyWrapper(actions);
 	tabbedPane.addTab("Test Hierarchy",
 			  hierarchyIcon,
 			  new JScrollPane(this.testHierarchy.getTree()));
-	final Selector[] SELECTORS = new Selector[] {
-	    this.testCaseLister,
-	    this.testHierarchy,
-	};
-	tabbedPane.addChangeListener(new TabChangeListener(tabbedPane,
-							   SELECTORS));
+
+
+	tabbedPane
+	    .addChangeListener(new TabChangeListener(tabbedPane,
+						     this.testCaseLister,
+						     this.testHierarchy));
 
 	// make up SplitPane 
 	this.splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -1324,30 +1440,42 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
      * methods not tied to constructor.                                     *
      * -------------------------------------------------------------------- */
 
-    void updateG() {
+    private void updateG() {
 	this.frame.update(this.frame.getGraphics());
     }
 
-    void noteTestStarted(TestCase testCase) {
+    // invoked if a test is started or ignored. 
+    void noteTestStartedI(TestCase testCase) {
+//	assert SwingUtilities.isEventDispatchThread();
+	setStatus(testCase);
 	this.testHierarchy.treeUpdater.updatePath(this.testHierarchy);
 	this.testHierarchy.setResult(testCase);// sounds strange. 
     }
 
+    /**
+     * Sets the message <code>msg</code> to the status bar. 
+     */
     void setStatus(String msg) {
-	
+//	assert SwingUtilities.isEventDispatchThread();
 	this.statusBar.setText(msg);
 	updateG();
     }
 
-    void setStatus(TestCase testCase) {
-	
+    /**
+     * Sets a status message describing <code>testCase</code> 
+     * to the status bar using {@link #setStatus(String)}. 
+     */
+    private void setStatus(TestCase testCase) {
 	setStatus("Test " + 
 		  testCase.getQuality().status() + ": " + 
 		  testCase.getDesc());
 	//this.frame.update();
     }
 
-    void reportResult(TestCase testCase) {
+    // invoked if a test is finished, whether successful or not 
+    // or after noteTestStartedI(TestCase) if it is ignored 
+    void noteReportResult(TestCase testCase) {
+//	assert SwingUtilities.isEventDispatchThread();
 	if (testCase.isSuccess()) {
 	    this.testHierarchy.collapseAlongPath();
 	}
@@ -1357,38 +1485,35 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 	this.runsErrorsFailures.incNumRunsDone(testCase);
 	this.testCaseLister.recordTestDone(testCase);
 	this.splitPane.resetToPreferredSizes();
-
     }
 
-    void start(Description desc) {
+    /**
+     * Called before any tests have been run. 
+     * Essentially distributes <code>desc</code> to various components. 
+     *
+     * @param desc 
+     *    describes the tests to be run
+     */
+    void testRunStarted(final Description desc) {
+//	assert SwingUtilities.isEventDispatchThread();
 	// **** strange way to obtain the classname ***** 
 	setStatus("testRunStarted(");
 	this.className.setText(desc.getChildren().get(0).toString());
 
-	this.progress.start(desc);
+	this.progress          .start(desc);
 	this.runsErrorsFailures.start(desc);
-	this.testHierarchy.start(desc);
-	this.testCaseLister.start(desc);
+	this.testHierarchy     .start(desc);
+	this.testCaseLister    .start(desc);
     }
 
     void updateSingularStarted() {
+//	assert SwingUtilities.isEventDispatchThread();
 	this.testHierarchy.updateSingular();
     }
     void updateSingularFinished(TestCase testCase) {
+//	assert SwingUtilities.isEventDispatchThread();
 	this.testCaseLister.updateSingular(testCase);
     }
 
 } // NOPMD coupling is not that high!
 
-
-// sr/lib64/jvm/javaLatest/bin/javac -classpath /home/ernst/Software/target/test-classes:/home/ernst/Software/target/classes:/home/ernst/Software/jars/junitLatest.jar:/home/ernst/Software/jars/javaoctaveLatest.jar:/home/ernst/Software/jars/commons-loggingLatest.jar:/home/ernst/Software/jars/antlr-3.5-complete.jar:/home/ernst/Software/jars/jnaLatest.jar:/home/ernst/Software/jars/jnaPlatformLatest.jar -sourcepath /home/ernst/Software/src/main/java -encoding UTF-8 -d /home/ernst/Software/target/classes -deprecation -target 1.6 -source 1.6 -Xlint GUIRunner.java
-
-// warning: [options] bootstrap class path not set in conjunction with -source 1.6
-// GUIRunner.java:784: warning: [unchecked] unchecked conversion
-// 	    jFailureList.setCellRenderer(new TestListCellRenderer());
-// 	                                 ^
-//   required: ListCellRenderer<? super TestCase>
-//   found:    TestListCellRenderer
-// 2 warnings
-
-// Compilation finished at Mon Oct 21 00:56:15
