@@ -5,10 +5,12 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 
+import java.util.Iterator;
+
 //import javax.swing.SwingUtilities;// wrong place
 
 /**
- * A RunListener which notifies the GUI {@link GUIRunner} 
+ * A {@link RunListener} which notifies the GUI {@link GUIRunner} 
  * of the events occuring while running a testsuite. 
  *
  * Created: Sat Jun  3 17:17:23 2006
@@ -38,6 +40,7 @@ public class GUIRunListener extends RunListener {
     public GUIRunListener() {
 	this((Actions)null);
     }
+
     // does not work, is just for compilation of testcases. !!!!
     public GUIRunListener(Class<?> cls) { // NOPMD
 	this((Actions)null);
@@ -53,11 +56,14 @@ public class GUIRunListener extends RunListener {
      * -------------------------------------------------------------------- */
 
 
-    // homemade extension 
+    // homemade extension of RunListener 
     public void testRunAborted() {
       // is empty. 
     }
 
+    /**
+     * Returns a string representation of <code>desc</code>. 
+     */
     public static String desc2string(Description desc) {
 	StringBuffer buf = new StringBuffer();
 	if (desc.isSuite()) {
@@ -65,8 +71,7 @@ public class GUIRunListener extends RunListener {
 	    buf.append(desc.getDisplayName());
 	    buf.append("\">\n");
 	    Description child;
-	    java.util.Iterator<Description> iter = 
-		desc.getChildren().iterator();
+	    Iterator<Description> iter = desc.getChildren().iterator();
 	    assert iter.hasNext();
 	    child = iter.next();
 	    buf.append(desc2string(child));
@@ -88,6 +93,10 @@ public class GUIRunListener extends RunListener {
      * inner classes and enums.                                             *
      * -------------------------------------------------------------------- */
 
+    /**
+     * The listener if all test cases are run. 
+     * **** maybe good extension: run a suite **** 
+     */
     static class All extends GUIRunListener {
 
 	/* ---------------------------------------------------------------- *
@@ -111,21 +120,26 @@ public class GUIRunListener extends RunListener {
 	 * ---------------------------------------------------------------- */
 
 	/**
-	 * Called before any tests have been run.
-	 * @param desc describes the tests to be run
+	 * Called before any tests have been run. 
+	 * Essentially delegates to 
+	 * {@link GUIRunner#testRunStarted(Description)}. 
+	 *
+	 * @param desc 
+	 *    describes the tests to be run
 	 */
+	// api-docs inherited from class RunListener
 	public void testRunStarted(final Description desc) {
+	    System.out.println("testRunStarted("+desc2string(desc));
 	    try {
-		System.out.println("testRunStarted("+desc2string(desc));
-// 	SwingUtilities.invokeLater(
-// 	    new Runnable() {
-// 		public void run() {
+	// SwingUtilities.invokeLater(
+	//     new Runnable() {
+	// 	public void run() {
 
-		All.this.runner.start(desc);
+		All.this.runner.testRunStarted(desc);
 		All.this.testCaseCount = 0;
-// 		}
-// 	    }
-// 	    );
+	    // 	}
+	    // }
+	    // );
 
 		System.out.println("...testRunStarted(");
 	    } catch (Throwable e) {// NOPMD
@@ -134,28 +148,32 @@ public class GUIRunListener extends RunListener {
 	}
 
 	/**
-	 * Called when all tests have finished
-	 * @param result the summary of the test run, 
-	 * including all the tests that failed
+	 * Called when all tests have finished. 
+	 * Prints a statistics to the standard output, 
+	 * a summary to the status bar of the GUI 
+	 *
+	 * @param result 
+	 *    the summary of the test run, including all the tests that failed
 	 */
-	public void testRunFinished(Result result) {
+	// api-docs inherited from class RunListener
+	public void testRunFinished(final Result result) {
 	    try {
 		System.out.println("testRunFinished(..."+result);
 		System.out.println("Statistics: ");
-		System.out.println("runs: "+result.getRunCount());
-		System.out.println("ignored: "+result.getIgnoreCount());
-		System.out.println("failures: "+result.getFailureCount());
+		System.out.println("runs:         "+result.getRunCount());
+		System.out.println("ignored:      "+result.getIgnoreCount());
+		System.out.println("failures:     "+result.getFailureCount());
 		System.out.println("time elapsed: "+result.getRunTime());
-// 	SwingUtilities.invokeLater(
-// 	    new Runnable() {
-// 		public void run() {
+	// SwingUtilities.invokeLater(
+	//     new Runnable() {
+	// 	public void run() {
 
 		All.this.runner.setStatus("testRunFinished( required: " + 
 					  result.getRunTime() + " ms. ");
 		All.this.actions.setState(false);
-// 		}
-// 	    }
-// 	    );
+	    // 	}
+	    // }
+	    // );
 
 		System.out.println("...testRunFinished(");
 	    } catch (Throwable e) {// NOPMD
@@ -164,26 +182,26 @@ public class GUIRunListener extends RunListener {
 	}
 
 	/**
-	 * Called when an atomic test is about to be started.
+	 * Called when an atomic test is about to be started. 
 	 * @param desc 
 	 *    the description of the test that is about to be run 
 	 *    (generally a class and method name)
 	 */
+	// api-docs inherited from class RunListener
 	public void testStarted(final Description desc) 
 	    throws Exception {// NOPMD
 	    try {
 		System.out.println("testStarted(..."+desc);
-// 	SwingUtilities.invokeLater(
-// 	    new Runnable() {
-// 		public void run() {
+	// SwingUtilities.invokeLater(
+	//     new Runnable() {
+	// 	public void run() {
 
 		All.this.testCase = new TestCase(desc,
 						 All.this.testCaseCount++);
-		All.this.runner.setStatus      (All.this.testCase);
-		All.this.runner.noteTestStarted(All.this.testCase);
-// 		}
-// 	    }
-// 	    );
+		All.this.runner.noteTestStartedI(All.this.testCase);
+	    // 	}
+	    // }
+	    // );
 
 		System.out.println("...testStarted(");
 	    } catch (Throwable e) {// NOPMD
@@ -198,17 +216,18 @@ public class GUIRunListener extends RunListener {
 	 */
 	public void testFinished(final Description desc) 
 	    throws Exception {// NOPMD
+	    System.out.println("testFinished("+desc);
+	    assert All.this.testCase.getDesc() == desc;
 	    try {
-		System.out.println("testFinished("+desc);	
-// 	SwingUtilities.invokeLater(
-// 	    new Runnable() {
-// 		public void run() {
+	// SwingUtilities.invokeLater(
+	//     new Runnable() {
+	// 	public void run() {
 
 		All.this.testCase.setFinished();
-		All.this.runner.reportResult(All.this.testCase);
-// 		}
-// 	    }
-// 	    );
+		All.this.runner.noteReportResult(All.this.testCase);
+	    // 	}
+	    // }
+	    // );
 
 		//this.currDesc = description;
 		//assert this.currDesc == description;
@@ -231,16 +250,16 @@ System.out.println("testFailure("+failure);
 System.out.println("msg is null("+failure.getException().getMessage() == null);
 System.out.println("msg is 'null'("+
 		   "null".equals(failure.getException().getMessage()));
-// 	SwingUtilities.invokeLater(
-// 	    new Runnable() {
-// 		public void run() {
+	// SwingUtilities.invokeLater(
+	//     new Runnable() {
+	// 	public void run() {
 
 		All.this.runner.setStatus("testFailure: "
 					  +failure.getException());
 		All.this.testCase.setFailure(failure);
-// 		}
-// 	    }
-// 	    );
+	    // 	}
+	    // }
+	    // );
 
 		System.out.println("...testFailure(");
 	    } catch (Throwable e) {// NOPMD
@@ -262,18 +281,18 @@ System.out.println("msg is 'null'("+
 	    throws Exception {// NOPMD
 	    try {
 		System.out.println("testIgnored("+desc);
-// 	SwingUtilities.invokeLater(
-// 	    new Runnable() {
-// 		public void run() {
+	// SwingUtilities.invokeLater(
+	//     new Runnable() {
+	// 	public void run() {
 
 		All.this.testCase = new TestCase(desc,
 						 All.this.testCaseCount++);
 		All.this.testCase.setIgnored();
-		All.this.runner.noteTestStarted(All.this.testCase);
-		All.this.runner.reportResult   (All.this.testCase);
-// 		}
-// 	    }
-// 	    );
+		All.this.runner.noteTestStartedI(All.this.testCase);
+		All.this.runner.noteReportResult(All.this.testCase);
+	    // 	}
+	    // }
+	    // );
 
 		System.out.println("...testIgnored(");
 	    } catch (Throwable e) {// NOPMD
@@ -303,6 +322,10 @@ System.out.println("msg is 'null'("+
     } // class All 
 
 
+    /**
+     * The listener if a single test case is run. 
+     * **** maybe good extension: run a suite **** 
+     */
     static class Singular extends GUIRunListener {
 
 	//private GUIRunner runner;
@@ -337,20 +360,30 @@ System.out.println("msg is 'null'("+
 	}
 
 	/**
-	 * Called when all tests have finished
-	 * @param result the summary of the test run, 
-	 * including all the tests that failed
+	 * Called when all tests have finished. 
+	 * Prints a statistics to the standard output, 
+	 * a summary to the status bar of the GUI 
+	 *
+	 * @param result 
+	 *    the summary of the test run, including all the tests that failed
 	 */
-	public void testRunFinished(Result result) throws Exception {// NOPMD
+	// api-docs inherited from class RunListener
+	public void testRunFinished(final Result result) throws Exception {// NOPMD
 	    System.out.println("S testRunFinished(..."+result);
 	    System.out.println("Statistics: ");
-	    System.out.println("runs: "+result.getRunCount());
-	    System.out.println("ignored: "+result.getIgnoreCount());
-	    System.out.println("failures: "+result.getFailureCount());
+	    System.out.println("runs:         "+result.getRunCount());
+	    System.out.println("ignored:      "+result.getIgnoreCount());
+	    System.out.println("failures:     "+result.getFailureCount());
 	    System.out.println("time elapsed: "+result.getRunTime());
+	// SwingUtilities.invokeLater(
+	//     new Runnable() {
+	// 	public void run() {
 	    Singular.this.runner.setStatus("testRunFinished( required: " + 
 					   result.getRunTime() + " ms. ");
-	    Singular.this.actions.setState(false);
+	    Singular.this.actions.setState(false);// not running 
+	    // }
+	    // }
+	    // );
 	}
 
 	/**
@@ -359,6 +392,7 @@ System.out.println("msg is 'null'("+
 	 *    the description of the test that is about to be run 
 	 *    (generally a class and method name)
 	 */
+	// api-docs inherited from class RunListener
 	public void testStarted(final Description desc) 
 	    throws Exception {// NOPMD
 	    System.out.println("S testStarted(..."+desc);
