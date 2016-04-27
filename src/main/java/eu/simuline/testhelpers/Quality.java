@@ -13,11 +13,19 @@ import eu.simuline.util.GifResource;
 import javax.swing.ImageIcon;
 
 /**
- * Represents the phases in the livecycle of a {@link TestCase} 
+ * Represents the phases in the life-cycle of a {@link TestCase} 
  * from being {@link #Scheduled} to {@link #Ignored} 
  * or via {@link #Started} to finished (see {@link #isDecided}) 
  * which means either {@link #Success}, 
  * {@link #Failure} or even {@link #Error}. 
+ * <p>
+ * For each of these phases, 
+ * there is a separate icon given by {@link #getIcon()}, 
+ * a status message given by {@link #status()}. 
+ * Also {@link #isDecided()} returns whether the outcoming of the test 
+ * is decided in that phase. 
+ * Methods {@link #setFinished()} and {@link #setIgnored()} 
+ * specify part of the state transitions. 
  *
  * Created: Wed Jun 12 16:41:14 2006
  *
@@ -111,21 +119,47 @@ enum Quality {
      * methods.                                                             *
      * -------------------------------------------------------------------- */
 
+    /**
+     * Returns an icon representing this phase on the GUI. 
+     */
     abstract ImageIcon getIcon();
 
-    // appropriate for Failur and Error 
+    /**
+     * Returns <code>this</code> for {@link #Failure} and {@link #Error} and 
+     * returns {@link #Success} for {@link #Started}. 
+     *
+     * @throws IllegalStateException 
+     *    for {@link #Scheduled}, {@link #Success} and {@link #Ignored}. 
+     */
     Quality setFinished() {
 	return this;
     }
 
+    /**
+     * Returns {@link #Ignored} for state {@link #Started}; 
+     * otherwise throws an exception. 
+     *
+     * @throws IllegalStateException 
+     *    except for {@link #Started}. 
+     */
     Quality setIgnored() {
 	throw new IllegalStateException
 	    (this +" may not be ignored. ");
     }
 
+    /**
+     * Returns a status messag which describes this phase 
+     * or throws an exception. 
+     *
+     * @throws UnsupportedOperationException
+     *    if applied for {@link #Scheduled}. 
+     */
     abstract String status();
 
-    // appropriate for Success, Failure and Error 
+    /**
+     * Returns <code>true</code> for {@link #Success}, {@link #Failure} 
+     * and {@link #Error}; otherwise <code>false</code>. 
+     */
     boolean isDecided() {
 	return true;
     }
