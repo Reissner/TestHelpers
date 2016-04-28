@@ -17,8 +17,6 @@ import org.junit.runner.JUnitCore;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import junit.framework.JUnit4TestAdapter;
-
 /**
  * Testclass for class <code>Accessor</code>. 
  * This is rudimentary only. 
@@ -601,11 +599,6 @@ public class AccessorTest {
    /* -------------------------------------------------------------------- *
      * framework.                                                           *
      * -------------------------------------------------------------------- */
-
-
-    public static junit.framework.Test suite() {
-	return new JUnit4TestAdapter(AccessorTest.class);
-    }
 
 
     /**
