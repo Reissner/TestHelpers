@@ -1211,7 +1211,9 @@ public class GUIRunner {
 
 	/**
 	 * Returns the choosen class or <code>null</code> 
-	 * if the selected file either does not exist
+	 * if either no file was selected, 
+	 * a file is selected which does not exist 
+	 * or does not represent a java class file. 
 	 */
 	String getChosenClass() {
 	    if (this.clsFileChooser.showOpenDialog(GUIRunner.this.frame) != 
