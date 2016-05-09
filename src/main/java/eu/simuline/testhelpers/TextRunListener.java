@@ -49,7 +49,12 @@ System.out.println("T testRunStarted(...");
      */
     public void testRunFinished(Result result) 
 	throws Exception {// NOPMD
-System.out.println("T testRunFinished(...");
+	System.out.println("T testRunFinished(...");
+	System.out.println("Statistics: ");
+	System.out.println("runs:         " + result.getRunCount());
+	System.out.println("ignored:      " + result.getIgnoreCount());
+	System.out.println("failures:     " + result.getFailureCount());
+	System.out.println("time elapsed: " + result.getRunTime());
     }
 
     /**
