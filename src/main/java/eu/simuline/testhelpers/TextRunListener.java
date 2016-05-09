@@ -6,6 +6,8 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 
+import java.util.Iterator;
+
 /**
  * A simple RunListener which notifies of the events while running tests 
  * by text output. 
@@ -34,48 +36,85 @@ public class TextRunListener extends RunListener {
      * -------------------------------------------------------------------- */
 
     /**
-     * Called before any tests have been run.
-     * @param description describes the tests to be run
+     * Returns a string representation of <code>desc</code>: 
+     * For atomic tests the display name, 
+     * for suites an xml-style description. 
      */
-    public void testRunStarted(Description description) 
-	throws Exception {// NOPMD
-System.out.println("T testRunStarted(...");
+    private static String desc2string(Description desc) {
+	StringBuffer buf = new StringBuffer();
+	if (desc.isSuite()) {
+	    buf.append("<Suite name=\"");
+	    buf.append(desc.getDisplayName());
+	    buf.append("\">\n");
+	    Description child;
+	    Iterator<Description> iter = desc.getChildren().iterator();
+	    assert iter.hasNext();
+	    child = iter.next();
+	    buf.append(desc2string(child));
+	    while (iter.hasNext()) {
+		child = iter.next();
+		buf.append(", \n");
+		buf.append(desc2string(child));
+	    }
+	    buf.append("\n</Suite>");
+	} else {
+	    assert desc.isTest();
+	    buf.append(desc.getDisplayName());
+	}
+	return buf.toString();
+    }
+
+
+    /**
+     * Called before any tests have been run. 
+     *
+     * @param desc
+     *    describes the tests to be run
+     */
+    // api-docs inherited from class RunListener
+    public void testRunStarted(Description desc) {
+	System.out.println("T testRunStarted(..." + desc2string(desc));
     }
 
     /**
-     * Called when all tests have finished
-     * @param result the summary of the test run, 
-     * including all the tests that failed
-     */
-    public void testRunFinished(Result result) 
-	throws Exception {// NOPMD
-	System.out.println("T testRunFinished(...");
+     * Called when all tests have finished. 
+     * Prints a statistics on the result to the standard output. 
+     *
+     * @param result 
+     *    the summary of the test run, including all the tests that failed
+      */
+    // api-docs inherited from class RunListener
+    public void testRunFinished(Result result) {
+	System.out.println("T testRunFinished(..." + result);
 	System.out.println("Statistics: ");
 	System.out.println("runs:         " + result.getRunCount());
 	System.out.println("ignored:      " + result.getIgnoreCount());
 	System.out.println("failures:     " + result.getFailureCount());
-	System.out.println("time elapsed: " + result.getRunTime());
+	System.out.println("time elapsed: " + result.getRunTime() + "ms");
     }
 
     /**
-     * Called when an atomic test is about to be started.
-     * @param description 
+     * Called when an atomic test is about to be started. 
+     *
+     * @param desc
      *    the description of the test that is about to be run 
      *    (generally a class and method name)
      */
-    public void testStarted(Description description) 
-	throws Exception {// NOPMD
-System.out.println("T testStarted(..."+description);
+    // api-docs inherited from class RunListener
+    public void testStarted(Description desc) {
+	System.out.println("T testStarted(..." + desc);
     }
 
     /**
      * Called when an atomic test has finished, 
-     * whether the test succeeds or fails.
-     * @param description the description of the test that just ran
+     * whether the test succeeds or fails. 
+     *
+     * @param desc
+     *    the description of the test that just ran
      */
-    public void testFinished(Description description) 
-	throws Exception {// NOPMD
-System.out.println("T testFinished("+description);	
+    // api-docs inherited from class RunListener
+    public void testFinished(Description desc) {
+	System.out.println("T testFinished(" + desc);
     }
 
     /** 
@@ -83,10 +122,10 @@ System.out.println("T testFinished("+description);
      * @param failure 
      *    describes the test that failed and the exception that was thrown
      */
-    public void testFailure(Failure failure) 
-	throws Exception {// NOPMD
-System.out.println("testFailure("+failure.getException());
-
+    // api-docs inherited from class RunListener
+    public void testFailure(Failure failure) {
+	// description and exception
+	System.out.println("testFailure(" + failure);
     }
 
     /**
@@ -97,10 +136,11 @@ System.out.println("testFailure("+failure.getException());
      * that neither {@link #testStarted} nor {@link #testFinished} 
      * are invoked. 
      *
-     * @param description describes the test that will not be run
+     * @param desc 
+     *    describes the test that will not be run
      */
-    public void testIgnored(Description description) 
-	throws Exception {// NOPMD
-System.out.println("T testIgnored("+description);
+    // api-docs inherited from class RunListener
+    public void testIgnored(Description desc) {
+	System.out.println("T testIgnored("+desc);
     }
 }
