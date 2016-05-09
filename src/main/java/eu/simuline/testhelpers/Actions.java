@@ -56,7 +56,8 @@ public class Actions {
 	}
 
 	public void actionPerformed(ActionEvent event) {
-	    String clsName = Actions.this.runner.openClassChooser();
+	    String clsName = Actions.this.guiRunner.openClassChooser();
+
 	    if (clsName == null) {
 		// open action was cancelled 
 		return;
@@ -93,15 +94,17 @@ public class Actions {
 	}
 
 	public void actionPerformed(ActionEvent event) {
-	    setState(true);// isRunning
- 	    Actions.this.coreRunner = 
- 		new CoreRunner(Actions.this.coreRunner);
+	    //setEnableForRun(true);// isRunning
+ 	    Actions.this.coreRunner = new CoreRunner(Actions.this.coreRunner);
 	    Actions.this.coreRunner.start();
 	}
     } // class StartAction 
 
     /**
      * The action of breaking the sequence of testcases currently running. 
+     * Tries to stop the currently running testcase 
+     * but guarantees only that the break is effected 
+     * after the current testcase has finished. 
      */
     class BreakAction extends AbstractAction {
 
@@ -110,7 +113,7 @@ public class Actions {
 	BreakAction() {
 	    super("Break",GifResource.getIcon(Hammer.class));
 	    putValue(SHORT_DESCRIPTION, 
-		     "Tries to break execution of current testcase. ");
+		     "Tries to break execution of current testcases. ");
             putValue(MNEMONIC_KEY, KeyEvent.VK_B);
             putValue(ACCELERATOR_KEY,
 		     KeyStroke.getKeyStroke(KeyEvent.VK_B,
@@ -118,37 +121,39 @@ public class Actions {
 	}
 
 	public void actionPerformed(ActionEvent event) {
-	    setState(false);// !isRunning
+	    //setEnableForRun(false);// !isRunning
 System.out.println("Break...");
 Actions.this.coreRunner.pleaseBreak();
 	    Actions.this.coreRunner.interrupt();////stop();
-	    setState(!Actions.this.coreRunner.interrupted());
-System.out.println("...Break"+Actions.this.coreRunner.interrupted());   
+	    setEnableForRun(!Actions.this.coreRunner.isInterrupted());
+System.out.println("...Break"+Actions.this.coreRunner.isInterrupted());   
 	}
     } // class BreakAction 
 
     /**
-     * The action of stopping the test run. 
-     * This is effected not before having finished 
+     * The action of stopping the test run//  after having finished 
      * the currently running testcase. 
      */
     class StopAction extends AbstractAction {
 
-	private static final long serialVersionUID = -589L;
+    	private static final long serialVersionUID = -589L;
 
-	StopAction() {
-	    super("Stop",GifResource.getIcon(Stop.class));
-	    putValue(SHORT_DESCRIPTION, 
-		     "Stops after having executed the current testcase. ");
+    	StopAction() {
+    	    super("Stop",GifResource.getIcon(Stop.class));
+    	    putValue(SHORT_DESCRIPTION, 
+    		     "Stops after having executed the current testcase. ");
             putValue(MNEMONIC_KEY, KeyEvent.VK_S);
             putValue(ACCELERATOR_KEY,
-		     KeyStroke.getKeyStroke(KeyEvent.VK_S,
-					    ActionEvent.CTRL_MASK));
-	}
+    		     KeyStroke.getKeyStroke(KeyEvent.VK_S,
+    					    ActionEvent.CTRL_MASK));
+    	}
 
-	public void actionPerformed(ActionEvent event) {
-	    //setState(false);// !isRunning **** wrong: does not stop imm. 
+     	public void actionPerformed(ActionEvent event) {
+     	    //setEnableForRun(false);// !isRunning **** wrong: does not stop imm. 
+System.out.println("STOP BUTTON...");
+    
 	    Actions.this.coreRunner.pleaseStop();
+System.out.println("...STOP BUTTON");
 	}
     } // class StopAction 
 
@@ -237,7 +242,7 @@ System.out.println("...Break"+Actions.this.coreRunner.interrupted());
 	 * Creates a new {@link TestCaseClassLoader} 
 	 * and assigns it to {@link #classLd}. 
 	 * With this classloader reloads the test class 
-	 * given by {@link #testClass} and returns this" copy". 
+	 * given by {@link #testClass} and returns this "copy". 
 	 *
 	 * @throws IllegalStateException
 	 *    in case the given class is not found. 
@@ -246,7 +251,7 @@ System.out.println("...Break"+Actions.this.coreRunner.interrupted());
 	    this.classLd = new TestCaseClassLoader();
 	    try {
 		return this.classLd.loadClass(this.testClass.getName(), 
-					 true);
+					      true);
 	    } catch (ClassNotFoundException e) {
 		throw new IllegalStateException// NOPMD
 		    ("Testclass \"" + this.testClass + "\" disappeared. ");
@@ -265,6 +270,7 @@ System.out.println("Core run()"+this.core);
 	    try {
 		this.core.run(request);
 	    } catch (StoppedByUserException e) {
+		System.exit(0);
 		Actions.this.listener.testRunAborted();
 	    }
 System.out.println("...Core run()"+this.core);
@@ -272,6 +278,7 @@ System.out.println("...Core run()"+this.core);
 
 	// **** does not work properly 
 	public void pleaseBreak() {
+	    pleaseStop();
 	    this.classLd.pleaseBreak();
 	}
 
@@ -303,23 +310,28 @@ System.out.println("...Core run()"+this.core);
 
 
     /**
-     *
+     * The action to open a new testclass. 
      */
     private final  OpenAction  openAction;
+
     /**
-     *
+     * The action to run a testcase. 
      */
     private final StartAction startAction;
+
     /**
-     *
+     * The action to stop after having finished the currently running testcase. 
      */
     private final  StopAction  stopAction;
+
     /**
-     *
+     * The action to break execution of testcases. 
+     * Tries to break the currently running testcase 
+     * and does not go on with further testcases. 
      */
     private final BreakAction breakAction;
 
-    private final GUIRunner runner;
+    private final GUIRunner guiRunner;
 
     private boolean isRunning;
 
@@ -337,19 +349,23 @@ System.out.println("...Core run()"+this.core);
      *
      */
     public Actions(Class<?> testClass) {
-	this.coreRunner = new CoreRunner(testClass);
+
 	this.singTest = null;// leads to running all testcases 
 	this. openAction = new  OpenAction();
 	this.startAction = new StartAction();
 	this. stopAction = new  StopAction();
 	this.breakAction = new BreakAction();
 
-	this.runner = new GUIRunner(this);
 
-
+	this.guiRunner = new GUIRunner(this);
 	this.listenerSingle = new GUIRunListener.Singular(this);
 	this.listenerAll    = new GUIRunListener.All     (this);
 	this.listener = this.listenerAll;
+
+
+
+	this.coreRunner = new CoreRunner(testClass);
+
 
 	this.isRunning = false;
     }
@@ -371,7 +387,7 @@ System.out.println("...Core run()"+this.core);
     }
 
     GUIRunner getRunner() {
-	return this.runner;
+	return this.guiRunner;
     }
 
     /**
@@ -390,11 +406,9 @@ System.out.println("...Core run()"+this.core);
      */
     void setSingleTest(TestCase singTest) {
 	this.singTest = singTest;
-	if (this.singTest == null) {
-	    this.listener = this.listenerAll;
-	} else {
-	    this.listener = this.listenerSingle;
-	}
+	this.listener = (this.singTest == null) 
+	    ? this.listenerAll : this.listenerSingle;
+	assert listener != null;
     }
 
     TestCase getSingleTest() {
@@ -402,19 +416,21 @@ System.out.println("...Core run()"+this.core);
     }
 
     /**
-     * Updates the actions according to whether a test is running or not. 
-     *
+     * Updates the action-enablements 
+     * depending on whether a test is running or not: 
+     * Open and Start action are enabled iff no test is running, 
+     * whereas stop and break actions are enabled iff some test is running. 
      *
      * @param isRunning
      *    whether a test is running. 
      */
-    void setState(boolean isRunning) {	
+    void setEnableForRun(boolean isRunning) {	
 	assert this.isRunning ^ isRunning;
 	this.isRunning = isRunning;
 	Actions.this. openAction.setEnabled(!this.isRunning);
 	Actions.this.startAction.setEnabled(!this.isRunning);
 	Actions.this. stopAction.setEnabled( this.isRunning);
-	Actions.this.breakAction.setEnabled( this.isRunning);//.setEnabled(true);
+	Actions.this.breakAction.setEnabled( this.isRunning);//(true);
     }
 
     AbstractAction getOpenAction() {
@@ -435,17 +451,3 @@ System.out.println("...Core run()"+this.core);
 
 }
 
-
-// cd /home/ernst/Software/src/main/java/eu/simuline/testhelpers/
-// /usr/lib64/jvm/javaLatest/bin/javac -classpath /home/ernst/Software/target/test-classes:/home/ernst/Software/target/classes:/home/ernst/Software/jars/junitLatest.jar:/home/ernst/Software/jars/javaoctaveLatest.jar:/home/ernst/Software/jars/commons-loggingLatest.jar:/home/ernst/Software/jars/antlr-4.5-complete.jar:/home/ernst/Software/jars/jnaLatest.jar:/home/ernst/Software/jars/jnaPlatformLatest.jar:/usr/share/ant/lib/ant.jar -sourcepath /home/ernst/Software/src/main/java -encoding UTF-8 -d /home/ernst/Software/target/classes -deprecation -target 1.6 -source 1.6 -Xlint Actions.java
-
-// warning: [options] bootstrap class path not set in conjunction with -source 1.6
-// Actions.java:125: warning: [static] static method should be qualified by type name, Thread, instead of by an expression
-// 	    setState(!Actions.this.coreRunner.interrupted());
-// 	                                     ^
-// Actions.java:126: warning: [static] static method should be qualified by type name, Thread, instead of by an expression
-// System.out.println("...Break"+Actions.this.coreRunner.interrupted());   
-//                                                      ^
-// 3 warnings
-
-// Compilation finished at Wed Apr 27 16:39:52
