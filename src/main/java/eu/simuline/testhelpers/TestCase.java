@@ -42,32 +42,42 @@ class TestCase {
      * -------------------------------------------------------------------- */
 
     // Create Started TestCase in state Started
-    TestCase(Description desc, int testCaseCount) {
+    TestCase(Description desc, Quality qual, int testCaseCount) {
 	this.desc = desc;
+	this.qual = qual;//Quality.Started;
 	this.testCaseCount = testCaseCount;
-	setRetried();
-    }
-
-    // Create Scheduled TestCase 
-    TestCase(Description desc) {
-	this.desc = desc;
-	this.qual = Quality.Scheduled;
+	//setRetried();
 	this.failure = null;
-	this.testCaseCount = -1;
-	this.time = -1;
-    }
+	switch (this.qual) {
+	case Scheduled:
+	    this.time = -1;
+	    break;
+	case Ignored:
+	    this.time = 0;
+	    break;
+	case Started:
+	    this.time = System.currentTimeMillis();
+	    break;
+	default:
+	    this.time = System.currentTimeMillis() - this.time;
+	    break;
+	}
+     }
+
 
     /* -------------------------------------------------------------------- *
      * methods.                                                             *
      * -------------------------------------------------------------------- */
 
     void setFailure(Failure failure) {
+	assert failure != null;
 	this.failure = failure;
 	assert this.desc == this.failure.getDescription();
 	this.qual = isFailure()? Quality.Failure : Quality.Error;
     }
 
     void setFailure2(Failure failure) {
+	assert failure != null;
 	this.failure = failure;
 	//assert this.desc == this.failure.getDescription();
 	this.qual = isFailure()? Quality.Failure : Quality.Error;
@@ -82,14 +92,6 @@ class TestCase {
 	assert this.qual == Quality.Started;
 	this.qual = Quality.Ignored;
 	this.time = 0;
-    }
-
-    void setIgnored2() {
-	//assert this.qual == Quality.Scheduled;
-	this.qual = Quality.Ignored;
-	this.time = 0;
-
-	this.failure = null;
     }
 
     final void setRetried() {
