@@ -30,26 +30,16 @@ public class GUIRunListener extends TextRunListener {
 
     protected final Actions actions;
 
-    protected final GUIRunner runner;
+    protected final GUIRunner guiRunner;
 
 
     /* -------------------------------------------------------------------- *
      * constructor.                                                         *
      * -------------------------------------------------------------------- */
 
-    // does not work, is just for compilation of testcases. 
-    public GUIRunListener() {
-	this((Actions)null);
-    }
-
-    // does not work, is just for compilation of testcases. !!!!
-    public GUIRunListener(Class<?> cls) { // NOPMD
-	this((Actions)null);
-    }
-
     public GUIRunListener(Actions actions) {
 	this.actions = actions;
-	this.runner = this.actions.getRunner();
+	this.guiRunner = this.actions.getRunner();
     }
 
     /* -------------------------------------------------------------------- *
@@ -57,13 +47,55 @@ public class GUIRunListener extends TextRunListener {
      * -------------------------------------------------------------------- */
 
 
-    // homemade extension of RunListener 
-    // invoked for stop and for break 
-    public void testRunAborted() {
-      // is empty. 
+    /**
+     * Called when all tests have finished. 
+     * Prints a statistics on the result to the standard output, 
+     * a summary to the status bar of the GUI 
+     * and updates the enablement of the GUI-Actions. 
+     *
+     * @param result 
+     *    the summary of the test run, including all the tests that failed
+     */
+    // api-docs inherited from class RunListener
+    public void testRunFinished(final Result result) throws Exception {
+	assert !SwingUtilities.isEventDispatchThread();
+	// output text 
+	super.testRunFinished(result);
+
+	Runnable runnable = new Runnable() {
+		public void run() {
+		    GUIRunListener.this.guiRunner
+			.setStatus("testRunFinished(required: " + 
+				   result.getRunTime() + "ms. ");
+		    GUIRunListener.this.actions
+			.setEnableForRun(false);// not running 
+		}
+	    };
+	SwingUtilities.invokeAndWait(runnable);
     }
 
- 
+  
+    // homemade extension 
+    // invoked for stop and for break 
+    // not clear which test has been aborted. 
+    public void testRunAborted() {
+	assert !SwingUtilities.isEventDispatchThread();
+	// output text 
+	System.out.println("S testRunAborted(");
+
+	Runnable runnable = new Runnable() {
+		public void run() {
+		    GUIRunListener.this.guiRunner.setStatus("testRunAborted(");
+		    GUIRunListener.this.actions.setEnableForRun(false);
+		}
+	    };
+	try {
+	    SwingUtilities.invokeAndWait(runnable);
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
+    }
+
 
     /* -------------------------------------------------------------------- *
      * inner classes and enums.                                             *
@@ -112,36 +144,11 @@ public class GUIRunListener extends TextRunListener {
 	    Runnable runnable = new Runnable() {
 		    public void run() {
 			All.this.actions.setEnableForRun(true);// running 
-
-			All.this.runner.testRunStarted(desc);
-			All.this.testCaseCount = 0;
+			All.this.guiRunner.testRunStarted(desc);
 		    }
 		};
 	    SwingUtilities.invokeAndWait(runnable);
-	}
-
-	/**
-	 * Called when all tests have finished. 
-	 * Prints a statistics on the result to the standard output, 
-	 * and a summary to the status bar of the GUI 
-	 * and updates the enablement of the GUI-Actions. 
-	 *
-	 * @param result 
-	 *    the summary of the test run, including all the tests that failed
-	 */
-	public void testRunFinished(final Result result) throws Exception {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    super.testRunFinished(result);
-
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			All.this.runner.setStatus("testRunFinished(required: " +
-						  result.getRunTime() + "ms. ");
-			All.this.actions.setEnableForRun(false);// not running 
-		    }
-		};
-	    SwingUtilities.invokeAndWait(runnable);
+	    All.this.testCaseCount = 0;
 	}
 
 	/**
@@ -160,7 +167,7 @@ public class GUIRunListener extends TextRunListener {
 		    public void run() {
 			All.this.testCase = new TestCase(desc,
 							 All.this.testCaseCount++);
-			All.this.runner.noteTestStartedI(All.this.testCase);
+			All.this.guiRunner.noteTestStartedI(All.this.testCase);
 		    }
 		};
 	    SwingUtilities.invokeAndWait(runnable);
@@ -182,7 +189,7 @@ public class GUIRunListener extends TextRunListener {
 	    Runnable runnable = new Runnable() {
 		    public void run() {
 			All.this.testCase.setFinished();
-			All.this.runner.noteReportResult(All.this.testCase);
+			All.this.guiRunner.noteReportResult(All.this.testCase);
 		    }
 		};
 
@@ -202,7 +209,7 @@ public class GUIRunListener extends TextRunListener {
 
 	    Runnable runnable = new Runnable() {
 		    public void run() {
-			All.this.runner.setStatus("testFailure: "
+			All.this.guiRunner.setStatus("testFailure: "
 						   + failure.getException());
 			All.this.testCase.setFailure(failure);
 		    }
@@ -231,32 +238,11 @@ public class GUIRunListener extends TextRunListener {
 			All.this.testCase = new TestCase(desc,
 							 All.this.testCaseCount++);
 			All.this.testCase.setIgnored();
-			All.this.runner.noteTestStartedI(All.this.testCase);
-			All.this.runner.noteReportResult(All.this.testCase);
+			All.this.guiRunner.noteTestStartedI(All.this.testCase);
+			All.this.guiRunner.noteReportResult(All.this.testCase);
 		    }
 		};
 	    SwingUtilities.invokeAndWait(runnable);
-	}
-
-	// homemade extension 
-	// not clear which test has been aborted. 
-	public void testRunAborted() {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    System.out.println("testRunAborted(");
-
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			All.this.runner.setStatus("testRunAborted(");
-			// not clear which test has been aborted. 
-			All.this.actions.setEnableForRun(false);// not running 
-		    }
-		};
-	    try {
-		SwingUtilities.invokeAndWait(runnable);
-	    } catch (Exception e) {
-		e.printStackTrace();
-	    }
 	}
 
     } // class All 
@@ -300,40 +286,13 @@ public class GUIRunListener extends TextRunListener {
 	    Runnable runnable = new Runnable() {
 		    public void run() {
 			Singular.this.actions.setEnableForRun(true);// running 
+
 			Singular.this.testCase = 
 			    Singular.this.actions.getSingleTest();//NOPMD
 			//assert this.testCase.getDesc().equals(desc);
 
 			// 	this.runner.setStatus("single testRunStarted(");
 			// 	this.runner.startSingular(desc);
-		    }
-		};
-	    SwingUtilities.invokeAndWait(runnable);
-	}
-
-	/**
-	 * Called when all tests have finished. 
-	 * Prints a statistics on the result to the standard output, 
-	 * a summary to the status bar of the GUI 
-	 * and updates the enablement of the GUI-Actions. 
-	 *
-	 * @param result 
-	 *    the summary of the test run, including all the tests that failed
-	 */
-	// api-docs inherited from class RunListener
-	public void testRunFinished(final Result result) throws Exception {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    // output text 
-	    super.testRunFinished(result);
-
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			Singular.this.runner
-			    .setStatus("testRunFinished(required: " + 
-				       result.getRunTime() + "ms. ");
-			Singular.this.actions
-			    .setEnableForRun(false);// not running 
 		    }
 		};
 	    SwingUtilities.invokeAndWait(runnable);
@@ -356,7 +315,7 @@ public class GUIRunListener extends TextRunListener {
 	    Runnable runnable = new Runnable() {
 		    public void run() {
 			Singular.this.testCase.setRetried();
-			Singular.this.runner.updateSingularStarted();
+			Singular.this.guiRunner.updateSingularStarted();
 			//this.testCase = new TestCase(description);
 		    }
 		};
@@ -375,11 +334,12 @@ public class GUIRunListener extends TextRunListener {
 	    assert !SwingUtilities.isEventDispatchThread();
 	    // output text 
 	    super.testFinished(desc);
+	    //assert Singular.this.testCase.getDesc() == desc;
 
 	    Runnable runnable = new Runnable() {
 		    public void run() {
 			Singular.this.testCase.setFinished();
-			Singular.this.runner
+			Singular.this.guiRunner
 			    .updateSingularFinished(Singular.this.testCase);
 		    }
 		};
@@ -398,8 +358,8 @@ public class GUIRunListener extends TextRunListener {
 
 	    Runnable runnable = new Runnable() {
 		    public void run() {
-			//this.runner.setStatus("testFailure: "+
-			//failure.getException());
+			Singular.this.guiRunner.setStatus("testFailure: "
+						   + failure.getException());
 			Singular.this.testCase.setFailure2(failure);
 		    }
 		};
@@ -426,31 +386,11 @@ public class GUIRunListener extends TextRunListener {
 		    public void run() {
 			Singular.this.testCase.setIgnored2();
 			//this.testCase.setFinished();
-			Singular.this.runner
+			Singular.this.guiRunner
 			    .updateSingularFinished(Singular.this.testCase);
 		    }
 		};
 	    SwingUtilities.invokeAndWait(runnable);
-	}
-
-	// homemade extension 
-	// not clear which test has been aborted. 
-	public void testRunAborted() {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    System.out.println("S testRunAborted(");
-
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			Singular.this.runner.setStatus("testRunAborted(");
-			Singular.this.actions.setEnableForRun(false);// not running 
-		    }
-		};
-	    try {
-		SwingUtilities.invokeAndWait(runnable);
-	    } catch (Exception e) {
-		e.printStackTrace();
-	    }
 	}
     } // class Singular 
 
