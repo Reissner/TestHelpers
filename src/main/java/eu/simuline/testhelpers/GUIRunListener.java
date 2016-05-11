@@ -251,34 +251,6 @@ public abstract class GUIRunListener extends TextRunListener {
 	    SwingUtilities.invokeAndWait(runnable);
 	}
 
-	// /**
-	//  * Called when a test will not be run, 
-	//  * generally because a test method is annotated 
-	//  * with <code>@Ignored</code>. 
-	//  * This implies 
-	//  * that neither {@link #testStarted} nor {@link #testFinished} 
-	//  * are invoked. 
-	//  *
-	//  * @param desc 
-	//  *    describes the test that will not be run
-	//  */
-	// public void testIgnored(final Description desc) throws Exception {
-	//     assert !SwingUtilities.isEventDispatchThread();
-	//     // output text 
-	//     super.testIgnored(desc);
-
-	//     Runnable runnable = new Runnable() {
-	// 	    public void run() {
-	// 		All.this.testCase = new TestCase(desc,
-	// 						 Quality.Ignored,
-	// 						 testCaseCount());
-	// 		All.this.guiRunner.noteTestStartedI(All.this.testCase);
-	// 		All.this.guiRunner.noteReportResult(All.this.testCase);
-	// 	    }
-	// 	};
-	//     SwingUtilities.invokeAndWait(runnable);
-	// }
-
 	int testCaseCount() {
 	    return All.this.testCaseCount++;
 	}
@@ -404,39 +376,6 @@ public abstract class GUIRunListener extends TextRunListener {
 		};
 	    SwingUtilities.invokeAndWait(runnable);
 	}
-
-	// /**
-	//  * Called when a test will not be run, 
-	//  * generally because a test method is annotated 
-	//  * with <code>@Ignored</code>. 
-	//  * This implies 
-	//  * that neither {@link #testStarted} nor {@link #testFinished} 
-	//  * are invoked. 
-	//  *
-	//  * @param desc 
-	//  *    describes the test that will not be run
-	//  */
-	// public void testIgnored(final Description desc) throws Exception {
-	//     assert !SwingUtilities.isEventDispatchThread();
-	//     // output text 
-	//     super.testIgnored(desc);
-
-	//     Runnable runnable = new Runnable() {
-	// 	    public void run() {
-	// 		Singular.this.testCase = new TestCase(desc,
-	// 						      Quality.Ignored,
-	// 						      testCaseCount());
-	// 		Singular.this.guiRunner.noteTestStartedI(Singular.this.testCase);
-	// 		Singular.this.guiRunner.noteReportResult(Singular.this.testCase);
-
-	// 		// Singular.this.testCase.setIgnored2();
-	// 		// //this.testCase.setFinished();
-	// 		// Singular.this.guiRunner
-	// 		//     .updateSingularFinished(Singular.this.testCase);
-	// 	    }
-	// 	};
-	//     SwingUtilities.invokeAndWait(runnable);
-	// }
 
 	int testCaseCount() {
 	    return -1;
