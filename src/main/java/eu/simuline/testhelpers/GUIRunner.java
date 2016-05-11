@@ -209,10 +209,10 @@ public class GUIRunner {
 	    setMaximum(desc.testCount());
 	    //this.model.setExtent(0);/// **** how much is visible: 
 	    //   minimum <= value <= value+extent <= maximum 
-	    reset();
+	    resetA();
 	}
 
-	void reset() {
+	void resetA() {
 	    setValue(0);
 	    setForeground(COLOR_OK);
 	}
@@ -229,6 +229,7 @@ public class GUIRunner {
 
     /**
      * To render a cell of the hierarchy tree. 
+     * The icon represents the state of the {@link TestCase}. 
      */
     static class TestTreeCellRenderer extends DefaultTreeCellRenderer {
 
@@ -252,6 +253,12 @@ public class GUIRunner {
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
+	/**
+	 * Renders the <code>value</code> interpreting it as Node 
+	 * the user object of which is a {@link TestCase}. 
+	 * Rendering is by setting the icon 
+	 * associated with the state of the @link TestCase}. 
+	 */
 	public Component getTreeCellRendererComponent(JTree tree, 
 						      Object value,
 						      boolean sel, 
@@ -319,6 +326,14 @@ public class GUIRunner {
 
     } // interface Selector 
 
+    /**
+     * Represents a path {@link #currPath} 
+     * in the tree of testsuites represented by {@link #treeModel}. 
+     * This is initialized by {@link #setFirstPath()} 
+     * to the uppermost complete path, 
+     * can be incremented via {@link #incPath()} 
+     * and be returned by {@link #getPath()}. 
+     */
     static class TreePathIncrementor {
 
 	/* ---------------------------------------------------------------- *
@@ -327,7 +342,13 @@ public class GUIRunner {
 
 	// is null after this is created. 
 	private       TreePath currPath;
+
+	/**
+	 * A model of the tree of testsuites and tests. 
+	 */
 	private final TreeModel treeModel;
+
+
 
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
@@ -342,6 +363,10 @@ public class GUIRunner {
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
+	/**
+	 * Initializes {@link #currPath} 
+	 * with the first path in {@link #treeModel}. 
+	 */
 	void setFirstPath() {
 	    TreeNode lastNode = (TreeNode) this.treeModel.getRoot();
 	    this.currPath = prolonguePath(new TreePath(lastNode));
@@ -360,12 +385,17 @@ public class GUIRunner {
 	    return path;
 	}
 
+	/**
+	 * Replaces {@link #currPath} removing the last node 
+	 * as long as the last node is the last child 
+	 * and returns the 
+	 */
+
 	private int shortenPath() {
 	    TreeNode lastNode = (TreeNode)
 		this.currPath.getLastPathComponent();
 	    TreePath prefix = this.currPath.getParentPath();
-	    TreeNode lastButOneNode = (TreeNode)
-		prefix.getLastPathComponent();
+	    TreeNode lastButOneNode = (TreeNode)prefix.getLastPathComponent();
 	    int index = lastButOneNode.getIndex(lastNode);
 
 	    while (index == lastButOneNode.getChildCount()-1) {
@@ -378,11 +408,13 @@ public class GUIRunner {
 	    return index;
 	}
 
+	/**
+	 * Increments {@link #currPath} and returns the result. 
+	 */
 	TreePath incPath() {
 	    int index = shortenPath();
 	    TreePath prefix = this.currPath.getParentPath();
-	    TreeNode lastButOneNode = 
-		(TreeNode)prefix.getLastPathComponent();
+	    TreeNode lastButOneNode = (TreeNode)prefix.getLastPathComponent();
 	    TreeNode lastNode = lastButOneNode.getChildAt(index+1);
 	    this.currPath = prefix.pathByAddingChild(lastNode);
 	    this.currPath = prolonguePath(this.currPath);
@@ -394,6 +426,11 @@ public class GUIRunner {
 	}
     } // class TreePathIncrementor 
 
+    /**
+     * Represents the hierarchy of testsuites and testcases 
+     * as a tree {@link #hierarchyTree} possibly with a single selected node 
+     * given by {@link #singleSelectedNode} 
+     */
     static class HierarchyWrapper 
 	implements Selector, TreeSelectionListener {
 
@@ -401,11 +438,16 @@ public class GUIRunner {
 	 * inner class.                                                     *
 	 * ---------------------------------------------------------------- */
 
-	enum TreeUpdater {
+	/**
+	 * Expands the tree along the current path, 
+	 * for {@link #Generic} after incrementing the current path. 
+	 */
+	enum TreePathUpdater {
 
 	    First() {
 		void updatePath(HierarchyWrapper testHiererarchy) {
-		    testHiererarchy.treeUpdater = Generic;
+		    testHiererarchy.treePathUpdater = Generic;
+		    testHiererarchy.currPathInc.setFirstPath();
 		    testHiererarchy.expandAlongPath();
 		}
 	    },
@@ -416,34 +458,78 @@ public class GUIRunner {
 		}
 	    };
 	    abstract void updatePath(HierarchyWrapper testHiererarchy);
-	} // enum TreeUpdater 
+	} // enum TreePathUpdater 
 
 	/* ---------------------------------------------------------------- *
 	 * fields.                                                          *
 	 * ---------------------------------------------------------------- */
 
 
+	/**
+	 * The hierarchy of testsuites and testcases as a tree. 
+	 * After creation this is a default tree, 
+	 * after invocation of {@link #start(Description)} 
+	 * the hierarchy reflects {@link #desc}. 
+	 * The selection model is given by {@link #treeSelection} 
+	 * and this is the {@link TreeSelectionListener}. 
+	 */
 	private final JTree hierarchyTree;
 
-	// is null after this is created. 
-	private TreePathIncrementor currPathInc;
-
+	/**
+	 * Set by {@link #start(Description)} initially <code>null</code>: 
+	 * Reflects the hierarchy of testsuites and tests 
+	 * to be represented by {@link #hierarchyTree}. 
+	 */
 	private Description desc;
 
-	private TreeUpdater treeUpdater; // NOPMD 
-
+	/**
+	 * The selection model for {@link #hierarchyTree}. 
+	 */
 	private final TreeSelectionModel treeSelection;
 
-	// selector to be influenced. 
-	private Selector selector;
+	/**
+	 * This is used only by {@link #valueChanged(TreeSelectionEvent)} 
+	 * to set the testcase via {@link Actions#setSingleTest(TestCase)}. 
+	 */
 	private final Actions actions;
-	// the selected node. Is null if nothing selected. 
+
+	/**
+	 * Represents the selected node in {@link #hierarchyTree}. 
+	 * This is <code>null</code> if nothing selected 
+	 * which is also the initial value. 
+	 */
 	private DefaultMutableTreeNode singleSelectedNode;
+
+
+	/**
+	 * Is <code>null</code> after this is created 
+	 * and is initialized by {@link #start(Description)}. 
+	 * Represents the path to the testcase currently run. 
+	 */
+	private TreePathIncrementor currPathInc;
+
+	// initialized by {@link #start(Description)}
+	private TreePathUpdater treePathUpdater; // NOPMD 
+
+
+	/**
+	 * Selector to be influenced: 
+	 * If this is in the selected tab, {@link #selector} 
+	 * is the tab with the {@link #TestCaseLister}; 
+	 * otherwise it is {@link GUIRunner.TabChangeListener#EMPTY_SELECTOR}. 
+	 * Set by {@link #registerSelector(Selector)}. 
+	 */
+	private Selector selector;
+
 
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
 	 * ---------------------------------------------------------------- */
 
+	/**
+	 * Creates a new HierarchyWrapper with the given <code>actions</code> 
+	 * which is used to initialize {@link #actions}. 
+	 */
 	HierarchyWrapper(Actions actions) {
 	    assert SwingUtilities.isEventDispatchThread();
 
@@ -455,12 +541,15 @@ public class GUIRunner {
 	    this.hierarchyTree.setSelectionModel(this.treeSelection);
 	    this.hierarchyTree.addTreeSelectionListener(this);
 	    this.hierarchyTree.setRootVisible(false);
-	    this.currPathInc = null;
 
 	    TreeNode root = (TreeNode)this.hierarchyTree.getModel().getRoot();
 	    this.hierarchyTree.setModel(new DefaultTreeModel(root));
 	    this.actions = actions;
+
+	    this.desc = null;
 	    this.singleSelectedNode = null;
+	    this.currPathInc = null;
+	    this.treePathUpdater = null;
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -471,7 +560,7 @@ public class GUIRunner {
 	// bad: design and problem with selecting testcases not yet run. 
 	// 
 	private static 
-	MutableTreeNode desc2treeNode(Description desc) {
+	    MutableTreeNode desc2treeNode(Description desc) {
 //System.out.println("desc2treeNode(");
 	    DefaultMutableTreeNode ret;
 	    if (desc.isTest()) {
@@ -503,23 +592,24 @@ public class GUIRunner {
 	 * further methods.                                                 *
 	 * ---------------------------------------------------------------- */
 
+	/**
+	 * Sets the description {@link #desc}, 
+	 * sets the according tree model of {@link #hierarchyTree} 
+	 * using {@link #desc2treeNode(Description)}, 
+	 * after that the cell renderer and the path incrementor 
+	 * {@link #currPathInc} in conjunction with the ***** bad design. 
+	 */
 	void start(Description desc) {
 	    this.desc = desc;
-	    reset();
-	}
-
-	void reset() {
 	    MutableTreeNode treeNode = desc2treeNode(this.desc);
 	    TreeModel newModel = new DefaultTreeModel(treeNode);
 	    this.hierarchyTree.setModel(newModel);
+	    // cell renderer after model. 
 	    this.hierarchyTree.setCellRenderer(new TestTreeCellRenderer());
 	    //this.testHierarcy.update(this.testHierarcy.getGraphics());
 
-	    this.currPathInc = 
-		new TreePathIncrementor(this.hierarchyTree);
-	    this.currPathInc.setFirstPath();
-	    expandAlongPath();
-	    this.treeUpdater = TreeUpdater.First;
+	    this.currPathInc = new TreePathIncrementor(this.hierarchyTree);
+	    this.treePathUpdater = TreePathUpdater.First;
 
 //Tree  TreePath 	getLeadSelectionPath() 
 //Tree   TreePath 	getSelectionPath() 
@@ -574,6 +664,8 @@ public class GUIRunner {
 	}
 
 	public void registerSelector(Selector selector) {
+	    assert selector instanceof TestCaseLister
+		|| selector == TabChangeListener.EMPTY_SELECTOR;
 	    this.selector = selector;
 	}
 
@@ -712,7 +804,7 @@ public class GUIRunner {
 	    this.errors   = new JLabel();
 
 	    this.numRuns  = 0;// formally. This is set by #start()
-	    reset();
+	    resetB();
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -745,14 +837,14 @@ public class GUIRunner {
 	 */
 	void start(Description desc) {
 	    this.numRuns = desc.testCount();
-	    reset();
+	    resetB();
 	}
 
 	/**
 	 * Resets all counters to <code>0</code> except {@link #numRuns} 
 	 * and updates all labels invoking {@link #updateLabels()}. 
 	 */
-	void reset() {
+	void resetB() {
 	    this.numRunsDone = 0;
 	    this.numIgn      = 0;
 	    this.numFails    = 0;
@@ -833,6 +925,13 @@ public class GUIRunner {
 	private final StackTraceLister stackTraceLister;
 
 	// selector to be influenced. 
+	/**
+	 * Selector to be influenced: 
+	 * If this is in the selected tab, {@link #selector} 
+	 * is the tab with the {@link #HierarchyWrapper}; 
+	 * otherwise it is {@link GUIRunner.TabChangeListener#EMPTY_SELECTOR}. 
+	 * Set by {@link #registerSelector(Selector)}. 
+	 */
 	private Selector selector;
 
 	/* ---------------------------------------------------------------- *
@@ -876,12 +975,12 @@ public class GUIRunner {
 	 * further methods.                                                 *
 	 * ---------------------------------------------------------------- */
 
-
+	// does not depend on desc 
 	void start(Description desc) {
-	    reset();
+	    resetTCL();
 	}
 
-	void reset() {
+	void resetTCL() {
 	    this.testsDoneList   .clear();
 	    this.failureSelection.clearSelection();
 	    this.failureListMod  .clear();
@@ -944,6 +1043,8 @@ public class GUIRunner {
 	}
 
 	public void registerSelector(Selector selector) {
+	    assert selector instanceof HierarchyWrapper
+		|| selector == TabChangeListener.EMPTY_SELECTOR;
 	    this.selector = selector;
 	}
 
@@ -1148,6 +1249,9 @@ public class GUIRunner {
 	 */
 	private final static int SEL_IND1 = 1;
 
+	/**
+	 * Registered with the unselected Selector. 
+	 */
 	private final static Selector EMPTY_SELECTOR = 
 	    new Selector() {
 		public void setSelection(int index) {
@@ -1540,7 +1644,7 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
     void noteTestStartedI(TestCase testCase) {
 //	assert SwingUtilities.isEventDispatchThread();
 	setStatus(testCase);
-	this.testHierarchy.treeUpdater.updatePath(this.testHierarchy);
+	this.testHierarchy.treePathUpdater.updatePath(this.testHierarchy);
 	this.testHierarchy.setResult(testCase);// sounds strange. 
     }
 
@@ -1581,7 +1685,7 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
     }
 
     void resetTestCaseLister() {
-	this.testCaseLister.reset();
+	this.testCaseLister.resetTCL();
     }
 
     /**
