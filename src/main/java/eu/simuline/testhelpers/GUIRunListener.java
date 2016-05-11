@@ -7,7 +7,7 @@ import org.junit.runner.Result;
 
 import java.util.Iterator;
 
-//import javax.swing.SwingUtilities;// wrong place
+import javax.swing.SwingUtilities;// wrong place?
 
 /**
  * A {@link RunListener} which notifies the GUI {@link GUIRunner} 
@@ -58,7 +58,7 @@ public class GUIRunListener extends TextRunListener {
 
 
     // homemade extension of RunListener 
-    public void testRunAborted() {
+    public void testRunAborted() throws Exception {
       // is empty. 
     }
 
@@ -103,24 +103,20 @@ public class GUIRunListener extends TextRunListener {
 	 * @param desc 
 	 *    describes the tests to be run
 	 */
-	public void testRunStarted(final Description desc) {
+	public void testRunStarted(final Description desc) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
 	    // output text 
 	    super.testRunStarted(desc);
-	    All.this.actions.setEnableForRun(true);// running 
 
-	    try {
-	// SwingUtilities.invokeLater(
-	//     new Runnable() {
-	// 	public void run() {
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			All.this.actions.setEnableForRun(true);// running 
 
-		All.this.runner.testRunStarted(desc);
-		All.this.testCaseCount = 0;
-	    // 	}
-	    // }
-	    // );
-	    } catch (Throwable e) {// NOPMD
-		e.printStackTrace();
-	    }
+			All.this.runner.testRunStarted(desc);
+			All.this.testCaseCount = 0;
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	/**
@@ -132,26 +128,19 @@ public class GUIRunListener extends TextRunListener {
 	 * @param result 
 	 *    the summary of the test run, including all the tests that failed
 	 */
-	public void testRunFinished(final Result result) {
+	public void testRunFinished(final Result result) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
 	    // output text 
 	    super.testRunFinished(result);
 
-	    try {
-		// SwingUtilities.invokeLater(
-		//     new Runnable() {
-		// 	public void run() {
-
-		All.this.runner.setStatus("testRunFinished( required: " + 
-					  result.getRunTime() + " ms. ");
-		All.this.actions.setEnableForRun(false);// not running 
-		// 	}
-		// }
-		// );
-
-		System.out.println("...testRunFinished(");
-	    } catch (Throwable e) {// NOPMD
-		e.printStackTrace();
-	    }
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			All.this.runner.setStatus("testRunFinished(required: " +
+						  result.getRunTime() + "ms. ");
+			All.this.actions.setEnableForRun(false);// not running 
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	/**
@@ -161,25 +150,19 @@ public class GUIRunListener extends TextRunListener {
 	 *    the description of the test that is about to be run 
 	 *    (generally a class and method name)
 	 */
-	public void testStarted(final Description desc) {
+	public void testStarted(final Description desc) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    super.testStarted(desc);
 
-	    try {
-	// SwingUtilities.invokeLater(
-	//     new Runnable() {
-	// 	public void run() {
-
-		All.this.testCase = new TestCase(desc,
-						 All.this.testCaseCount++);
-		All.this.runner.noteTestStartedI(All.this.testCase);
-	    // 	}
-	    // }
-	    // );
-
-		System.out.println("...testStarted(");
-	    } catch (Throwable e) {// NOPMD
-		e.printStackTrace();
-	    }
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			All.this.testCase = new TestCase(desc,
+							 All.this.testCaseCount++);
+			All.this.runner.noteTestStartedI(All.this.testCase);
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	/**
@@ -189,27 +172,20 @@ public class GUIRunListener extends TextRunListener {
 	 * @param desc
 	 *    the description of the test that just ran
 	 */
-	public void testFinished(final Description desc) {
+	public void testFinished(final Description desc) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    super.testFinished(desc);
 	    assert All.this.testCase.getDesc() == desc;
 
-	    try {
-	// SwingUtilities.invokeLater(
-	//     new Runnable() {
-	// 	public void run() {
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			All.this.testCase.setFinished();
+			All.this.runner.noteReportResult(All.this.testCase);
+		    }
+		};
 
-		All.this.testCase.setFinished();
-		All.this.runner.noteReportResult(All.this.testCase);
-	    // 	}
-	    // }
-	    // );
-
-		//this.currDesc = description;
-		//assert this.currDesc == description;
-
-	    } catch (Throwable e) {// NOPMD
-		e.printStackTrace();
-	    }
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	/** 
@@ -218,24 +194,19 @@ public class GUIRunListener extends TextRunListener {
 	 * @param failure 
 	 *    describes the test that failed and the exception that was thrown
 	 */
-	public void testFailure(final Failure failure) {
+	public void testFailure(final Failure failure) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    super.testFailure(failure);
 
-	    try {
-	// SwingUtilities.invokeLater(
-	//     new Runnable() {
-	// 	public void run() {
-
-		All.this.runner.setStatus("testFailure: "
-					  +failure.getException());
-		All.this.testCase.setFailure(failure);
-	    // 	}
-	    // }
-	    // );
-
-	    } catch (Throwable e) {// NOPMD
-		e.printStackTrace();
-	    }
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			All.this.runner.setStatus("testFailure: "
+						   + failure.getException());
+			All.this.testCase.setFailure(failure);
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	/**
@@ -249,45 +220,38 @@ public class GUIRunListener extends TextRunListener {
 	 * @param desc 
 	 *    describes the test that will not be run
 	 */
-	public void testIgnored(final Description desc) {
+	public void testIgnored(final Description desc) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    super.testIgnored(desc);
 
-	    try {
-	// SwingUtilities.invokeLater(
-	//     new Runnable() {
-	// 	public void run() {
-
-		All.this.testCase = new TestCase(desc,
-						 All.this.testCaseCount++);
-		All.this.testCase.setIgnored();
-		All.this.runner.noteTestStartedI(All.this.testCase);
-		All.this.runner.noteReportResult(All.this.testCase);
-	    // 	}
-	    // }
-	    // );
-
-	    } catch (Throwable e) {// NOPMD
-		e.printStackTrace();
-	    }
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			All.this.testCase = new TestCase(desc,
+							 All.this.testCaseCount++);
+			All.this.testCase.setIgnored();
+			All.this.runner.noteTestStartedI(All.this.testCase);
+			All.this.runner.noteReportResult(All.this.testCase);
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	// homemade extension 
-	public void testRunAborted() {
+	// not clear which test has been aborted. 
+	public void testRunAborted() throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    System.out.println("testRunAborted(");
-	    try {
-// 	SwingUtilities.invokeLater(
-// 	    new Runnable() {
-// 		public void run() {
 
-		All.this.runner.setStatus("testRunAborted(");
-// 		}
-// 	    }
-// 	    );
-
-		System.out.println("...testRunAborted(");
-	    } catch (Throwable e) {// NOPMD
-		e.printStackTrace();
-	    }
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			All.this.runner.setStatus("testRunAborted(");
+			// not clear which test has been aborted. 
+			All.this.actions.setEnableForRun(false);// not running 
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
     } // class All 
@@ -323,17 +287,23 @@ public class GUIRunListener extends TextRunListener {
 	 * @param desc 
 	 *    describes the tests to be run
 	 */
-	public void testRunStarted(final Description desc) {
+	public void testRunStarted(final Description desc) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
 	    // output text 
 	    super.testRunStarted(desc);
-	    Singular.this.actions.setEnableForRun(true);// running 
 
-	    Singular.this.testCase = Singular.this.actions.getSingleTest();//NOPMD
-	    //assert this.testCase.getDesc().equals(desc);
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			Singular.this.actions.setEnableForRun(true);// running 
+			Singular.this.testCase = 
+			    Singular.this.actions.getSingleTest();//NOPMD
+			//assert this.testCase.getDesc().equals(desc);
 
-// 	this.runner.setStatus("single testRunStarted(");
-// 	this.runner.startSingular(desc);
-
+			// 	this.runner.setStatus("single testRunStarted(");
+			// 	this.runner.startSingular(desc);
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	/**
@@ -346,19 +316,22 @@ public class GUIRunListener extends TextRunListener {
 	 *    the summary of the test run, including all the tests that failed
 	 */
 	// api-docs inherited from class RunListener
-	public void testRunFinished(final Result result) {
+	public void testRunFinished(final Result result) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    // output text 
 	    super.testRunFinished(result);
 
-	// SwingUtilities.invokeLater(
-	//     new Runnable() {
-	// 	public void run() {
-	    Singular.this.runner.setStatus("testRunFinished( required: " + 
-					   result.getRunTime() + " ms. ");
-	    Singular.this.actions.setEnableForRun(false);// not running 
-	    // }
-	    // }
-	    // );
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			Singular.this.runner
+			    .setStatus("testRunFinished(required: " + 
+				       result.getRunTime() + "ms. ");
+			Singular.this.actions
+			    .setEnableForRun(false);// not running 
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	/**
@@ -369,12 +342,20 @@ public class GUIRunListener extends TextRunListener {
 	 *    (generally a class and method name)
 	 */
 	// api-docs inherited from class RunListener
-	public void testStarted(final Description desc) {
+	public void testStarted(final Description desc) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    super.testStarted(desc);
 
-	    Singular.this.testCase.setRetried();
-	    Singular.this.runner.updateSingularStarted();
-//this.testCase = new TestCase(description);
+
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			Singular.this.testCase.setRetried();
+			Singular.this.runner.updateSingularStarted();
+			//this.testCase = new TestCase(description);
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 
@@ -385,19 +366,19 @@ public class GUIRunListener extends TextRunListener {
 	 * @param desc
 	 *    the description of the test that just ran
 	 */
-	public void testFinished(final Description desc) {
+	public void testFinished(final Description desc) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    super.testFinished(desc);
 
-
-// try {
-	    Singular.this.testCase.setFinished();
-	    Singular.this.runner
-		.updateSingularFinished(Singular.this.testCase);
-// } catch (Throwable e) {
-//     e.printStackTrace();
-// }
-
-	    System.out.println("...S testFinished("+desc);
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			Singular.this.testCase.setFinished();
+			Singular.this.runner
+			    .updateSingularFinished(Singular.this.testCase);
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	/** 
@@ -405,11 +386,19 @@ public class GUIRunListener extends TextRunListener {
 	 * @param failure 
 	 *    describes the test that failed and the exception that was thrown
 	 */
-	public void testFailure(final Failure failure) {
+	public void testFailure(final Failure failure) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    super.testFailure(failure);
 
-//this.runner.setStatus("testFailure: "+failure.getException());
-	    Singular.this.testCase.setFailure2(failure);
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			//this.runner.setStatus("testFailure: "+
+			//failure.getException());
+			Singular.this.testCase.setFailure2(failure);
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	/**
@@ -423,17 +412,36 @@ public class GUIRunListener extends TextRunListener {
 	 * @param desc 
 	 *    describes the test that will not be run
 	 */
-	public void testIgnored(final Description desc) {
+	public void testIgnored(final Description desc) throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    super.testIgnored(desc);
 
-	    Singular.this.testCase.setIgnored2();
-//this.testCase.setFinished();
-	    Singular.this.runner.updateSingularFinished(this.testCase);
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			Singular.this.testCase.setIgnored2();
+			//this.testCase.setFinished();
+			Singular.this.runner
+			    .updateSingularFinished(Singular.this.testCase);
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
 
 	// homemade extension 
-	public void testRunAborted() {
+	// not clear which test has been aborted. 
+	public void testRunAborted() throws Exception {
+	    assert !SwingUtilities.isEventDispatchThread();
+	    // output text 
 	    System.out.println("S testRunAborted(");
+
+	    Runnable runnable = new Runnable() {
+		    public void run() {
+			Singular.this.runner.setStatus("testRunAborted(");
+			Singular.this.actions.setEnableForRun(false);// not running 
+		    }
+		};
+	    SwingUtilities.invokeAndWait(runnable);
 	}
     } // class Singular 
 
