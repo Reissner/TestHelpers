@@ -41,7 +41,7 @@ class TestCase {
      * constructor.                                                         *
      * -------------------------------------------------------------------- */
 
-    // Create Started TestCase 
+    // Create Started TestCase in state Started
     TestCase(Description desc, int testCaseCount) {
 	this.desc = desc;
 	this.testCaseCount = testCaseCount;
@@ -108,9 +108,8 @@ class TestCase {
 
     private boolean isFailure() {
 	Throwable thrw = this.failure.getException();
-	return 
-	    thrw instanceof AssertionFailedError ||
-	    thrw instanceof AssertionError;
+	return thrw instanceof AssertionFailedError
+	    || thrw instanceof AssertionError;// **** does not seem reasonable 
     }
 
     Description getDesc() {
@@ -118,7 +117,6 @@ class TestCase {
     }
 
     Throwable getException() {
-
 	return this.failure == null ? null : this.failure.getException();
     }
 
