@@ -73,14 +73,7 @@ class TestCase {
 	assert failure != null;
 	this.failure = failure;
 	assert this.desc == this.failure.getDescription();
-	this.qual = isFailure()? Quality.Failure : Quality.Error;
-    }
-
-    void setFailure2(Failure failure) {
-	assert failure != null;
-	this.failure = failure;
-	//assert this.desc == this.failure.getDescription();
-	this.qual = isFailure()? Quality.Failure : Quality.Error;
+	this.qual = isFailure() ? Quality.Failure : Quality.Error;
     }
 
     void setFinished() {
