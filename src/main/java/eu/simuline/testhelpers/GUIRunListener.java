@@ -58,7 +58,8 @@ public class GUIRunListener extends TextRunListener {
 
 
     // homemade extension of RunListener 
-    public void testRunAborted() throws Exception {
+    // invoked for stop and for break 
+    public void testRunAborted() {
       // is empty. 
     }
 
@@ -239,7 +240,7 @@ public class GUIRunListener extends TextRunListener {
 
 	// homemade extension 
 	// not clear which test has been aborted. 
-	public void testRunAborted() throws Exception {
+	public void testRunAborted() {
 	    assert !SwingUtilities.isEventDispatchThread();
 	    // output text 
 	    System.out.println("testRunAborted(");
@@ -251,7 +252,11 @@ public class GUIRunListener extends TextRunListener {
 			All.this.actions.setEnableForRun(false);// not running 
 		    }
 		};
-	    SwingUtilities.invokeAndWait(runnable);
+	    try {
+		SwingUtilities.invokeAndWait(runnable);
+	    } catch (Exception e) {
+		e.printStackTrace();
+	    }
 	}
 
     } // class All 
@@ -430,7 +435,7 @@ public class GUIRunListener extends TextRunListener {
 
 	// homemade extension 
 	// not clear which test has been aborted. 
-	public void testRunAborted() throws Exception {
+	public void testRunAborted() {
 	    assert !SwingUtilities.isEventDispatchThread();
 	    // output text 
 	    System.out.println("S testRunAborted(");
@@ -441,7 +446,11 @@ public class GUIRunListener extends TextRunListener {
 			Singular.this.actions.setEnableForRun(false);// not running 
 		    }
 		};
-	    SwingUtilities.invokeAndWait(runnable);
+	    try {
+		SwingUtilities.invokeAndWait(runnable);
+	    } catch (Exception e) {
+		e.printStackTrace();
+	    }
 	}
     } // class Singular 
 
