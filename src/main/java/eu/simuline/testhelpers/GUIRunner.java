@@ -565,8 +565,7 @@ public class GUIRunner {
 	// **** Descriptions instead of testcases 
 	// bad: design and problem with selecting testcases not yet run. 
 	// 
-	private static 
-	    MutableTreeNode desc2treeNode(Description desc) {
+	private static MutableTreeNode desc2treeNode(Description desc) {
 //System.out.println("desc2treeNode(");
 	    DefaultMutableTreeNode ret = new DefaultMutableTreeNode
 		(new TestCase(desc, Quality.Scheduled, -1));
