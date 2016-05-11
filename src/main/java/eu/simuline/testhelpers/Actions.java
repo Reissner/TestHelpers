@@ -11,6 +11,9 @@ import javax.swing.SwingUtilities;
 
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
+import org.junit.runner.Runner;
+import org.junit.runner.Result;
+import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runner.notification.StoppedByUserException;
 
@@ -25,8 +28,6 @@ import org.javalobby.icons20x20.Delete;
  * Represents the actions of the test GUI inspired by old junit GUI. 
  * The fundamental method is {@link #run(Class)} 
  * which runs the test class. 
- * <p>
- * CAUTION: presupposes JUnit 4.12. 
  *
  * @see GUIRunner
  * @see GUIRunListener
@@ -186,8 +187,9 @@ public class Actions {
      * Essentially, this is defined by the class {@link #testClass} 
      * to be tested and the execution is delegated to {@link #core}. 
      * The major task of this class is, to reload {@link #testClass} 
-     * using a classloader {@link #classLd} which allows reloading 
+     * using a classloader which allows reloading 
      * each test run without restarting the tester application. 
+     * The core of the code is copied from {@link JUnitCore}. 
      */
     class CoreRunner extends Thread {
 
@@ -196,10 +198,9 @@ public class Actions {
 	 * ---------------------------------------------------------------- */
 
 	/**
-	 * The JUnitCore effectively executing the testcases. 
+	 * The notifier to run the tests as in JUnitCore 
 	 */
-  	private final JUnitCore core;
-	//private final RunNotifier notifier = new RunNotifier();
+	private final RunNotifier notifier;
 
 	/**
 	 * The class to be tested. 
@@ -215,12 +216,8 @@ public class Actions {
 	 * Creates a runner running all testcases in the given test class. 
 	 */
 	CoreRunner(Class<?> testClass)  {
-
-	    this.core = new JUnitCore();
-	    this.core.addListener(Actions.this.listener);
-
-	    // this.notifier = new RunNotifier();
-	    // this.notifier.addListener(Actions.this.listener);
+	    this.notifier = new RunNotifier();
+	    this.notifier.addListener(Actions.this.listener);
 
 	    this.testClass = testClass;
 	}
@@ -240,17 +237,14 @@ public class Actions {
 	// api-docs inherited from Runnable 
 	// overwrites void implementation provided by class Thread 
 	public void run() {
-	    System.out.println("Core run()"+this.core);
-
 	    Class<?> newTestClass = null;
-
 	    try {
 		newTestClass = new TestCaseClassLoader()
 		    .loadClass(this.testClass.getName(), 
 					 true);
 	    } catch (ClassNotFoundException e) {
 		throw new IllegalStateException// NOPMD
-		    ("Testclass \"" + this.testClass + "\" disappeared. ");
+		    ("Testclass '" + this.testClass + "' disappeared. ");
 		// **** This makes the problem 
 		// that in the GUI the run button is shaded 
 		// (and the stop button is not). 
@@ -262,27 +256,32 @@ public class Actions {
 		request = request.filterWith(Actions.this.singTest.getDesc());
 	    }
 	    try {
-		this.core.run(request);// ignoring returned Result 
+		run(request);
 	    } catch (StoppedByUserException ee) {
 		// either Break or Stop 
   		Actions.this.listener.testRunAborted();
   	    }
 
-System.out.println("...Core run()"+this.core);
+	    //System.out.println("...Core run()"+this.core);
+	}
+
+	// almost copy from JUnitCore
+	public void run(Request request) {
+	    Runner runner = request.getRunner();
+	    Result result = new Result();
+	    RunListener listener = result.createListener();
+	    this.notifier.addFirstListener(listener);
+	    try {
+		this.notifier.fireTestRunStarted(runner.getDescription());
+		runner.run(this.notifier);
+		this.notifier.fireTestRunFinished(result);
+	    } finally {
+		this.notifier.removeListener(listener);
+	    }
 	}
 
 	public void pleaseStop() {
-	    // **** hack: should be provided by JUnitCore. 
-	    try {
-		// for junit 4.7 the according field is named "fNotifier"
-		RunNotifier notifier = 
-		    (RunNotifier)Accessor.getField(this.core, "notifier");
-		notifier.pleaseStop();
-	    } catch (NoSuchFieldException nsfe) {
-		throw new IllegalStateException// NOPMD
-		    ("Access to internal JUnit classes failed. " + 
-		     "Implementation changed? ");
-	    }
+	    this.notifier.pleaseStop();
 	}
 
     } // class CoreRunner 
