@@ -445,6 +445,8 @@ public class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	HierarchyWrapper(Actions actions) {
+	    assert SwingUtilities.isEventDispatchThread();
+
 	    this.hierarchyTree = new JTree();
 	    // generate selection model 
 	    this.treeSelection = new DefaultTreeSelectionModel();
@@ -492,7 +494,7 @@ public class GUIRunner {
 	    return ret;
 	}
 
-	void  updateSingular() {
+	void updateSingular() {
 	    ((DefaultTreeModel)this.hierarchyTree.getModel())
 	    	.nodeChanged(this.singleSelectedNode);
 	}
@@ -810,8 +812,10 @@ public class GUIRunner {
     } // class RunsErrorsFailures 
 
     /**
-     * Represents the list of testcases already failed. 
-     * This is shown in one of the tabs. 
+     * Represents the list of testcases already failed 
+     * shown in one of the tabs 
+     * and a {@link #stackTraceLister} 
+     * which represents the stack trace box below the tabbed pane. 
      */
     class TestCaseLister implements ListSelectionListener, Selector {
 
@@ -881,14 +885,14 @@ public class GUIRunner {
 	    this.testsDoneList   .clear();
 	    this.failureSelection.clearSelection();
 	    this.failureListMod  .clear();
-	    this.stackTraceLister.clear();
+	    this.stackTraceLister.clearStack();
 	}
 
 	void updateSingular(TestCase testCase) {
 	    if (testCase.hasFailed()) {
 		this.stackTraceLister.setStack(testCase.getException());
 	    } else {
-		this.stackTraceLister.clear();
+		this.stackTraceLister.clearStack();
 	    }
 	    updateG();
 	}
@@ -936,7 +940,7 @@ public class GUIRunner {
 
 	public void clearSelection() {
 	    this.failureSelection.clearSelection();
-	    this.stackTraceLister.clear();
+	    this.stackTraceLister.clearStack();
 	}
 
 	public void registerSelector(Selector selector) {
@@ -952,7 +956,7 @@ public class GUIRunner {
 	    int selIndex = this.failureSelection.getMinSelectionIndex();
 	    if (selIndex == -1) {
 		// Here, the selection is empty. 
-		this.stackTraceLister.clear();
+		this.stackTraceLister.clearStack();
 		this.selector.clearSelection();
 		return;
 	    }
@@ -966,8 +970,16 @@ public class GUIRunner {
     } // class TestCaseLister 
 
     /**
-     * Represents the stack trace of the failure or error 
+     * Represents the stack trace of the throwable, {@link #thrw} 
      * currently selected in the error list. 
+     * The representation consists in 
+     * the string representation {@link #thrwMessager} 
+     * and in the stack trace given by {@link #stacktrace}. 
+     * <p>
+     * This class is also a {@link ListSelectionListener} 
+     * which opens <code>emacsclient</code> 
+     * with the source file and the line number 
+     * given by the selected stack trace element. 
      */
     static class StackTraceLister implements ListSelectionListener {
 
@@ -975,18 +987,48 @@ public class GUIRunner {
 	 * attributes.                                                      *
 	 * ---------------------------------------------------------------- */
 
-	private final JLabel thrwMessager;
-	private final DefaultListModel<String> stacktrace;
-	private final ListSelectionModel stackElemSelection;
-	// is null initially 
+	/**
+	 * Represents a throwable or is <code>null</code> 
+	 * if no throwable is represented. 
+	 * This is also the initial value. 
+	 */
 	private Throwable thrw;
+
+	/**
+	 * Is empty iff {@link #thrw} is <code>null</code> 
+	 * and contains the string representation 
+	 * of the represented throwable {@link #thrw}. 
+	 */
+	private final JLabel thrwMessager;
+
+	/**
+	 * Is either empty or contains the stacktrace
+	 * of the represented throwable {@link #thrw}. 
+	 */
+	private final DefaultListModel<String> stacktrace;
+
+	/**
+	 * The selection of this stack trace: 
+	 * This is either empty 
+	 * (which is mandatory for empty {@link #thrwMessager}) 
+	 * or selects a single stack element. 
+	 * If so, by selection <code>emacsclient</code> is started 
+	 * at the place the stack element points to. 
+	 */
+	private final ListSelectionModel stackElemSelection;
+
 
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
 	 * ---------------------------------------------------------------- */
 
+	/**
+	 * Creates a new StackTraceLister with empty throwable. 
+	 */
 	StackTraceLister() {
-	    this.thrwMessager = new JLabel("",SwingConstants.LEADING);
+	    // init thrw and its string representation. 
+	    this.thrw = null;
+	    this.thrwMessager = new JLabel("", SwingConstants.LEADING);
 
 	    // init stacktrace 
 	    this.stacktrace = new DefaultListModel<String>();
@@ -997,15 +1039,15 @@ public class GUIRunner {
 	    this.stackElemSelection.setValueIsAdjusting(true);
 	    this.stackElemSelection
 		.addListSelectionListener(StackTraceLister.this);
-	    // init thrw 
-	    this.thrw = null;
 	}
 
 	/* ---------------------------------------------------------------- *
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
-
+	/**
+	 * Returns a graphical representation of this StackTraceLister. 
+	 */
 	Component getStackTraceBox() {
 	    JList<String> stacktraceList = new JList<String>(this.stacktrace);
 	    stacktraceList.setSelectionModel(this.stackElemSelection);
@@ -1016,18 +1058,30 @@ public class GUIRunner {
 	    return stackTraceBox;
 	}
 
-	void clear() {
+	/**
+	 * Clears the represented stack including {@link #thrw} and text. 
+	 */
+	void clearStack() {
+	    this.thrw = null;
 	    this.thrwMessager.setText("");
-	    this.thrwMessager.setHorizontalAlignment(SwingConstants.LEADING);
+	    //this.thrwMessager.setHorizontalAlignment(SwingConstants.LEADING);
 	    this.stacktrace.clear();
 	    this.stackElemSelection.clearSelection();
 	}
 
+	/**
+	 * Represents the throwable <code>thrw</code> 
+	 * if this is not <code>null</code>; 
+	 * otherwise just clears this stack trace lister 
+	 * as is done by {@link #clearStack()}. 
+	 * The selection is cleared anyway. 
+	 */
 	void setStack(Throwable thrw) {
-	    clear();
+	    clearStack();
 	    if (thrw == null) {
 		// **** can only occur for rerun testcases 
 		// which eventually succeed. 
+		// is like clearing the stack trace 
 		return;
 	    }
 
@@ -1039,7 +1093,10 @@ public class GUIRunner {
 	    }
 	}
 
-	// if an entry is selected, move with emacs. 
+	/**
+	 * If an entry is selected, move with emacs to the according place. 
+	 */
+	// api-docs inherited from ListSelectionListener 
 	public void valueChanged(ListSelectionEvent lse) {
 	    // ***Here, the stacktrace cannot be empty. *** not right. 
 	    int selIndex = this.stackElemSelection.getMinSelectionIndex();
@@ -1059,14 +1116,17 @@ public class GUIRunner {
 		return;
 	    }
 
+	    // move with emacs to the selected position 
 	    try {
 		Runtime.getRuntime().exec(new String[] {
-		    "emacsclient", 
-		    "--no-wait", 
-		    "+" + location.getLineNumber(), 
-		    toBeLoaded.getPath()
-		},
-					  null,null);
+			"emacsclient", 
+			"--no-wait", 
+			"+" + location.getLineNumber(), 
+			toBeLoaded.getPath()
+		    },
+		    // environment variables and working directory 
+		    // inherited from the current process 
+		    null, null);
 	    } catch (IOException ioe) {
 		System.err.println("Failed to invoke emacs. ");
 		ioe.printStackTrace();
@@ -1164,7 +1224,11 @@ public class GUIRunner {
 
     /**
      * Provides a method to choose a test class. 
-     * This is triggered by clicking on the 'open' icon. 
+     * This is triggered by clicking on the 'open' icon 
+     * in the enclosing GUIRunner. 
+     * Class ClassChooser is based 
+     * on the {@link JFileChooser} {@link #clsFileChooser}
+     * It is not static because of its access to {@link GUIRunner#frame}. 
      */
     class ClassChooser {
 
@@ -1172,7 +1236,14 @@ public class GUIRunner {
 	 * attributes.                                                      *
 	 * ---------------------------------------------------------------- */
 
+	/**
+	 * File chooser for class files representing test classes. 
+	 */
 	private final JFileChooser clsFileChooser;
+
+	/**
+	 * The class path for test classes. 
+	 */
 	private final JavaPath clsPath;
 
 	/* ---------------------------------------------------------------- *
@@ -1181,18 +1252,22 @@ public class GUIRunner {
 
 	ClassChooser() {
 	    String classpath = System.getProperty("chooseClasspath");
+	    this.clsPath = new JavaPath(classpath);
 	    this.clsFileChooser = new JFileChooser(classpath);
 	    this.clsFileChooser.setMultiSelectionEnabled(false);
 	    this.clsFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	    this.clsFileChooser.setFileHidingEnabled(true);
+	    // File filter accepting directories 
+	    // and files ending with class but without inner classes 
 	    this.clsFileChooser.setFileFilter(new FileFilter() {
 		    public boolean accept(File file) {
 			if (!file.isFile()) {
+			    // directories accepted 
 			    return true;
 			}
-
-			return   file.getName().endsWith(".class") && 
-			    /**/!file.getName().contains("$");
+			String name = file.getName();
+			// file accepted if class file but no inner class 
+			return name.endsWith(".class") && !name.contains("$");
 		    }
 		    public String getDescription() {
 			return "Java class files ending with .class ";
@@ -1200,8 +1275,6 @@ public class GUIRunner {
 		});
 	    this.clsFileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
 	    this.clsFileChooser.setDialogTitle("Testclasses");
-
-	    this.clsPath = new JavaPath(classpath);
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -1210,7 +1283,8 @@ public class GUIRunner {
 
 
 	/**
-	 * Returns the choosen class or <code>null</code> 
+	 * Opens the class chooser dialog 
+	 * and returns the choosen class or <code>null</code> 
 	 * if either no file was selected, 
 	 * a file is selected which does not exist 
 	 * or does not represent a java class file. 
@@ -1226,9 +1300,6 @@ public class GUIRunner {
 	    }
 	    String clsName = this.clsPath.absFile2cls(clsFile,
 						      JavaPath.ClsSrc.Class);
-	    if (clsName == null) {
-		return null;
-	    }
 	    return clsName;
 	}
     } // class ClassChooser 
@@ -1241,9 +1312,15 @@ public class GUIRunner {
 
     /**
      * The frame in which the Testrunne GUI is displayed. 
+     * Since this is the outermost component, 
+     * this is used in {@link GUIRunner.ClassChooser} 
+     * and in {@link #updateG()}. 
      */
     private final JFrame frame;
 
+    /**
+     * A chooser for testclasses. 
+     */
     private final ClassChooser classChooser;
 
     /**
@@ -1260,7 +1337,7 @@ public class GUIRunner {
     /**
      * Represents the table displaying the number of runs, 
      * both passed and to be performed altogether, 
-     * the tests already ignored and those an error was found. 
+     * the tests already ignored and those in which an error was found. 
      */
     private final RunsErrorsFailures runsErrorsFailures;
 
@@ -1277,7 +1354,13 @@ public class GUIRunner {
     private HierarchyWrapper testHierarchy;
 
     /**
-     * Represents the split pane. 
+     * Represents the split pane with a tabbed pane as top component 
+     * and the stack trace box as bottom component. 
+     * The tabbed pane contains a tab for the {@link #testCaseLister} 
+     * and another one for the {@link #testHierarchy}. 
+     * The stack trace box is given by 
+     * {@link GuiRunner.TestCaseLister#getStackTraceBox()}. 
+     * <p>
      * This field is used to reset to preferred size. 
      */
     private JSplitPane splitPane;
@@ -1292,6 +1375,16 @@ public class GUIRunner {
      * constructor with its methods.                                        *
      * -------------------------------------------------------------------- */
 
+    /**
+     * Opens the class chooser dialog 
+     * and returns the choosen class or <code>null</code> 
+     * if either no file was selected, 
+     * a file is selected which does not exist 
+     * or does not represent a java class file. 
+     * <p>
+     * Essentially delegates 
+     * to {@link GUIRunner.ClassChooser#getChosenClass()}. 
+     */
     String openClassChooser() {
 	return this.classChooser.getChosenClass();
     }
@@ -1431,9 +1524,6 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 	// make up SplitPane 
 	this.splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 	this.splitPane.setTopComponent(tabbedPane);
-
-
-
 	this.splitPane.setBottomComponent
 	    (this.testCaseLister.getStackTraceBox());
     }
@@ -1481,12 +1571,17 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 	if (testCase.isSuccess()) {
 	    this.testHierarchy.collapseAlongPath();
 	}
-	setStatus(testCase);
-	this.testHierarchy.setResult(testCase);
-	this.progress.incNumRunsDone(testCase);
+	setStatus                             (testCase);
+	this.testHierarchy     .setResult     (testCase);
+	this.progress          .incNumRunsDone(testCase);
 	this.runsErrorsFailures.incNumRunsDone(testCase);
-	this.testCaseLister.recordTestDone(testCase);
-	this.splitPane.resetToPreferredSizes();
+	this.testCaseLister    .recordTestDone(testCase);
+
+	this.splitPane         .resetToPreferredSizes();
+    }
+
+    void resetTestCaseLister() {
+	this.testCaseLister.reset();
     }
 
     /**
@@ -1505,7 +1600,7 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 	this.progress          .start(desc);
 	this.runsErrorsFailures.start(desc);
 	this.testHierarchy     .start(desc);
-	this.testCaseLister    .start(desc);
+	this.testCaseLister    .start(desc);// does not depend on desc: no fail
     }
 
     void updateSingularStarted() {
