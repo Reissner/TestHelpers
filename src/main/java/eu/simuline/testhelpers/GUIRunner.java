@@ -334,7 +334,32 @@ public class GUIRunner {
      * can be incremented via {@link #incPath()} 
      * and be returned by {@link #getPath()}. 
      */
-    static class TreePathIncrementor {
+    static class TreePathIterator {
+
+
+	/* ---------------------------------------------------------------- *
+	 * inner class.                                                     *
+	 * ---------------------------------------------------------------- */
+
+	/**
+	 * Expands the tree along the current path, 
+	 * for {@link #Generic} after incrementing the current path. 
+	 */
+	enum TreePathUpdater {
+
+	    First() {
+		void updatePath(HierarchyWrapper testHiererarchy) {
+		    testHiererarchy.currPathIter.treePathUpdater = Generic;
+		    testHiererarchy.currPathIter.setFirstPath();
+		}
+	    },
+	    Generic() {
+		void updatePath(HierarchyWrapper testHiererarchy) {
+		    testHiererarchy.currPathIter.incPath();
+		}
+	    };
+	    abstract void updatePath(HierarchyWrapper testHiererarchy);
+	} // enum TreePathUpdater 
 
 	/* ---------------------------------------------------------------- *
 	 * attributes.                                                      *
@@ -348,20 +373,29 @@ public class GUIRunner {
 	 */
 	private final TreeModel treeModel;
 
+	private TreePathUpdater treePathUpdater;
+
 
 
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
 	 * ---------------------------------------------------------------- */
 
-	TreePathIncrementor(JTree tree) {
+	TreePathIterator(JTree tree) {
 	    this.currPath = null;// formally only 
 	    this.treeModel = tree.getModel();
+	    this.treePathUpdater = TreePathUpdater.First;
 	}
 
 	/* ---------------------------------------------------------------- *
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
+
+	void updatePath(HierarchyWrapper testHiererarchy) {
+	    assert testHiererarchy.currPathIter ==  this;
+	    this.treePathUpdater.updatePath(testHiererarchy);
+	    testHiererarchy.expandAlongPath();
+	}
 
 	/**
 	 * Initializes {@link #currPath} 
@@ -424,7 +458,7 @@ public class GUIRunner {
 	TreePath getPath() {
 	    return this.currPath;
 	}
-    } // class TreePathIncrementor 
+    } // class TreePathIterator 
 
     /**
      * Represents the hierarchy of testsuites and testcases 
@@ -434,31 +468,6 @@ public class GUIRunner {
     static class HierarchyWrapper 
 	implements Selector, TreeSelectionListener {
 
-	/* ---------------------------------------------------------------- *
-	 * inner class.                                                     *
-	 * ---------------------------------------------------------------- */
-
-	/**
-	 * Expands the tree along the current path, 
-	 * for {@link #Generic} after incrementing the current path. 
-	 */
-	enum TreePathUpdater {
-
-	    First() {
-		void updatePath(HierarchyWrapper testHiererarchy) {
-		    testHiererarchy.treePathUpdater = Generic;
-		    testHiererarchy.currPathInc.setFirstPath();
-		    testHiererarchy.expandAlongPath();
-		}
-	    },
-	    Generic() {
-		void updatePath(HierarchyWrapper testHiererarchy) {
-		    testHiererarchy.currPathInc.incPath();
-		    testHiererarchy.expandAlongPath();
-		}
-	    };
-	    abstract void updatePath(HierarchyWrapper testHiererarchy);
-	} // enum TreePathUpdater 
 
 	/* ---------------------------------------------------------------- *
 	 * fields.                                                          *
@@ -497,20 +506,16 @@ public class GUIRunner {
 	 * Represents the selected node in {@link #hierarchyTree}. 
 	 * This is <code>null</code> if nothing selected 
 	 * which is also the initial value. 
+	 * This is set by {@link #valueChanged(TreeSelectionEvent)}. 
 	 */
 	private DefaultMutableTreeNode singleSelectedNode;
-
 
 	/**
 	 * Is <code>null</code> after this is created 
 	 * and is initialized by {@link #start(Description)}. 
 	 * Represents the path to the testcase currently run. 
 	 */
-	private TreePathIncrementor currPathInc;
-
-	// initialized by {@link #start(Description)}
-	private TreePathUpdater treePathUpdater; // NOPMD 
-
+	private TreePathIterator currPathIter;
 
 	/**
 	 * Selector to be influenced: 
@@ -546,10 +551,11 @@ public class GUIRunner {
 	    this.hierarchyTree.setModel(new DefaultTreeModel(root));
 	    this.actions = actions;
 
-	    this.desc = null;
+	    // purely formally 
+	    this.desc               = null;
 	    this.singleSelectedNode = null;
-	    this.currPathInc = null;
-	    this.treePathUpdater = null;
+	    this.currPathIter       = null;
+	    this.selector           = null;
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -583,6 +589,11 @@ public class GUIRunner {
 	    return ret;
 	}
 
+
+	void updatePath() {
+	    this.currPathIter.updatePath(this);
+	}
+
 	void updateSingular() {
 	    ((DefaultTreeModel)this.hierarchyTree.getModel())
 	    	.nodeChanged(this.singleSelectedNode);
@@ -597,7 +608,7 @@ public class GUIRunner {
 	 * sets the according tree model of {@link #hierarchyTree} 
 	 * using {@link #desc2treeNode(Description)}, 
 	 * after that the cell renderer and the path incrementor 
-	 * {@link #currPathInc} in conjunction with the ***** bad design. 
+	 * {@link #currPathIter} in conjunction with the ***** bad design. 
 	 */
 	void start(Description desc) {
 	    this.desc = desc;
@@ -608,8 +619,7 @@ public class GUIRunner {
 	    this.hierarchyTree.setCellRenderer(new TestTreeCellRenderer());
 	    //this.testHierarcy.update(this.testHierarcy.getGraphics());
 
-	    this.currPathInc = new TreePathIncrementor(this.hierarchyTree);
-	    this.treePathUpdater = TreePathUpdater.First;
+	    this.currPathIter = new TreePathIterator(this.hierarchyTree);
 
 //Tree  TreePath 	getLeadSelectionPath() 
 //Tree   TreePath 	getSelectionPath() 
@@ -617,12 +627,12 @@ public class GUIRunner {
 
 	void expandAlongPath() {
 	    this.hierarchyTree.expandPath
-		(this.currPathInc.getPath().getParentPath());
+		(this.currPathIter.getPath().getParentPath());
 	}
 
 	void collapseAlongPath() {
 	    this.hierarchyTree.collapsePath
-		(this.currPathInc.getPath().getParentPath());
+		(this.currPathIter.getPath().getParentPath());
 	}
 
 	JTree getTree() {
@@ -631,12 +641,12 @@ public class GUIRunner {
 
 	// **** for tests only 
 	TreePath getPath() {
-	    return this.currPathInc.getPath();
+	    return this.currPathIter.getPath();
 	}
 
 	void setResult(TestCase result) {
 	    MutableTreeNode lastNode = (MutableTreeNode)
-		this.currPathInc.getPath().getLastPathComponent();
+		this.currPathIter.getPath().getLastPathComponent();
 	    lastNode.setUserObject(result);
 	    ((DefaultTreeModel)this.hierarchyTree.getModel())
 	    	.nodeChanged(lastNode);
@@ -647,13 +657,12 @@ public class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	public void setSelection(int index) {
-	    TreePathIncrementor inc = 
-		new TreePathIncrementor(this.hierarchyTree);
-	    inc.setFirstPath();
+	    TreePathIterator iter = new TreePathIterator(this.hierarchyTree);
+	    iter.setFirstPath();
 	    for (int i = 0; i < index; i++) {
-		inc.incPath();
+		iter.incPath();
 	    }
-	    this.treeSelection.addSelectionPath(inc.getPath());
+	    this.treeSelection.addSelectionPath(iter.getPath());
 	    //**** still a problem with update 
 	    // what follows does not solve the problem. 
 	    //this.frame.update(this.frame.getGraphics());
@@ -673,6 +682,8 @@ public class GUIRunner {
 	 * methods implementing TreeSelectionListener.                      *
 	 * ---------------------------------------------------------------- */
 
+	// as a side effect affects {@link #treeSelection}, 
+	// {@link #singleSelectedNode} and {@link #selector}
 	public void valueChanged(TreeSelectionEvent selEvent) {
 //public boolean isAddedPath(TreePath path)
 //public boolean isAddedPath(int index)
@@ -706,8 +717,8 @@ public class GUIRunner {
 		    if (lastNode.isLeaf()) {
 			testCase = (TestCase)lastNode.getUserObject();
 			if (!testCase.getQuality().isDecided()) {
-			    treeSelection.clearSelection();
-			    this.selector.clearSelection();
+			    this.treeSelection.clearSelection();
+			    this.     selector.clearSelection();
 			    continue;
 			}
 
@@ -1644,7 +1655,7 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
     void noteTestStartedI(TestCase testCase) {
 //	assert SwingUtilities.isEventDispatchThread();
 	setStatus(testCase);
-	this.testHierarchy.treePathUpdater.updatePath(this.testHierarchy);
+	this.testHierarchy.updatePath();
 	this.testHierarchy.setResult(testCase);// sounds strange. 
     }
 
