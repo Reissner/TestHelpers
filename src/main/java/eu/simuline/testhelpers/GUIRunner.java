@@ -568,13 +568,11 @@ public class GUIRunner {
 	private static 
 	    MutableTreeNode desc2treeNode(Description desc) {
 //System.out.println("desc2treeNode(");
-	    DefaultMutableTreeNode ret;
+	    DefaultMutableTreeNode ret = new DefaultMutableTreeNode
+		(new TestCase(desc, Quality.Scheduled, -1));
 	    if (desc.isTest()) {
 //System.out.println("ret1: "+ret);
-		ret = new DefaultMutableTreeNode(new TestCase(desc));
 		return ret;
-	    } else {
-		ret = new DefaultMutableTreeNode(new TestCase(desc));
 	    }
 
 	    List<Description> childrenIn = desc.getChildren();
