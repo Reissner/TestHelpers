@@ -91,6 +91,12 @@ public class TextRunListener extends RunListener {
 	System.out.println("ignored:      " + result.getIgnoreCount());
 	System.out.println("failures:     " + result.getFailureCount());
 	System.out.println("time elapsed: " + result.getRunTime() + "ms");
+	// **** strange: 
+	// runs seem without ignores 
+	// failures seem all runs which did not succeed, 
+	// i.e. test could not be executed or failed. 
+	// **** only in singular tests with GUI: 
+	// ignored seem to be also failures
     }
 
     /**
