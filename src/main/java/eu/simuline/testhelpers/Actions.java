@@ -23,6 +23,10 @@ import org.javalobby.icons20x20.Delete;
 
 /**
  * Represents the actions of the test GUI inspired by old junit GUI. 
+ * The fundamental method is {@link #run(Class)} 
+ * which runs the test class. 
+ * <p>
+ * CAUTION: presupposes JUnit 4.12. 
  *
  * @see GUIRunner
  * @see GUIRunListener
@@ -39,15 +43,15 @@ public class Actions {
      * -------------------------------------------------------------------- */
 
     /**
-     * The action of opening a <code>java</code>-file defining a test class. 
-     * **** missing: update of the GUI. 
+     * The action of opening a <code>java</code>-file defining a test class 
+     * and starting the tests defined by it. 
      */
     class OpenAction extends AbstractAction {
 
 	private static final long serialVersionUID = -589L;
 
 	OpenAction() {
-	    super("Open",GifResource.getIcon(Open.class));
+	    super("Open", GifResource.getIcon(Open.class));
 	    putValue(SHORT_DESCRIPTION, "Opens a class and executes run. ");
             putValue(MNEMONIC_KEY, KeyEvent.VK_O);
             putValue(ACCELERATOR_KEY,
@@ -59,20 +63,22 @@ public class Actions {
 	    String clsName = Actions.this.guiRunner.openClassChooser();
 
 	    if (clsName == null) {
-		// open action was cancelled 
+		// open action was not successful  
 		return;
 	    }
 	    assert clsName != null;
 
 	    try {
 		Class<?> cls = new TestCaseClassLoader()
-		    .loadClass(clsName,true);
+		    .loadClass(clsName, true);
 		Actions.this.coreRunner = new CoreRunner(cls);
 	    } catch (ClassNotFoundException e) {
 		System.out.println
-		    ("Could not find testclass \"" + clsName + "\". ");
+		    ("Could not find testclass '" + clsName + "'. ");
 	    }
-	    //Actions.this.runner.clear(clsName);
+	    // clears list of failed testcases
+	    Actions.this.guiRunner.resetTestCaseLister();
+	    Actions.this.getStartAction().actionPerformed(null);
 	}
     } // class OpenAction 
 
@@ -85,7 +91,7 @@ public class Actions {
 	private static final long serialVersionUID = -589L;
 
 	StartAction() {
-	    super("Run",GifResource.getIcon(ExecuteProject.class));
+	    super("Run", GifResource.getIcon(ExecuteProject.class));
 	    putValue(SHORT_DESCRIPTION, "Runs the testcases. ");
             putValue(MNEMONIC_KEY, KeyEvent.VK_R);
             putValue(ACCELERATOR_KEY,
@@ -94,11 +100,33 @@ public class Actions {
 	}
 
 	public void actionPerformed(ActionEvent event) {
-	    //setEnableForRun(true);// isRunning
  	    Actions.this.coreRunner = new CoreRunner(Actions.this.coreRunner);
 	    Actions.this.coreRunner.start();
 	}
     } // class StartAction 
+
+    /**
+     * The action of stopping the test run//  after having finished 
+     * the currently running testcase. 
+     */
+    class StopAction extends AbstractAction {
+
+    	private static final long serialVersionUID = -589L;
+
+    	StopAction() {
+    	    super("Stop", GifResource.getIcon(Stop.class));
+    	    putValue(SHORT_DESCRIPTION, 
+    		     "Stops after having executed the current testcase. ");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_S);
+            putValue(ACCELERATOR_KEY,
+    		     KeyStroke.getKeyStroke(KeyEvent.VK_S,
+    					    ActionEvent.CTRL_MASK));
+    	}
+
+     	public void actionPerformed(ActionEvent event) {
+	    Actions.this.coreRunner.pleaseStop();
+	}
+    } // class StopAction 
 
     /**
      * The action of breaking the sequence of testcases currently running. 
@@ -111,7 +139,7 @@ public class Actions {
 	private static final long serialVersionUID = -589L;
 
 	BreakAction() {
-	    super("Break",GifResource.getIcon(Hammer.class));
+	    super("Break", GifResource.getIcon(Hammer.class));
 	    putValue(SHORT_DESCRIPTION, 
 		     "Tries to break execution of current testcases. ");
             putValue(MNEMONIC_KEY, KeyEvent.VK_B);
@@ -122,40 +150,13 @@ public class Actions {
 
 	public void actionPerformed(ActionEvent event) {
 	    //setEnableForRun(false);// !isRunning
-System.out.println("Break...");
-Actions.this.coreRunner.pleaseBreak();
-	    Actions.this.coreRunner.interrupt();////stop();
-	    setEnableForRun(!Actions.this.coreRunner.isInterrupted());
-System.out.println("...Break"+Actions.this.coreRunner.isInterrupted());   
+	    System.out.println("Break...");
+	    Actions.this.coreRunner.pleaseStop();// avoids going on after stop 
+	    // method stop is deprecated but there is no alternative 
+	    Actions.this.coreRunner.stop(new StoppedByUserException());
 	}
     } // class BreakAction 
 
-    /**
-     * The action of stopping the test run//  after having finished 
-     * the currently running testcase. 
-     */
-    class StopAction extends AbstractAction {
-
-    	private static final long serialVersionUID = -589L;
-
-    	StopAction() {
-    	    super("Stop",GifResource.getIcon(Stop.class));
-    	    putValue(SHORT_DESCRIPTION, 
-    		     "Stops after having executed the current testcase. ");
-            putValue(MNEMONIC_KEY, KeyEvent.VK_S);
-            putValue(ACCELERATOR_KEY,
-    		     KeyStroke.getKeyStroke(KeyEvent.VK_S,
-    					    ActionEvent.CTRL_MASK));
-    	}
-
-     	public void actionPerformed(ActionEvent event) {
-     	    //setEnableForRun(false);// !isRunning **** wrong: does not stop imm. 
-System.out.println("STOP BUTTON...");
-    
-	    Actions.this.coreRunner.pleaseStop();
-System.out.println("...STOP BUTTON");
-	}
-    } // class StopAction 
 
     /**
      * The action of exiting the tester application. 
@@ -165,7 +166,7 @@ System.out.println("...STOP BUTTON");
 	private static final long serialVersionUID = -589L;
 
 	ExitAction() {
-	    super("Exit",GifResource.getIcon(Delete.class));
+	    super("Exit", GifResource.getIcon(Delete.class));
 	    putValue(SHORT_DESCRIPTION, 
 		     "Quits this application immediately. ");
             putValue(MNEMONIC_KEY, KeyEvent.VK_E);
@@ -198,21 +199,13 @@ System.out.println("...STOP BUTTON");
 	 * The JUnitCore effectively executing the testcases. 
 	 */
   	private final JUnitCore core;
+	//private final RunNotifier notifier = new RunNotifier();
 
 	/**
 	 * The class to be tested. 
 	 */
 	private final Class<?> testClass;
-
-	/**
-	 * The classloader used. 
-	 * The special about this is, that it can unload and reload classes 
-	 * when modified without leaving the tester application. 
-	 * <p>
-	 * Note that this field is not initialized by the constructor, 
-	 * but as a side effect invoking {@link #newTestClass()}. 
-	 */
-	TestCaseClassLoader classLd;
+	
 
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
@@ -222,8 +215,13 @@ System.out.println("...STOP BUTTON");
 	 * Creates a runner running all testcases in the given test class. 
 	 */
 	CoreRunner(Class<?> testClass)  {
+
 	    this.core = new JUnitCore();
 	    this.core.addListener(Actions.this.listener);
+
+	    // this.notifier = new RunNotifier();
+	    // this.notifier.addListener(Actions.this.listener);
+
 	    this.testClass = testClass;
 	}
 
@@ -238,20 +236,18 @@ System.out.println("...STOP BUTTON");
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
-	/**
-	 * Creates a new {@link TestCaseClassLoader} 
-	 * and assigns it to {@link #classLd}. 
-	 * With this classloader reloads the test class 
-	 * given by {@link #testClass} and returns this "copy". 
-	 *
-	 * @throws IllegalStateException
-	 *    in case the given class is not found. 
-	 */
- 	private Class<?> newTestClass() {
-	    this.classLd = new TestCaseClassLoader();
+
+	// api-docs inherited from Runnable 
+	// overwrites void implementation provided by class Thread 
+	public void run() {
+	    System.out.println("Core run()"+this.core);
+
+	    Class<?> newTestClass = null;
+
 	    try {
-		return this.classLd.loadClass(this.testClass.getName(), 
-					      true);
+		newTestClass = new TestCaseClassLoader()
+		    .loadClass(this.testClass.getName(), 
+					 true);
 	    } catch (ClassNotFoundException e) {
 		throw new IllegalStateException// NOPMD
 		    ("Testclass \"" + this.testClass + "\" disappeared. ");
@@ -259,34 +255,28 @@ System.out.println("...STOP BUTTON");
 		// that in the GUI the run button is shaded 
 		// (and the stop button is not). 
 	    }
-	}
+	    assert newTestClass != null;
 
-	public void run() {
-System.out.println("Core run()"+this.core);
-	    Request request = Request.classes(newTestClass());
+	    Request request = Request.classes(newTestClass);
 	    if (Actions.this.singTest != null) {
 		request = request.filterWith(Actions.this.singTest.getDesc());
 	    }
 	    try {
-		this.core.run(request);
-	    } catch (StoppedByUserException e) {
-		System.exit(0);
-		Actions.this.listener.testRunAborted();
-	    }
-System.out.println("...Core run()"+this.core);
-	}
+		this.core.run(request);// ignoring returned Result 
+	    } catch (StoppedByUserException ee) {
+		// either Break or Stop 
+  		Actions.this.listener.testRunAborted();
+  	    }
 
-	// **** does not work properly 
-	public void pleaseBreak() {
-	    pleaseStop();
-	    this.classLd.pleaseBreak();
+System.out.println("...Core run()"+this.core);
 	}
 
 	public void pleaseStop() {
 	    // **** hack: should be provided by JUnitCore. 
 	    try {
+		// for junit 4.7 the according field is named "fNotifier"
 		RunNotifier notifier = 
-		    (RunNotifier)Accessor.getField(this.core,"fNotifier");
+		    (RunNotifier)Accessor.getField(this.core, "notifier");
 		notifier.pleaseStop();
 	    } catch (NoSuchFieldException nsfe) {
 		throw new IllegalStateException// NOPMD
@@ -294,6 +284,7 @@ System.out.println("...Core run()"+this.core);
 		     "Implementation changed? ");
 	    }
 	}
+
     } // class CoreRunner 
 
     /* -------------------------------------------------------------------- *
@@ -333,6 +324,12 @@ System.out.println("...Core run()"+this.core);
 
     private final GUIRunner guiRunner;
 
+    /**
+     * Defines whether a test is running. 
+     * This is used to activate/deactivate the actions 
+     * {@link #openAction}, {@link #startAction}, {@link #stopAction} 
+     * and {@link #breakAction}. 
+     */
     private boolean isRunning;
 
     // to run a single testcase **** may be null 
@@ -374,6 +371,11 @@ System.out.println("...Core run()"+this.core);
      * methods.                                                             *
      * -------------------------------------------------------------------- */
 
+    /**
+     * The fundamental method to start tests with the underlying JUnit-GUI. 
+     * The test class is supposed to define a method <code>main</code> 
+     * with body <code>Actions.run(<testclass>.class);</code>. 
+     */
     public static void run(final Class<?> testClass) {
       Runnable guiCreator = new Runnable() {
 		public void run() {
@@ -436,18 +438,34 @@ System.out.println("...Core run()"+this.core);
     AbstractAction getOpenAction() {
 	return this.openAction;
     }
+
     AbstractAction getStartAction() {
 	return this.startAction;
     }
+
     AbstractAction getStopAction() {
 	return this.stopAction;
     }
+
     AbstractAction getBreakAction() {
 	return this.breakAction;
     }
+
     AbstractAction getExitAction() {
 	return new ExitAction();
     }
 
 }
 
+// well, i did not find any reasonable alternatie to stop. 
+// maybe instrumentation is a way, but... 
+// seems to be quite complicated. 
+//
+//
+// warning: [options] bootstrap class path not set in conjunction with -source 1.6
+// Actions.java:155: warning: [deprecation] stop() in Thread has been deprecated
+// Actions.this.coreRunner.stop();//interrupt();
+//                        ^
+// 2 warnings
+
+// Compilation finished at Tue May 10 01:51:04
