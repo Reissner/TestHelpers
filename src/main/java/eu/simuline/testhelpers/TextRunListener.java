@@ -72,7 +72,7 @@ public class TextRunListener extends RunListener {
      *    describes the tests to be run
      */
     // api-docs inherited from class RunListener
-    public void testRunStarted(Description desc) {
+    public void testRunStarted(Description desc) throws Exception {//NOPMD
 	System.out.println("T testRunStarted(..." + desc2string(desc));
     }
 
@@ -84,7 +84,7 @@ public class TextRunListener extends RunListener {
      *    the summary of the test run, including all the tests that failed
       */
     // api-docs inherited from class RunListener
-    public void testRunFinished(Result result) {
+    public void testRunFinished(Result result) throws Exception {//NOPMD
 	System.out.println("T testRunFinished(..." + result);
 	System.out.println("Statistics: ");
 	System.out.println("runs:         " + result.getRunCount());
@@ -101,7 +101,7 @@ public class TextRunListener extends RunListener {
      *    (generally a class and method name)
      */
     // api-docs inherited from class RunListener
-    public void testStarted(Description desc) {
+    public void testStarted(Description desc) throws Exception {//NOPMD
 	System.out.println("T testStarted(..." + desc);
     }
 
@@ -113,17 +113,19 @@ public class TextRunListener extends RunListener {
      *    the description of the test that just ran
      */
     // api-docs inherited from class RunListener
-    public void testFinished(Description desc) {
+    public void testFinished(Description desc) throws Exception {//NOPMD
 	System.out.println("T testFinished(" + desc);
     }
 
     /** 
-     * Called when an atomic test fails.
+     * Called when an atomic test fails to execute properly 
+     * throwing a Throwable. 
+     *
      * @param failure 
      *    describes the test that failed and the exception that was thrown
      */
     // api-docs inherited from class RunListener
-    public void testFailure(Failure failure) {
+    public void testFailure(Failure failure) throws Exception {//NOPMD
 	// description and exception
 	System.out.println("testFailure(" + failure);
     }
@@ -133,14 +135,14 @@ public class TextRunListener extends RunListener {
      * generally because a test method is annotated 
      * with <code>@Ignored</code>. 
      * This implies 
-     * that neither {@link #testStarted} nor {@link #testFinished} 
-     * are invoked. 
+     * that neither {@link #testStarted} nor {@link #testFinished} nor 
+     * {@link #testFailure} are invoked. 
      *
      * @param desc 
      *    describes the test that will not be run
      */
     // api-docs inherited from class RunListener
-    public void testIgnored(Description desc) {
+    public void testIgnored(Description desc) throws Exception {//NOPMD
 	System.out.println("T testIgnored("+desc);
     }
 }
