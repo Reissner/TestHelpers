@@ -26,6 +26,18 @@ import javax.swing.ImageIcon;
  * is decided in that phase. 
  * Methods {@link #setFinished()} and {@link #setIgnored()} 
  * specify part of the state transitions. 
+
+ *                            |
+ *                            |
+ *                  {@link #Scheduled}
+ *                            /\
+ *                           /  \
+ *                          /    \
+ *          {@link #Started}     {@link #Ignored} 
+ *                  /\
+ *                 /  \
+ *                /    \
+ * {@link #Success} {@link #Failure} {@link #Error}. 
  *
  * Created: Wed Jun 12 16:41:14 2006
  *
@@ -38,6 +50,15 @@ enum Quality {
      * constant constructors.                                               *
      * -------------------------------------------------------------------- */
 
+
+    /**
+     * The testcase is scheduled for execution 
+     * but execution has not yet been started 
+     * nor has it been decided to ignore, i.e. not to execute the testcase. 
+     *
+     * @see #Started
+     * @see #Ignored
+     */
     Scheduled {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(File.class);
@@ -46,6 +67,7 @@ enum Quality {
 	    throw new IllegalStateException
 		("Found testcase finished before started. ");
 	}
+	// **** seems strange and contradicts introduction **** 
 	Quality setIgnored() {
 	    throw new IllegalStateException
 		("Found testcase ignored before started. ");// shall be ok. 
@@ -57,6 +79,13 @@ enum Quality {
 	    return false;
 	}
     },
+
+    /**
+     * The execution of the testcase started but did not finish 
+     * in any way. 
+     * Thus it is neither clear whether the execution succeeds 
+     * nor the outcoming of the test. 
+     */
     Started {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(New.class);
@@ -74,6 +103,11 @@ enum Quality {
 	    return false;
 	}
     },
+
+    /**
+     * The execution of the testcase finished and the test succeeded (passed): 
+     * All assertions hold and no throwable has been thrown. 
+     */
     Success {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(Ok.class);
@@ -86,6 +120,11 @@ enum Quality {
 	    return "succeeded";
 	}
     },
+    /**
+     * The testcase was ignored, i.e. was scheduled for execution 
+     * but then decided not to start execution. 
+     * In particular, nothing can be said about the course of the test run. 
+     */
     Ignored {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(Ignored.class);
@@ -98,6 +137,13 @@ enum Quality {
 	    return "was ignored";
 	}
     }, 
+    /**
+     * The execution of the testcase finished gracefully 
+     * but did not succeed: 
+     * At least one assertion is hurt, 
+     * indicated by an {@link AssertionFailedError}. 
+     * This excludes further throwables. 
+     */
     Failure {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(Failure.class);
@@ -106,6 +152,12 @@ enum Quality {
 	    return "failed";
 	}
     }, 
+    /**
+     * The execution of the testcase failed 
+     * indicated by finishing with exception or error 
+     * other than {@link AssertionFailedError}. 
+     * Thus there is no valid test result. 
+     */
     Error {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(Error.class);
@@ -143,12 +195,11 @@ enum Quality {
      *    except for {@link #Started}. 
      */
     Quality setIgnored() {
-	throw new IllegalStateException
-	    (this +" may not be ignored. ");
+	throw new IllegalStateException(this + " may not be ignored. ");
     }
 
     /**
-     * Returns a status messag which describes this phase 
+     * Returns a status message which describes this phase 
      * or throws an exception. 
      *
      * @throws UnsupportedOperationException
