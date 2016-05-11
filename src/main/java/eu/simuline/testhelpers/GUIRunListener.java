@@ -75,6 +75,29 @@ public abstract class GUIRunListener extends TextRunListener {
     }
 
   
+
+    /**
+     * Called when an atomic test fails. 
+     *
+     * @param failure 
+     *    describes the test that failed and the exception that was thrown
+     */
+    public void testFailure(final Failure failure) throws Exception {
+	assert !SwingUtilities.isEventDispatchThread();
+	// output text 
+	super.testFailure(failure);
+
+	Runnable runnable = new Runnable() {
+		public void run() {
+		    GUIRunListener.this.guiRunner.setStatus("testFailure: "
+						 + failure.getException());
+		    GUIRunListener.this.testCase.setFailure(failure);
+		}
+	    };
+	SwingUtilities.invokeAndWait(runnable);
+    }
+
+
     // homemade extension 
     // invoked for stop and for break 
     // not clear which test has been aborted. 
@@ -200,7 +223,7 @@ public abstract class GUIRunListener extends TextRunListener {
 		    public void run() {
 			All.this.testCase = new TestCase(desc,
 							 Quality.Started,
-							 All.this.testCaseCount++);
+							 testCaseCount());
 			All.this.guiRunner.noteTestStartedI(All.this.testCase);
 		    }
 		};
@@ -230,26 +253,26 @@ public abstract class GUIRunListener extends TextRunListener {
 	    SwingUtilities.invokeAndWait(runnable);
 	}
 
-	/** 
-	 * Called when an atomic test fails. 
-	 *
-	 * @param failure 
-	 *    describes the test that failed and the exception that was thrown
-	 */
-	public void testFailure(final Failure failure) throws Exception {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    super.testFailure(failure);
+	// /** 
+	//  * Called when an atomic test fails. 
+	//  *
+	//  * @param failure 
+	//  *    describes the test that failed and the exception that was thrown
+	//  */
+	// public void testFailure(final Failure failure) throws Exception {
+	//     assert !SwingUtilities.isEventDispatchThread();
+	//     // output text 
+	//     super.testFailure(failure);
 
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			All.this.guiRunner.setStatus("testFailure: "
-						   + failure.getException());
-			All.this.testCase.setFailure(failure);
-		    }
-		};
-	    SwingUtilities.invokeAndWait(runnable);
-	}
+	//     Runnable runnable = new Runnable() {
+	// 	    public void run() {
+	// 		All.this.guiRunner.setStatus("testFailure: "
+	// 					   + failure.getException());
+	// 		All.this.testCase.setFailure(failure);
+	// 	    }
+	// 	};
+	//     SwingUtilities.invokeAndWait(runnable);
+	// }
 
 	int testCaseCount() {
 	    return All.this.testCaseCount++;
@@ -325,8 +348,16 @@ public abstract class GUIRunListener extends TextRunListener {
 
 	    Runnable runnable = new Runnable() {
 		    public void run() {
-			Singular.this.testCase.setRetried();
+			Singular.this.testCase = new TestCase(desc,
+							 Quality.Started,
+							 testCaseCount());
+			// Singular.this.testCase.setRetried();
+
+
+			//Singular.this.guiRunner.noteTestStartedI(Singular.this.testCase);
+
 			Singular.this.guiRunner.updateSingularStarted();
+
 			//this.testCase = new TestCase(desc);
 		    }
 		};
@@ -357,25 +388,26 @@ public abstract class GUIRunListener extends TextRunListener {
 	    SwingUtilities.invokeAndWait(runnable);
 	}
 
-	/** 
-	 * Called when an atomic test fails.
-	 * @param failure 
-	 *    describes the test that failed and the exception that was thrown
-	 */
-	public void testFailure(final Failure failure) throws Exception {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    super.testFailure(failure);
+	// /** 
+	//  * Called when an atomic test fails. 
+	//  *
+	//  * @param failure 
+	//  *    describes the test that failed and the exception that was thrown
+	//  */
+	// public void testFailure(final Failure failure) throws Exception {
+	//     assert !SwingUtilities.isEventDispatchThread();
+	//     // output text 
+	//     super.testFailure(failure);
 
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			Singular.this.guiRunner.setStatus("testFailure: "
-						   + failure.getException());
-			Singular.this.testCase.setFailure2(failure);
-		    }
-		};
-	    SwingUtilities.invokeAndWait(runnable);
-	}
+	//     Runnable runnable = new Runnable() {
+	// 	    public void run() {
+	// 		Singular.this.guiRunner.setStatus("testFailure: "
+	// 					   + failure.getException());
+	// 		Singular.this.testCase.setFailure(failure);
+	// 	    }
+	// 	};
+	//     SwingUtilities.invokeAndWait(runnable);
+	// }
 
 	int testCaseCount() {
 	    return -1;
