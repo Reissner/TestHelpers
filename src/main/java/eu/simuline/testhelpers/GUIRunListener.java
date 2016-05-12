@@ -74,7 +74,38 @@ public abstract class GUIRunListener extends TextRunListener {
 	SwingUtilities.invokeAndWait(runnable);
     }
 
-  
+    /**
+     * Called when an atomic test has finished, 
+     * whether the test succeeds or fails. 
+     *
+     * @param desc
+     *    the description of the test that just ran
+     */
+    public void testFinished(final Description desc) throws Exception {
+	assert !SwingUtilities.isEventDispatchThread();
+	// output text 
+	super.testFinished(desc);
+	assert GUIRunListener.this.testCase.getDesc() == desc;
+
+	Runnable runnable = new Runnable() {
+		public void run() {
+		    GUIRunListener.this.testCase.setFinished();
+		    if (isSingular()) {
+			GUIRunListener.this.guiRunner
+			    .updateSingularFinished(GUIRunListener.this.testCase);
+
+		    } else {
+			GUIRunListener.this.guiRunner
+			    .noteReportResult(GUIRunListener.this.testCase);
+		    }
+		}
+	    };
+
+	SwingUtilities.invokeAndWait(runnable);
+    }
+
+
+
 
     /**
      * Called when an atomic test fails. 
@@ -152,6 +183,7 @@ public abstract class GUIRunListener extends TextRunListener {
 
 
     abstract int testCaseCount();
+    abstract boolean isSingular();
 
     /* -------------------------------------------------------------------- *
      * inner classes and enums.                                             *
@@ -230,31 +262,13 @@ public abstract class GUIRunListener extends TextRunListener {
 	    SwingUtilities.invokeAndWait(runnable);
 	}
 
-	/**
-	 * Called when an atomic test has finished, 
-	 * whether the test succeeds or fails. 
-	 *
-	 * @param desc
-	 *    the description of the test that just ran
-	 */
-	public void testFinished(final Description desc) throws Exception {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    super.testFinished(desc);
-	    assert All.this.testCase.getDesc() == desc;
-
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			All.this.testCase.setFinished();
-			All.this.guiRunner.noteReportResult(All.this.testCase);
-		    }
-		};
-
-	    SwingUtilities.invokeAndWait(runnable);
-	}
 
 	int testCaseCount() {
 	    return All.this.testCaseCount++;
+	}
+
+	boolean isSingular() {
+	    return false;
 	}
 
     } // class All 
@@ -343,27 +357,8 @@ public abstract class GUIRunListener extends TextRunListener {
 	}
 
 
-	/**
-	 * Called when an atomic test has finished, 
-	 * whether the test succeeds or fails. 
-	 *
-	 * @param desc
-	 *    the description of the test that just ran
-	 */
-	public void testFinished(final Description desc) throws Exception {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    super.testFinished(desc);
-	    //assert Singular.this.testCase.getDesc() == desc;
-
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			Singular.this.testCase.setFinished();
-			Singular.this.guiRunner
-			    .updateSingularFinished(Singular.this.testCase);
-		    }
-		};
-	    SwingUtilities.invokeAndWait(runnable);
+	boolean isSingular() {
+	    return true;
 	}
 
 	int testCaseCount() {
