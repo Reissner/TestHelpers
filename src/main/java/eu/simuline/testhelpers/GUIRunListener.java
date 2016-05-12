@@ -46,6 +46,47 @@ public abstract class GUIRunListener extends TextRunListener {
      * methods.                                                             *
      * -------------------------------------------------------------------- */
 
+    abstract int testCaseCount();
+    abstract boolean isSingular();
+
+ 
+
+    /**
+     * Called before any tests have been run.
+     * Updates the enablement of the GUI-Actions 
+     * and then delegates to 
+     * {@link GUIRunner#testRunStarted(Description)}. 
+     * Updates the enablement of the GUI-Actions 
+     * and ***** OVERWRITTEN FOR ALL
+     *
+     * @param desc 
+     *    describes the tests to be run
+     */
+    public void testRunStarted(final Description desc) throws Exception {
+	assert !SwingUtilities.isEventDispatchThread();
+	// output text 
+	super.testRunStarted(desc);
+	
+	Runnable runnable = new Runnable() {
+		public void run() {
+		    GUIRunListener.this.actions.setEnableForRun(true);// running 
+		    if (isSingular()) {
+			GUIRunListener.this.testCase = 
+			    GUIRunListener.this.actions.getSingleTest();//NOPMD
+		    } else {
+			GUIRunListener.this.guiRunner.testRunStarted(desc);
+		    }
+
+		    //assert this.testCase.getDesc().equals(desc);
+		    
+		    // 	this.runner.setStatus("single testRunStarted(");
+		}
+	    };
+	SwingUtilities.invokeAndWait(runnable);
+    }
+
+
+
 
     /**
      * Called when all tests have finished. 
@@ -69,6 +110,36 @@ public abstract class GUIRunListener extends TextRunListener {
 		    		   result.getRunTime() + "ms. ");
 		    GUIRunListener.this.actions
 			.setEnableForRun(false);// not running 
+		}
+	    };
+	SwingUtilities.invokeAndWait(runnable);
+    }
+
+
+    /**
+     * Called when an atomic test is about to be started. 
+     *
+     * @param desc 
+     *    the description of the test that is about to be run 
+     *    (generally a class and method name)
+     */
+    // api-docs inherited from class RunListener
+    public void testStarted(final Description desc) throws Exception {
+	assert !SwingUtilities.isEventDispatchThread();
+	// output text 
+	super.testStarted(desc);
+	
+
+	Runnable runnable = new Runnable() {
+		public void run() {
+		    GUIRunListener.this.testCase = 
+			new TestCase(desc,Quality.Started, testCaseCount());
+		    if (isSingular()) {
+			GUIRunListener.this.guiRunner.updateSingularStarted();
+		    } else {
+			GUIRunListener.this.guiRunner
+			    .noteTestStartedI(GUIRunListener.this.testCase);
+		    }
 		}
 	    };
 	SwingUtilities.invokeAndWait(runnable);
@@ -104,9 +175,6 @@ public abstract class GUIRunListener extends TextRunListener {
 	SwingUtilities.invokeAndWait(runnable);
     }
 
-
-
-
     /**
      * Called when an atomic test fails. 
      *
@@ -129,28 +197,7 @@ public abstract class GUIRunListener extends TextRunListener {
     }
 
 
-    // homemade extension 
-    // invoked for stop and for break 
-    // not clear which test has been aborted. 
-    public void testRunAborted() {
-	assert !SwingUtilities.isEventDispatchThread();
-	// output text 
-	System.out.println("S testRunAborted(");
-
-	Runnable runnable = new Runnable() {
-		public void run() {
-		    GUIRunListener.this.guiRunner.setStatus("testRunAborted(");
-		    GUIRunListener.this.actions.setEnableForRun(false);
-		}
-	    };
-	try {
-	    SwingUtilities.invokeAndWait(runnable);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-    }
-
-    /**
+   /**
      * Called when a test will not be run, 
      * generally because a test method is annotated 
      * with <code>@Ignored</code>. 
@@ -180,10 +227,28 @@ public abstract class GUIRunListener extends TextRunListener {
 	SwingUtilities.invokeAndWait(runnable);
     }
 
+    // homemade extension 
+    // invoked for stop and for break 
+    // not clear which test has been aborted. 
+    public void testRunAborted() {
+	assert !SwingUtilities.isEventDispatchThread();
+	// output text 
+	System.out.println("S testRunAborted(");
 
+	Runnable runnable = new Runnable() {
+		public void run() {
+		    GUIRunListener.this.guiRunner.setStatus("testRunAborted(");
+		    GUIRunListener.this.actions.setEnableForRun(false);
+		}
+	    };
+	try {
+	    SwingUtilities.invokeAndWait(runnable);
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
+    }
 
-    abstract int testCaseCount();
-    abstract boolean isSingular();
+ 
 
     /* -------------------------------------------------------------------- *
      * inner classes and enums.                                             *
@@ -224,43 +289,10 @@ public abstract class GUIRunListener extends TextRunListener {
 	 * @param desc 
 	 *    describes the tests to be run
 	 */
-	public void testRunStarted(final Description desc) throws Exception {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    super.testRunStarted(desc);
-
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			All.this.actions.setEnableForRun(true);// running 
-			All.this.guiRunner.testRunStarted(desc);
-		    }
-		};
-	    SwingUtilities.invokeAndWait(runnable);
-	    All.this.testCaseCount = 0;
-	}
-
-	/**
-	 * Called when an atomic test is about to be started.  
-	 *
-	 * @param desc 
-	 *    the description of the test that is about to be run 
-	 *    (generally a class and method name)
-	 */
-	public void testStarted(final Description desc) throws Exception {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    super.testStarted(desc);
-
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			All.this.testCase = new TestCase(desc,
-							 Quality.Started,
-							 testCaseCount());
-			All.this.guiRunner.noteTestStartedI(All.this.testCase);
-		    }
-		};
-	    SwingUtilities.invokeAndWait(runnable);
-	}
+	 public void testRunStarted(final Description desc) throws Exception {
+	     super.testRunStarted(desc);
+	     All.this.testCaseCount = 0;
+	 }
 
 
 	int testCaseCount() {
@@ -295,67 +327,6 @@ public abstract class GUIRunListener extends TextRunListener {
 	/* ---------------------------------------------------------------- *
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
-
-	/**
-	 * Called before any tests have been run.
-	 * Updates the enablement of the GUI-Actions 
-	 * and ***** 
-	 *
-	 * @param desc 
-	 *    describes the tests to be run
-	 */
-	public void testRunStarted(final Description desc) throws Exception {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    super.testRunStarted(desc);
-
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			Singular.this.actions.setEnableForRun(true);// running 
-
-			Singular.this.testCase = 
-			    Singular.this.actions.getSingleTest();//NOPMD
-			//assert this.testCase.getDesc().equals(desc);
-
-			// 	this.runner.setStatus("single testRunStarted(");
-			// 	this.runner.startSingular(desc);
-		    }
-		};
-	    SwingUtilities.invokeAndWait(runnable);
-	}
-
-	/**
-	 * Called when an atomic test is about to be started. 
-	 *
-	 * @param desc 
-	 *    the description of the test that is about to be run 
-	 *    (generally a class and method name)
-	 */
-	// api-docs inherited from class RunListener
-	public void testStarted(final Description desc) throws Exception {
-	    assert !SwingUtilities.isEventDispatchThread();
-	    // output text 
-	    super.testStarted(desc);
-
-
-	    Runnable runnable = new Runnable() {
-		    public void run() {
-			Singular.this.testCase = new TestCase(desc,
-							 Quality.Started,
-							 testCaseCount());
-			// Singular.this.testCase.setRetried();
-
-
-			//Singular.this.guiRunner.noteTestStartedI(Singular.this.testCase);
-
-			Singular.this.guiRunner.updateSingularStarted();
-
-			//this.testCase = new TestCase(desc);
-		    }
-		};
-	    SwingUtilities.invokeAndWait(runnable);
-	}
-
 
 	boolean isSingular() {
 	    return true;
