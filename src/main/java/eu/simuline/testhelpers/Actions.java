@@ -268,6 +268,8 @@ public class Actions {
 	// almost copy from JUnitCore
 	public void run(Request request) {
 	    Runner runner = request.getRunner();
+//System.out.println("runner: "+runner);is an instance of Suite 
+	    
 	    Result result = new Result();
 	    RunListener listener = result.createListener();
 	    this.notifier.addFirstListener(listener);
@@ -293,11 +295,7 @@ public class Actions {
 
     private CoreRunner coreRunner;
 
-    private       GUIRunListener          listener;
-    private final GUIRunListener.All      listenerAll;
-    private final GUIRunListener.Singular listenerSingle;
-
-
+    private final GUIRunListener listener;
 
     /**
      * The action to open a new testclass. 
@@ -354,14 +352,11 @@ public class Actions {
 
 
 	this.guiRunner = new GUIRunner(this);
-	this.listenerSingle = new GUIRunListener.Singular(this);
-	this.listenerAll    = new GUIRunListener.All     (this);
-	this.listener = this.listenerAll;
 
-
+	this.listener = new GUIRunListener(this);
+	listener.setIsSingular(false);
 
 	this.coreRunner = new CoreRunner(testClass);
-
 
 	this.isRunning = false;
     }
@@ -407,9 +402,7 @@ public class Actions {
      */
     void setSingleTest(TestCase singTest) {
 	this.singTest = singTest;
-	this.listener = (this.singTest == null) 
-	    ? this.listenerAll : this.listenerSingle;
-	assert listener != null;
+	this.listener.setIsSingular(this.singTest != null);
     }
 
     TestCase getSingleTest() {
