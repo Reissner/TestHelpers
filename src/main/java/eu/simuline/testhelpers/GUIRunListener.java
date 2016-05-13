@@ -19,23 +19,23 @@ import javax.swing.SwingUtilities;// wrong place?
  * @author <a href="mailto:ernst@">Ernst Reissner</a>
  * @version 1.0
  */
-public abstract class GUIRunListener extends TextRunListener {
+public class GUIRunListener extends TextRunListener {
 
 
     /* -------------------------------------------------------------------- *
      * fields.                                                              *
      * -------------------------------------------------------------------- */
 
-    protected TestCase testCase;
+    private final Actions actions;
 
-    protected final Actions actions;
+    private final GUIRunner guiRunner;
 
-    protected final GUIRunner guiRunner;
+    private boolean isSingular;
 
-    boolean isSingular;
+    private TestCase testCase;
 
     // -1 before testRunStarted and for Singular. 
-    protected int testCaseCount;
+    private int testCaseCount;
 
 
     /* -------------------------------------------------------------------- *
@@ -52,17 +52,16 @@ public abstract class GUIRunListener extends TextRunListener {
      * -------------------------------------------------------------------- */
 
     int testCaseCount() {
-	if (isSingular()) {
+	if (this.isSingular) {
 	    return -1;
 	} else {
 	    return this.testCaseCount++;
 	}
     }
 
-    boolean isSingular() {
-	return this.isSingular;
+    void setIsSingular(boolean isSingular) {
+	this.isSingular = isSingular;
     }
-
  
 
     /**
@@ -84,7 +83,7 @@ public abstract class GUIRunListener extends TextRunListener {
 	Runnable runnable = new Runnable() {
 		public void run() {
 		    GUIRunListener.this.actions.setEnableForRun(true);//running 
-		    if (isSingular()) {
+		    if (GUIRunListener.this.isSingular) {
 			GUIRunListener.this.testCase = 
 			    GUIRunListener.this.actions.getSingleTest();//NOPMD
 		    } else {
@@ -102,9 +101,6 @@ public abstract class GUIRunListener extends TextRunListener {
 	//     GUIRunListener.this.testCaseCount = 0;
 	// }
     }
-
-
-
 
     /**
      * Called when all tests have finished. 
@@ -133,7 +129,6 @@ public abstract class GUIRunListener extends TextRunListener {
 	SwingUtilities.invokeAndWait(runnable);
     }
 
-
     /**
      * Called when an atomic test is about to be started. 
      *
@@ -152,7 +147,7 @@ public abstract class GUIRunListener extends TextRunListener {
 		public void run() {
 		    GUIRunListener.this.testCase = 
 			new TestCase(desc,Quality.Started, testCaseCount());
-		    if (isSingular()) {
+		    if (GUIRunListener.this.isSingular) {
 			GUIRunListener.this.guiRunner.updateSingularStarted();
 		    } else {
 			GUIRunListener.this.guiRunner
@@ -179,9 +174,9 @@ public abstract class GUIRunListener extends TextRunListener {
 	Runnable runnable = new Runnable() {
 		public void run() {
 		    GUIRunListener.this.testCase.setFinished();
-		    if (isSingular()) {
-			GUIRunListener.this.guiRunner
-			    .updateSingularFinished(GUIRunListener.this.testCase);
+		    if (GUIRunListener.this.isSingular) {
+			GUIRunListener.this.guiRunner.updateSingularFinished
+			    (GUIRunListener.this.testCase);
 
 		    } else {
 			GUIRunListener.this.guiRunner
@@ -214,8 +209,7 @@ public abstract class GUIRunListener extends TextRunListener {
 	SwingUtilities.invokeAndWait(runnable);
     }
 
-
-   /**
+    /**
      * Called when a test will not be run, 
      * generally because a test method is annotated 
      * with <code>@Ignored</code>. 
@@ -265,62 +259,5 @@ public abstract class GUIRunListener extends TextRunListener {
 	    e.printStackTrace();
 	}
     }
-
-
- 
-
-    /* -------------------------------------------------------------------- *
-     * inner classes and enums.                                             *
-     * -------------------------------------------------------------------- */
-
-    /**
-     * The listener if all test cases are run. 
-     * **** maybe good extension: run a suite **** 
-     */
-    static class All extends GUIRunListener {
-
-	/* ---------------------------------------------------------------- *
-	 * constructors.                                                    *
-	 * ---------------------------------------------------------------- */
-
-	All(Actions actions) {
-	    super(actions);
-	    this.isSingular = false;
-	    this.testCaseCount = -1;
-	}
-
-	/* ---------------------------------------------------------------- *
-	 * methods.                                                         *
-	 * ---------------------------------------------------------------- */
-
-    } // class All 
-
-
-    /**
-     * The listener if a single test case is run. 
-     * **** maybe good extension: run a suite **** 
-     */
-    static class Singular extends GUIRunListener {
-
-	//private GUIRunner runner;
-	//private Description fullDesc;
-
-	/* ---------------------------------------------------------------- *
-	 * constructors.                                                    *
-	 * ---------------------------------------------------------------- */
-
-	Singular(Actions actions) {
-	    super(actions);
-	    this.isSingular = true;
-	    //this.fullDesc = fullDesc;
-	}
-
-	/* ---------------------------------------------------------------- *
-	 * methods.                                                         *
-	 * ---------------------------------------------------------------- */
-
-
-    } // class Singular 
-
 }
 
