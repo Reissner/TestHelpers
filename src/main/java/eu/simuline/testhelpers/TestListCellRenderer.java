@@ -24,12 +24,12 @@ import java.awt.Rectangle;
 import java.io.Serializable;
 
 
-/**u
+/**
  * A special renderer object 
  * consisting of a label and a location within java code 
  * for an item in a failure list. 
  */
-public class TestListCellRenderer 
+class TestListCellRenderer 
     implements ListCellRenderer<TestCase>, Serializable {
 
     private static final long serialVersionUID = -2479143000061671589L;
@@ -47,7 +47,7 @@ public class TestListCellRenderer
      * consisting of a label and a location within java code 
      * for an item in a failure list. 
      */
-    public TestListCellRenderer() {
+    TestListCellRenderer() {
 	super();
     }
 
@@ -57,18 +57,16 @@ public class TestListCellRenderer
 
     // **** hack ****
     private String thrwToString(Throwable thrw) {
-	if ("null".equals(thrw.getMessage())) {
-	    return thrw.getClass().toString();
-	} else {
-	    return thrw           .toString();
-	}
+	// if ("null".equals(thrw.getMessage())) {
+	//     return thrw.getClass().toString();
+	// } else {
+	//     return thrw           .toString();
+	// }
 
-/*
-	return 
-	    
+
+	return "null".equals(thrw.getMessage())	    
 	    ? thrw.getClass().toString()
 	    : thrw           .toString();
-*/
     }
 
     public Component getListCellRendererComponent(JList<? extends TestCase> list,
@@ -95,13 +93,17 @@ public class TestListCellRenderer
     }
 
     static class Label extends JLabel {
+
 	private static final long serialVersionUID = -2479143000061671589L;
+
 	Label(Icon icon) {
 	    super(icon);
 	}
+
 	Label(String text) {
 	    super(text);
 	}
+
 	void setDetails(JList<?> list,
 			boolean isSelected,
 			boolean cellHasFocus) {
@@ -119,7 +121,6 @@ public class TestListCellRenderer
 		      : NO_FOCUS_BORDER);
 	    setOpaque(true);
 	}
-
 
 	/**
 	 * Overridden for performance reasons.
@@ -308,6 +309,7 @@ public class TestListCellRenderer
 	    // is empty. 
 	}
     } // class Label 
+
     /**
      * A subclass of DefaultListCellRenderer that implements UIResource.
      * DefaultListCellRenderer doesn't implement UIResource

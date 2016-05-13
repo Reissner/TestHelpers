@@ -111,7 +111,7 @@ import javax.swing.SwingUtilities;
  * @version 1.0
  */
 //@SuppressWarnings("")
-public class GUIRunner {
+class GUIRunner {
 
     /* -------------------------------------------------------------------- *
      * constants.                                                           *
@@ -884,8 +884,9 @@ public class GUIRunner {
 		    this.numExc++;
 		    break;
 		default:
-		    throw new IllegalStateException();
-
+		    throw new IllegalStateException
+			("Found unexpected quality '" 
+			 + result.getQuality() + "'. ");
 	    }
 	    updateLabels();
 	}
