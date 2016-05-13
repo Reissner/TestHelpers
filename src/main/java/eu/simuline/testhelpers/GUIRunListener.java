@@ -51,7 +51,13 @@ public abstract class GUIRunListener extends TextRunListener {
      * methods.                                                             *
      * -------------------------------------------------------------------- */
 
-    abstract int testCaseCount();
+    int testCaseCount() {
+	if (isSingular()) {
+	    return -1;
+	} else {
+	    return this.testCaseCount++;
+	}
+    }
 
     boolean isSingular() {
 	return this.isSingular;
@@ -260,6 +266,7 @@ public abstract class GUIRunListener extends TextRunListener {
 	}
     }
 
+
  
 
     /* -------------------------------------------------------------------- *
@@ -285,12 +292,6 @@ public abstract class GUIRunListener extends TextRunListener {
 	/* ---------------------------------------------------------------- *
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
-
-
-
-	int testCaseCount() {
-	    return All.this.testCaseCount++;
-	}
 
     } // class All 
 
@@ -318,9 +319,6 @@ public abstract class GUIRunListener extends TextRunListener {
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
-	int testCaseCount() {
-	    return -1;
-	}
 
     } // class Singular 
 
