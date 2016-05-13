@@ -207,6 +207,27 @@ public class GUIRunListener extends TextRunListener {
 	SwingUtilities.invokeAndWait(runnable);
     }
 
+
+    public void testAssumptionFailure(final Failure failure) {
+	assert !SwingUtilities.isEventDispatchThread();
+	// output text 
+	super.testAssumptionFailure(failure);
+
+	Runnable runnable = new Runnable() {
+		public void run() {
+		    GUIRunListener.this.guiRunner.setStatus("testAssumptionFailure: "
+						 + failure.getException());
+		    GUIRunListener.this.testCase.setFailure(failure);
+		}
+	    };
+
+	try {
+	    SwingUtilities.invokeAndWait(runnable);
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
+    }
+
     /**
      * Called when a test will not be run, 
      * generally because a test method is annotated 

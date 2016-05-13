@@ -136,6 +136,23 @@ public class TextRunListener extends RunListener {
 	System.out.println("testFailure(" + failure);
     }
 
+
+    /**
+     * Called when an atomic test flags 
+     * that it assumes a condition that is false. 
+     * This is treated as ignored with the description of the failure. 
+     *
+     * @param failure
+     *    describes the test that failed 
+     *    and the {@link AssumptionViolatedException} that was thrown. 
+     * @see #testIgnored(Description)
+     */
+    public void testAssumptionFailure(Failure failure) {
+	// description and exception
+	System.out.println("testAssumptionFailure(" + failure);
+    }
+
+
     /**
      * Called when a test will not be run, 
      * generally because a test method is annotated 
