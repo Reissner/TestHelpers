@@ -30,8 +30,6 @@ public class GUIRunListener extends TextRunListener {
 
     private final GUIRunner guiRunner;
 
-    private boolean isSingular;
-
     private TestCase testCase;
 
     // -1 before testRunStarted and for Singular. 
@@ -51,18 +49,18 @@ public class GUIRunListener extends TextRunListener {
      * methods.                                                             *
      * -------------------------------------------------------------------- */
 
-    int testCaseCount() {
-	if (this.isSingular) {
+    private boolean isSingular() {
+	return this.actions.getSingleTest() != null;
+    }
+
+    private int testCaseCount() {
+	if (isSingular()) {
 	    return -1;
 	} else {
 	    return this.testCaseCount++;
 	}
     }
 
-    void setIsSingular(boolean isSingular) {
-	this.isSingular = isSingular;
-    }
- 
 
     /**
      * Called before any tests have been run.
@@ -83,7 +81,7 @@ public class GUIRunListener extends TextRunListener {
 	Runnable runnable = new Runnable() {
 		public void run() {
 		    GUIRunListener.this.actions.setEnableForRun(true);//running 
-		    if (GUIRunListener.this.isSingular) {
+		    if (GUIRunListener.this.isSingular()) {
 			GUIRunListener.this.testCase = 
 			    GUIRunListener.this.actions.getSingleTest();//NOPMD
 		    } else {
@@ -147,7 +145,7 @@ public class GUIRunListener extends TextRunListener {
 		public void run() {
 		    GUIRunListener.this.testCase = 
 			new TestCase(desc,Quality.Started, testCaseCount());
-		    if (GUIRunListener.this.isSingular) {
+		    if (GUIRunListener.this.isSingular()) {
 			GUIRunListener.this.guiRunner.updateSingularStarted();
 		    } else {
 			GUIRunListener.this.guiRunner
@@ -174,7 +172,7 @@ public class GUIRunListener extends TextRunListener {
 	Runnable runnable = new Runnable() {
 		public void run() {
 		    GUIRunListener.this.testCase.setFinished();
-		    if (GUIRunListener.this.isSingular) {
+		    if (GUIRunListener.this.isSingular()) {
 			GUIRunListener.this.guiRunner.updateSingularFinished
 			    (GUIRunListener.this.testCase);
 
