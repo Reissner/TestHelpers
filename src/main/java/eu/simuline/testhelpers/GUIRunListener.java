@@ -32,6 +32,11 @@ public abstract class GUIRunListener extends TextRunListener {
 
     protected final GUIRunner guiRunner;
 
+    boolean isSingular;
+
+    // -1 before testRunStarted and for Singular. 
+    protected int testCaseCount;
+
 
     /* -------------------------------------------------------------------- *
      * constructor.                                                         *
@@ -47,7 +52,10 @@ public abstract class GUIRunListener extends TextRunListener {
      * -------------------------------------------------------------------- */
 
     abstract int testCaseCount();
-    abstract boolean isSingular();
+
+    boolean isSingular() {
+	return this.isSingular;
+    }
 
  
 
@@ -69,12 +77,13 @@ public abstract class GUIRunListener extends TextRunListener {
 	
 	Runnable runnable = new Runnable() {
 		public void run() {
-		    GUIRunListener.this.actions.setEnableForRun(true);// running 
+		    GUIRunListener.this.actions.setEnableForRun(true);//running 
 		    if (isSingular()) {
 			GUIRunListener.this.testCase = 
 			    GUIRunListener.this.actions.getSingleTest();//NOPMD
 		    } else {
 			GUIRunListener.this.guiRunner.testRunStarted(desc);
+	     GUIRunListener.this.testCaseCount = 0;
 		    }
 
 		    //assert this.testCase.getDesc().equals(desc);
@@ -83,6 +92,9 @@ public abstract class GUIRunListener extends TextRunListener {
 		}
 	    };
 	SwingUtilities.invokeAndWait(runnable);
+	// if (!isSingular()) {
+	//     GUIRunListener.this.testCaseCount = 0;
+	// }
     }
 
 
@@ -261,18 +273,12 @@ public abstract class GUIRunListener extends TextRunListener {
     static class All extends GUIRunListener {
 
 	/* ---------------------------------------------------------------- *
-	 * attributes.                                                      *
-	 * ---------------------------------------------------------------- */
-
-	// -1 before testRunStarted
-	private int testCaseCount;
-
-	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
 	 * ---------------------------------------------------------------- */
 
 	All(Actions actions) {
 	    super(actions);
+	    this.isSingular = false;
 	    this.testCaseCount = -1;
 	}
 
@@ -280,27 +286,10 @@ public abstract class GUIRunListener extends TextRunListener {
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
-	/**
-	 * Called before any tests have been run. 
-	 * Updates the enablement of the GUI-Actions 
-	 * and then delegates to 
-	 * {@link GUIRunner#testRunStarted(Description)}. 
-	 *
-	 * @param desc 
-	 *    describes the tests to be run
-	 */
-	 public void testRunStarted(final Description desc) throws Exception {
-	     super.testRunStarted(desc);
-	     All.this.testCaseCount = 0;
-	 }
 
 
 	int testCaseCount() {
 	    return All.this.testCaseCount++;
-	}
-
-	boolean isSingular() {
-	    return false;
 	}
 
     } // class All 
@@ -321,16 +310,13 @@ public abstract class GUIRunListener extends TextRunListener {
 
 	Singular(Actions actions) {
 	    super(actions);
+	    this.isSingular = true;
 	    //this.fullDesc = fullDesc;
 	}
 
 	/* ---------------------------------------------------------------- *
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
-
-	boolean isSingular() {
-	    return true;
-	}
 
 	int testCaseCount() {
 	    return -1;
