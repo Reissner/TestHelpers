@@ -351,11 +351,8 @@ public class Actions {
 	this.breakAction = new BreakAction();
 
 
-	this.guiRunner = new GUIRunner(this);
-
-	this.listener = new GUIRunListener(this);
-	listener.setIsSingular(false);
-
+	this.guiRunner  = new GUIRunner(this);
+	this.listener   = new GUIRunListener(this);
 	this.coreRunner = new CoreRunner(testClass);
 
 	this.isRunning = false;
@@ -402,7 +399,6 @@ public class Actions {
      */
     void setSingleTest(TestCase singTest) {
 	this.singTest = singTest;
-	this.listener.setIsSingular(this.singTest != null);
     }
 
     TestCase getSingleTest() {
