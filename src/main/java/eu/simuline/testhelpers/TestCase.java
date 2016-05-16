@@ -10,8 +10,9 @@ import junit.framework.AssertionFailedError;
  * Represents a test which may be a single case or a suite 
  * during its lifetime 
  * from being scheduled to having runned successfully or not. 
- * It is a wrapper around a Description {@link #desc} 
- * but includes also the phase given by th quality {@link #qual}. 
+ * In this respect, the testcase goes beyond a {@link Description}. 
+ * It is a wrapper around a {@link Description} {@link #desc} 
+ * but includes also the phase given by the quality {@link #qual}. 
  * Depending on the phase, ****
  * 
  * @see Quality
@@ -27,21 +28,51 @@ class TestCase {
      * fields.                                                              *
      * -------------------------------------------------------------------- */
 
+    /**
+     * The description of this testcase. 
+     */
     private final Description desc;
-    private Failure failure;
+
+    /**
+     * The phase of this testcase. 
+     */
     private Quality qual;
+    /**
+     * 
+     */
+    private Failure failure;
+    /**
+     * 
+     */
     private final int testCaseCount;
 
-    // either starttime or time required to finished; 
-    //  0 if Ignored. 
-    // -1 if Scheduled
+    /**
+     * The meaning depends on {@link #qual}: 
+     * <ul>
+     * <li><code>-1</code> for {@link Quality#Scheduled}, 
+     * <li><code>-0</code> for {@link Quality#Ignored}, 
+     * <li>the start time for {@link Quality#Started} and 
+     * <li>the time the test required to finish (successfully or not) 
+     * for all other phases. 
+     * <ul>
+     */
     private long time;
 
     /* -------------------------------------------------------------------- *
      * constructor.                                                         *
      * -------------------------------------------------------------------- */
 
-    // Create Started TestCase in state Started
+    /**
+     * Creates a new testcase based on the description 
+     * with the given Quality and a test count. 
+     *
+     * @param desc
+     *    a description of this testcase
+     * @param qual
+     *    the initial phase. 
+     * @param testCaseCount
+     *    
+     */
     TestCase(Description desc, Quality qual, int testCaseCount) {
 	this.desc = desc;
 	this.qual = qual;//Quality.Started;
