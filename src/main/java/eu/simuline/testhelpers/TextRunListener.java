@@ -136,11 +136,20 @@ public class TextRunListener extends RunListener {
 	System.out.println("testFailure(" + failure);
     }
 
-
     /**
      * Called when an atomic test flags 
      * that it assumes a condition that is false. 
      * This is treated as ignored with the description of the failure. 
+     * In contrast to {@link #testIgnored(Description)}, 
+     * this method is invoked after {@link #testStarted(Description)} 
+     * and before {@link #testFinished(Description)}
+     * with the according description. 
+     * A failed assertion does not count as a failure 
+     * and so {@link #testFailure(Failure)} for the according test 
+     * is not invoked. 
+     * CAUTION: Although a failed assertion is like an ignored test, 
+     * {@link #testRunFinished(Result)} does not count this as ignored test 
+     * but rather than a passed test. 
      *
      * @param failure
      *    describes the test that failed 
