@@ -86,7 +86,7 @@ public class GUIRunListener extends TextRunListener {
 			    GUIRunListener.this.actions.getSingleTest();//NOPMD
 		    } else {
 			GUIRunListener.this.guiRunner.testRunStarted(desc);
-	     GUIRunListener.this.testCaseCount = 0;
+			GUIRunListener.this.testCaseCount = 0;
 		    }
 
 		    //assert this.testCase.getDesc().equals(desc);
