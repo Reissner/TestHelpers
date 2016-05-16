@@ -199,15 +199,25 @@ public class GUIRunListener extends TextRunListener {
 
 	Runnable runnable = new Runnable() {
 		public void run() {
+		    GUIRunListener.this.testCase.setFailure(failure);
 		    GUIRunListener.this.guiRunner.setStatus("testFailure: "
 						 + failure.getException());
-		    GUIRunListener.this.testCase.setFailure(failure);
 		}
 	    };
 	SwingUtilities.invokeAndWait(runnable);
     }
 
 
+    /**
+     * Called when an atomic test flags 
+     * that it assumes a condition that is false. 
+     * This is treated as ignored with the description of the failure. 
+     *
+     * @param failure
+     *    describes the test that failed 
+     *    and the {@link AssumptionViolatedException} that was thrown. 
+     * @see #testIgnored(Description)
+     */
     public void testAssumptionFailure(final Failure failure) {
 	assert !SwingUtilities.isEventDispatchThread();
 	// output text 
@@ -215,9 +225,10 @@ public class GUIRunListener extends TextRunListener {
 
 	Runnable runnable = new Runnable() {
 		public void run() {
-		    GUIRunListener.this.guiRunner.setStatus("testAssumptionFailure: "
-						 + failure.getException());
-		    GUIRunListener.this.testCase.setFailure(failure);
+		    GUIRunListener.this.testCase.setAssumptionFailure(failure);
+		    GUIRunListener.this.guiRunner
+			.setStatus("testAssumptionFailure: "
+				   + failure.getException());
 		}
 	    };
 

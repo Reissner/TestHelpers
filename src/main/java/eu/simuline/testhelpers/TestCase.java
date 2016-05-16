@@ -107,6 +107,14 @@ class TestCase {
 	this.qual = isFailure() ? Quality.Failure : Quality.Error;
     }
 
+    void setAssumptionFailure(Failure failure) {
+	assert failure != null;
+	this.failure = failure;
+	assert this.desc == this.failure.getDescription();
+	assert failure.getException() instanceof AssumptionViolatedException;
+	this.qual = Quality.Invalidated;
+    }
+
     void setFinished() {
 	this.qual = this.qual.setFinished();
 	this.time = System.currentTimeMillis() - this.time;

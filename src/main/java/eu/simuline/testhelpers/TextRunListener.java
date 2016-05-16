@@ -7,6 +7,7 @@ import org.junit.runner.Description;
 import org.junit.runner.Result;
 
 import java.util.Iterator;
+import org.junit.AssumptionViolatedException;
 
 /**
  * A simple RunListener which notifies of the events while running tests 
@@ -101,10 +102,12 @@ public class TextRunListener extends RunListener {
 
     /**
      * Called when an atomic test is about to be started. 
+     * An ignored test is never started. 
      *
      * @param desc
      *    the description of the test that is about to be run 
      *    (generally a class and method name)
+     * @see #testIgnored(Description)
      */
     // api-docs inherited from class RunListener
     public void testStarted(Description desc) throws Exception {//NOPMD
@@ -114,9 +117,13 @@ public class TextRunListener extends RunListener {
     /**
      * Called when an atomic test has finished, 
      * whether the test succeeds or fails. 
+     * This method must be invoked after a test has been started 
+     * which was indicated by {@link #testStarted(Description)} before. 
+     * An ignored test is never finished. 
      *
      * @param desc
      *    the description of the test that just ran
+     * @see #testIgnored(Description)
      */
     // api-docs inherited from class RunListener
     public void testFinished(Description desc) throws Exception {//NOPMD
@@ -126,6 +133,12 @@ public class TextRunListener extends RunListener {
     /** 
      * Called when an atomic test fails to execute properly 
      * throwing a Throwable. 
+     * This method is invoked after {@link #testStarted(Description)} 
+     * and before {@link #testFinished(Description)}
+     * with the according description. 
+     * In case of a failed assumption, instead of this method 
+     * {@link #testAssumptionFailure(Failure)} is invoked 
+     * for the according test. 
      *
      * @param failure 
      *    describes the test that failed and the exception that was thrown
@@ -133,20 +146,20 @@ public class TextRunListener extends RunListener {
     // api-docs inherited from class RunListener
     public void testFailure(Failure failure) throws Exception {//NOPMD
 	// description and exception
-	System.out.println("testFailure(" + failure);
+	System.out.println("T testFailure(" + failure);
     }
 
     /**
      * Called when an atomic test flags 
      * that it assumes a condition that is false. 
      * This is treated as ignored with the description of the failure. 
-     * In contrast to {@link #testIgnored(Description)}, 
-     * this method is invoked after {@link #testStarted(Description)} 
+     * This method is invoked after {@link #testStarted(Description)} 
      * and before {@link #testFinished(Description)}
      * with the according description. 
      * A failed assertion does not count as a failure 
-     * and so {@link #testFailure(Failure)} for the according test 
-     * is not invoked. 
+     * and so {@link #testFailure(Failure)} is not invoked 
+     * for the according test. 
+     * <p>
      * CAUTION: Although a failed assertion is like an ignored test, 
      * {@link #testRunFinished(Result)} does not count this as ignored test 
      * but rather than a passed test. 
@@ -157,8 +170,9 @@ public class TextRunListener extends RunListener {
      * @see #testIgnored(Description)
      */
     public void testAssumptionFailure(Failure failure) {
-	// description and exception
-	System.out.println("testAssumptionFailure(" + failure);
+	// description and exception 
+	assert failure.getException() instanceof AssumptionViolatedException;
+	System.out.println("T testAssumptionFailure(" + failure);
     }
 
 
@@ -167,8 +181,11 @@ public class TextRunListener extends RunListener {
      * generally because a test method is annotated 
      * with <code>@Ignored</code>. 
      * This implies 
-     * that neither {@link #testStarted} nor {@link #testFinished} nor 
-     * {@link #testFailure} are invoked. 
+     * that neither {@link #testStarted(Description)} 
+     * nor {@link #testFinished(Description)} are invoked 
+     * for the according test. 
+     * This in turn implies that neither {@link #testFailure(Failure)} 
+     * nor {@link #testAssumptionFailure(Failure)} are invoked. 
      *
      * @param desc 
      *    describes the test that will not be run

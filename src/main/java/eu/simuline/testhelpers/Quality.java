@@ -103,7 +103,24 @@ enum Quality {
 	    return false;
 	}
     },
-
+    /**
+     * The execution of the testcase ran onto an hurt assumtion 
+     * and is thus invalidated. 
+     */
+    Invalidated {
+	ImageIcon getIcon() {
+	    throw new eu.simuline.util.NotYetImplementedException();
+	}
+	Quality setFinished() {
+	    return this;
+	}
+	String status() {
+	    return "invalidated by failed assumption";
+	}
+	boolean isDecided() {
+	    return false;
+	}
+    },
     /**
      * The execution of the testcase finished and the test succeeded (passed): 
      * All assertions hold and no throwable has been thrown. 
