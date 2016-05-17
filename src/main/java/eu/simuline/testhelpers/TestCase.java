@@ -99,7 +99,6 @@ class TestCase {
     	return this.desc;
     }
 
-    // **** ignore Ignored
     Quality getQuality() {
 	return this.qual;
     }
