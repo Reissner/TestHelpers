@@ -92,7 +92,7 @@ import java.io.Serializable;
  * a treeview on the testsuite 
  * represented by the class {@link GUIRunner.HierarchyWrapper}. 
  * This needs support from the classes and 
- * {@link GUIRunner.TreePathIncrementor}, 
+ * {@link GUIRunner.TreePathIterator}, 
  * {@link GUIRunner.TestTreeCellRenderer}. 
  * <li>
  * a list of the testcases that failed in a sense 
@@ -162,8 +162,11 @@ class GUIRunner {
 
     /**
      * The progress bar indicating how much of the testcases already passed. 
-     * As long as no error is found, this bar is green, 
-     * after the first error, it is red. 
+     * After the first testcase ending irregular, 
+     * the bar takes {@link Quality#COLOR_FAIL}. 
+     * Else after the first ignored testscase, 
+     * the bar takes {@link Quality#COLOR_IGNORED}. 
+     * Else, the bar takes {@link Quality#COLOR_OK}. 
      */
     static class TestProgressBar extends JProgressBar {
 
@@ -173,27 +176,17 @@ class GUIRunner {
 
 	private static final long serialVersionUID = -2479143000061671589L;
 
-	/**
-	 * Represents the case that a testcase failed. 
-	 */
-	private static final Color COLOR_FAIL    = Color.red;
-
-	/**
-	 * Represents the case that so far no testcase failed. 
-	 * Maybe: **** introduce yellow for ignored testcases. 
-	 * see COLOR_IGNORED
-	 */
-	private static final Color COLOR_OK      = Color.green;
-
-	/**
-	 * Represents the case that so far no testcase failed 
-	 * but some is ignored. **** not yet used. 
-	 */
-	private static final Color COLOR_IGNORED = Color.yellow;
-
 	/* ---------------------------------------------------------------- *
 	 * attributes.                                                      *
 	 * ---------------------------------------------------------------- */
+
+	/**
+	 * The maximal quality found in testcases so far. 
+	 * This determines the foreground color of this progress bar. 
+	 * This is <code>null</code> initially 
+	 * and initialized in {@link #start(Description)}. 
+	 */
+	private Quality qual;
 
 
 	/* ---------------------------------------------------------------- *
@@ -206,6 +199,7 @@ class GUIRunner {
 	public TestProgressBar() {
 	    super(new DefaultBoundedRangeModel());
 	    this.model.setValueIsAdjusting(true);
+	    this.qual = null;
 	    //.setString("progress");//*** even better; fail or ok
 	    //.setStringPainted(true);
 	}
@@ -224,14 +218,18 @@ class GUIRunner {
 
 	void resetA() {
 	    setValue(0);
-	    setForeground(COLOR_OK);
+	    this.qual = Quality.Scheduled;// color OK 
 	}
 
+	/**
+	 * Pushes the progress bar one further 
+	 * and upates the color of the progress bar 
+	 * as described in {@link GUIRunner.TestProgressBar}. 
+	 */
 	void incNumRunsDone(TestCase testCase) {
 	    setValue(getValue() + 1);
-	    if (testCase.hasFailed()) {
-		setForeground(COLOR_FAIL);
-	    }
+	    this.qual = this.qual.max(testCase.getQuality());
+	    setForeground(this.qual.getColor());
 	}
 
     } // class TestProgressBar 
@@ -530,9 +528,9 @@ class GUIRunner {
 	/**
 	 * Selector to be influenced: 
 	 * If this is in the selected tab, {@link #selector} 
-	 * is the tab with the {@link #TestCaseLister}; 
+	 * is the tab with the {@link GUIRunner.TestCaseLister TestCaseLister}; 
 	 * otherwise it is {@link GUIRunner.TabChangeListener#EMPTY_SELECTOR}. 
-	 * Set by {@link #registerSelector(Selector)}. 
+	 * Set by {@link #registerSelector(GUIRunner.Selector)}. 
 	 */
 	private Selector selector;
 
@@ -723,7 +721,8 @@ class GUIRunner {
 
 		    if (lastNode.isLeaf()) {
 			testCase = (TestCase)lastNode.getUserObject();
-			if (!testCase.getQuality().isDecided()) {
+			if (!testCase.getQuality().allowsRerun()) {
+			    // no rerun, no selection possible 
 			    this.treeSelection.clearSelection();
 			    this.     selector.clearSelection();
 			    continue;
@@ -773,6 +772,7 @@ class GUIRunner {
 
 	private final JLabel runs;
 	private final JLabel ignored;
+	private final JLabel invalidated;
 	private final JLabel failures;
 	private final JLabel errors;
 
@@ -792,6 +792,13 @@ class GUIRunner {
 	 * The number of runs already identified as ignored. 
 	 */
 	private int numIgn;
+
+
+	/**
+	 * The number of runs already invalidated 
+	 * because of a failed assumption. 
+	 */
+	private int numInv;
 
 	/**
 	 * The number of runs already failed. 
@@ -816,10 +823,11 @@ class GUIRunner {
 	RunsErrorsFailures() {
 	    super();
 
-	    this.runs     = new JLabel();
-	    this.ignored  = new JLabel();
-	    this.failures = new JLabel();
-	    this.errors   = new JLabel();
+	    this.runs        = new JLabel();
+	    this.ignored     = new JLabel();
+	    this.invalidated = new JLabel();
+	    this.failures    = new JLabel();
+	    this.errors      = new JLabel();
 
 	    this.numRuns  = 0;// formally. This is set by #start()
 	    resetB();
@@ -840,6 +848,8 @@ class GUIRunner {
 	    res.add(this.runs);
 	    res.add(new JLabel(Quality.Ignored.getIcon()));
 	    res.add(this.ignored);
+	    res.add(new JLabel(Quality.Invalidated.getIcon()));
+	    res.add(this.invalidated);
 	    res.add(new JLabel(Quality.Failure.getIcon()));
 	    res.add(this.failures);
 	    res.add(new JLabel(Quality.Error  .getIcon()));
@@ -851,7 +861,7 @@ class GUIRunner {
 	/**
 	 * Initiates {@link #numRuns} 
 	 * with the testcount from <code>desc</code> 
-	 * and resets this component invoking {@link #reset()}. 
+	 * and resets this component invoking {@link #resetB()}. 
 	 */
 	void start(Description desc) {
 	    this.numRuns = desc.testCount();
@@ -865,6 +875,7 @@ class GUIRunner {
 	void resetB() {
 	    this.numRunsDone = 0;
 	    this.numIgn      = 0;
+	    this.numInv      = 0;
 	    this.numFails    = 0;
 	    this.numExc      = 0;
 	    updateLabels();
@@ -881,37 +892,41 @@ class GUIRunner {
 	void incNumRunsDone(TestCase result) {
 	    this.numRunsDone++;
 	    switch (result.getQuality()) {
-		case Success:
-		    // nothing to Do
-		    break;
-		case Ignored:
-		    this.numIgn++;
-		    break;
-		case Failure:
-		    this.numFails++;
-		    break;
-		case Error:
-		    this.numExc++;
-		    break;
-		default:
-		    throw new IllegalStateException
-			("Found unexpected quality '" 
-			 + result.getQuality() + "'. ");
+	    case Success:
+		// nothing to Do
+		break;
+	    case Ignored:
+		this.numIgn++;
+		break;
+	    case Invalidated:
+		this.numInv++;
+		break;
+	    case Failure:
+		this.numFails++;
+		break;
+	    case Error:
+		this.numExc++;
+		break;
+	    default:
+		throw new IllegalStateException
+		    ("Found unexpected quality '" 
+		     + result.getQuality() + "'. ");
 	    }
 	    updateLabels();
 	}
 
 	/**
 	 * Updates all labels if a counter has changed. 
-	 * This is invoked by {@link #reset()} 
+	 * This is invoked by {@link #resetB()} 
 	 * and by {@link #incNumRunsDone(TestCase)}. 
 	 */
 	private void updateLabels() {
-	    this.runs    .setText("Runs: "     + this.numRunsDone + 
-				  "/"          + this.numRuns + "    ");
-	    this.ignored .setText("Ignored: "  + this.numIgn + "    ");
-	    this.failures.setText("Failures: " + this.numFails + "    ");
-	    this.errors  .setText("Errors: "   + this.numExc);
+	    this.runs       .setText("Runs: "        + this.numRunsDone + 
+				  "/"                + this.numRuns + "    ");
+	    this.ignored    .setText("Ignored: "     + this.numIgn + "    ");
+	    this.invalidated.setText("Invalidated: " + this.numInv + "    ");
+	    this.failures   .setText("Failures: "    + this.numFails + "    ");
+	    this.errors     .setText("Errors: "      + this.numExc);
 
 /*
 	    setText("Runs: " + this.numRunsDone + "/" + this.numRuns + 
@@ -1267,9 +1282,9 @@ class GUIRunner {
 	/**
 	 * Selector to be influenced: 
 	 * If this is in the selected tab, {@link #selector} 
-	 * is the tab with the {@link #HierarchyWrapper}; 
+	 * is the tab with the {@link GUIRunner.HierarchyWrapper}; 
 	 * otherwise it is {@link GUIRunner.TabChangeListener#EMPTY_SELECTOR}. 
-	 * Set by {@link #registerSelector(Selector)}. 
+	 * Set by {@link #registerSelector(GUIRunner.Selector)}. 
 	 */
 	private Selector selector;
 
@@ -1336,7 +1351,7 @@ class GUIRunner {
 	}
 
 	boolean toBeAdded(TestCase result) {
-	    return result.getException() != null;
+	    return result.hasFailed();
 	}
 
 	void recordTestDone(TestCase result) {
@@ -1634,7 +1649,7 @@ class GUIRunner {
 	 * and if the tab is changed, this methd must be invoked accordingly. 
 	 * <p>
 	 * As described 
-	 * for {@link GUIRunner.Selector#registerSelector(Selector)}, 
+	 * for {@link GUIRunner.Selector#registerSelector(GUIRunner.Selector)}, 
 	 * the tab in the foreground receives its selection events directly, 
 	 * whereas the one in the background 
 	 * must be registered at the one in the foreground 
@@ -1802,7 +1817,7 @@ class GUIRunner {
      * The tabbed pane contains a tab for the {@link #testCaseLister} 
      * and another one for the {@link #testHierarchy}. 
      * The stack trace box is given by 
-     * {@link GuiRunner.TestCaseLister#getStackTraceBox()}. 
+     * {@link GUIRunner.TestCaseLister#getStackTraceBox()}. 
      * <p>
      * This field is used to reset to preferred size. 
      */
