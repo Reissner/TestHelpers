@@ -1,13 +1,14 @@
 package eu.simuline.testhelpers;
 
+import java.lang.reflect.InvocationTargetException;
+
+import javax.swing.SwingUtilities;// wrong place?
+
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
-
-import java.util.Iterator;
-
-import javax.swing.SwingUtilities;// wrong place?
+import org.junit.AssumptionViolatedException;
 
 /**
  * A {@link RunListener} which notifies the GUI {@link GUIRunner} 
@@ -73,7 +74,7 @@ public class GUIRunListener extends TextRunListener {
      * @param desc 
      *    describes the tests to be run
      */
-    public void testRunStarted(final Description desc) throws Exception {
+    public void testRunStarted(final Description desc) throws Exception {//NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
 	// output text 
 	super.testRunStarted(desc);
@@ -110,7 +111,7 @@ public class GUIRunListener extends TextRunListener {
      *    the summary of the test run, including all the tests that failed
      */
     // api-docs inherited from class RunListener
-    public void testRunFinished(final Result result) throws Exception {
+    public void testRunFinished(final Result result) throws Exception {//NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
 	// output text 
 	super.testRunFinished(result);
@@ -135,7 +136,7 @@ public class GUIRunListener extends TextRunListener {
      *    (generally a class and method name)
      */
     // api-docs inherited from class RunListener
-    public void testStarted(final Description desc) throws Exception {
+    public void testStarted(final Description desc) throws Exception {//NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
 	// output text 
 	super.testStarted(desc);
@@ -144,7 +145,7 @@ public class GUIRunListener extends TextRunListener {
 	Runnable runnable = new Runnable() {
 		public void run() {
 		    GUIRunListener.this.testCase = 
-			new TestCase(desc,Quality.Started, testCaseCount());
+			new TestCase(desc, Quality.Started, testCaseCount());
 		    if (GUIRunListener.this.isSingular()) {
 			GUIRunListener.this.guiRunner.updateSingularStarted();
 		    } else {
@@ -163,7 +164,7 @@ public class GUIRunListener extends TextRunListener {
      * @param desc
      *    the description of the test that just ran
      */
-    public void testFinished(final Description desc) throws Exception {
+    public void testFinished(final Description desc) throws Exception {//NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
 	// output text 
 	super.testFinished(desc);
@@ -192,7 +193,7 @@ public class GUIRunListener extends TextRunListener {
      * @param failure 
      *    describes the test that failed and the exception that was thrown
      */
-    public void testFailure(final Failure failure) throws Exception {
+    public void testFailure(final Failure failure) throws Exception {//NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
 	// output text 
 	super.testFailure(failure);
@@ -234,7 +235,9 @@ public class GUIRunListener extends TextRunListener {
 
 	try {
 	    SwingUtilities.invokeAndWait(runnable);
-	} catch (Exception e) {
+	} catch (InterruptedException e) {
+	    e.printStackTrace();
+	} catch (InvocationTargetException e) {
 	    e.printStackTrace();
 	}
     }
@@ -250,16 +253,15 @@ public class GUIRunListener extends TextRunListener {
      * @param desc 
      *    describes the test that will not be run
      */
-    public void testIgnored(final Description desc) throws Exception {
+    public void testIgnored(final Description desc) throws Exception {//NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
 	// output text 
 	super.testIgnored(desc);
 
 	Runnable runnable = new Runnable() {
 		public void run() {
-		    GUIRunListener.this.testCase = new TestCase(desc,
-						     Quality.Ignored,
-						     testCaseCount());
+		    GUIRunListener.this.testCase = 
+			new TestCase(desc, Quality.Ignored, testCaseCount());
 		    GUIRunListener.this.guiRunner
 			.noteTestStartedI(GUIRunListener.this.testCase);
 		    GUIRunListener.this.guiRunner
@@ -285,7 +287,9 @@ public class GUIRunListener extends TextRunListener {
 	    };
 	try {
 	    SwingUtilities.invokeAndWait(runnable);
-	} catch (Exception e) {
+	} catch (InterruptedException e) {
+	    e.printStackTrace();
+	} catch (InvocationTargetException e) {
 	    e.printStackTrace();
 	}
     }
