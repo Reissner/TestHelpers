@@ -73,6 +73,9 @@ import javax.swing.border.EmptyBorder;
 
 import java.io.Serializable;
 
+import java.util.Map;
+import java.util.EnumMap;
+
 /**
  * The GUI of a JUnit test-runner. 
  * Comprises 
@@ -769,12 +772,25 @@ class GUIRunner {
 	 * attributes.                                                      *
 	 * ---------------------------------------------------------------- */
 
+	/**
+	 * Maps the quality with level <code>> 0</code> 
+	 * to the according labels. 
+	 */
+	private final Map<Quality, JLabel>  qual2label;
 
+	/**
+	 * Maps the quality with any level
+	 * to the number of testcases with according state. 
+	 */
+	private final Map<Quality, Integer> qual2num;
+
+	/**
+	 * Label for the number of runs done and to be executed. 
+	 *
+	 * @see #numRunsDone
+	 * @see #numRuns
+	 */
 	private final JLabel runs;
-	private final JLabel ignored;
-	private final JLabel invalidated;
-	private final JLabel failures;
-	private final JLabel errors;
 
 	/**
 	 * The number of runs already finished. 
@@ -788,33 +804,6 @@ class GUIRunner {
 	 */
 	private int numRuns;
 
-	/**
-	 * The number of runs already identified as ignored. 
-	 */
-	private int numIgn;
-
-
-	/**
-	 * The number of runs already invalidated 
-	 * because of a failed assumption. 
-	 */
-	private int numInv;
-
-	/**
-	 * The number of runs already failed. 
-	 * This does not include the runs with exception or error. 
-	 *
-	 * @see #numExc
-	 */
-	private int numFails;
-
-	/**
-	 * The number of runs ended with exception or error. 
-	 * These tests did not fail, but the tests could not be executed. 
-	 *
-	 * @see #numFails
-	 */
-	private int numExc;
 
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
@@ -823,13 +812,18 @@ class GUIRunner {
 	RunsErrorsFailures() {
 	    super();
 
-	    this.runs        = new JLabel();
-	    this.ignored     = new JLabel();
-	    this.invalidated = new JLabel();
-	    this.failures    = new JLabel();
-	    this.errors      = new JLabel();
+	    this.runs    = new JLabel();
+	    this.numRuns = 0;// formally. This is set by #start()
 
-	    this.numRuns  = 0;// formally. This is set by #start()
+	    this.qual2label = new EnumMap<Quality, JLabel>(Quality.class);
+	    for (Quality qual : Quality.values()) {
+		if (qual.isNeutral()) {
+		    continue;
+		}
+		this.qual2label.put(qual, new JLabel());
+	    }
+	    this.qual2num = new EnumMap<Quality, Integer>(Quality.class);
+
 	    resetB();
 	}
 
@@ -838,22 +832,20 @@ class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	/**
-	 * Returns a horizontal box with the labels 
-	 * {@link #runs}, {@link #ignored}, 
-	 * {@link #failures} and {@link #errors} 
+	 * Returns a horizontal box with the labels in {@link #qual2label}
 	 * intermangled with according icons. 
 	 */
 	Box getBox() {
 	    Box res = Box.createHorizontalBox();
 	    res.add(this.runs);
-	    res.add(new JLabel(Quality.Ignored.getIcon()));
-	    res.add(this.ignored);
-	    res.add(new JLabel(Quality.Invalidated.getIcon()));
-	    res.add(this.invalidated);
-	    res.add(new JLabel(Quality.Failure.getIcon()));
-	    res.add(this.failures);
-	    res.add(new JLabel(Quality.Error  .getIcon()));
-	    res.add(this.errors);
+	    for (Quality qual : Quality.values()) {
+		if (qual.isNeutral()) {
+		    continue;
+		}
+		res.add(new JLabel(qual.getIcon()));
+		res.add(this.qual2label.get(qual));
+	    }
+
 	    res.add(Box.createGlue());
 	    return res;
 	}
@@ -874,10 +866,11 @@ class GUIRunner {
 	 */
 	void resetB() {
 	    this.numRunsDone = 0;
-	    this.numIgn      = 0;
-	    this.numInv      = 0;
-	    this.numFails    = 0;
-	    this.numExc      = 0;
+
+	    for (Quality qual : Quality.values()) {
+		this.qual2num.put(qual, 0);
+	    }
+
 	    updateLabels();
 	}
 
@@ -891,27 +884,10 @@ class GUIRunner {
 	 */
 	void incNumRunsDone(TestCase result) {
 	    this.numRunsDone++;
-	    switch (result.getQuality()) {
-	    case Success:
-		// nothing to Do
-		break;
-	    case Ignored:
-		this.numIgn++;
-		break;
-	    case Invalidated:
-		this.numInv++;
-		break;
-	    case Failure:
-		this.numFails++;
-		break;
-	    case Error:
-		this.numExc++;
-		break;
-	    default:
-		throw new IllegalStateException
-		    ("Found unexpected quality '" 
-		     + result.getQuality() + "'. ");
-	    }
+
+	    int num = this.qual2num.get(result.getQuality());
+	    /*      */this.qual2num.put(result.getQuality(), ++num);
+
 	    updateLabels();
 	}
 
@@ -921,22 +897,19 @@ class GUIRunner {
 	 * and by {@link #incNumRunsDone(TestCase)}. 
 	 */
 	private void updateLabels() {
-	    this.runs       .setText("Runs: "        + this.numRunsDone + 
-				  "/"                + this.numRuns + "    ");
-	    this.ignored    .setText("Ignored: "     + this.numIgn + "    ");
-	    this.invalidated.setText("Invalidated: " + this.numInv + "    ");
-	    this.failures   .setText("Failures: "    + this.numFails + "    ");
-	    this.errors     .setText("Errors: "      + this.numExc);
+	    this.runs.setText("Runs: " + this.numRunsDone + 
+			      "/"      + this.numRuns     + "    ");
 
-/*
-	    setText("Runs: " + this.numRunsDone + "/" + this.numRuns + 
-		    "    Ignored: " + this.numIgn +
-		    "    Failures: " + this.numFails +
-		    "    Errors: " + this.numExc);
-*/
+	    for (Quality qual : Quality.values()) {
+		if (qual.isNeutral()) {
+		    continue;
+		}
+		/*         */this.qual2label.get(qual)
+		    .setText(qual.toString()           + "s: " + 
+			     this.qual2num  .get(qual) + "    ");
+	    }
 	}
     } // class RunsErrorsFailures 
-
 
 
     /**
