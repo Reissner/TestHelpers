@@ -109,17 +109,15 @@ class TestCase {
 
     void setFailure(Failure failure) {
 	assert failure != null;
-	assert this.desc == this.failure.getDescription();
-
+	//assert this.desc == this.failure.getDescription();
 	this.failure = failure;
 	this.qual = this.qual.setFailure(failure);
    }
 
     void setAssumptionFailure(Failure failure) {
 	assert failure != null;
-	assert this.desc == this.failure.getDescription();
+	//assert this.desc == this.failure.getDescription();
 	assert failure.getException() instanceof AssumptionViolatedException;
-
 	this.failure = failure;
 	this.qual = this.qual.setAssumptionFailure();
     }
