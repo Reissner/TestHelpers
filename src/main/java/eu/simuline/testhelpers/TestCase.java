@@ -1,7 +1,7 @@
 package eu.simuline.testhelpers;
 
+import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
-
 import org.junit.runner.notification.Failure;
 
 import junit.framework.AssertionFailedError;
@@ -34,17 +34,21 @@ class TestCase {
     private final Description desc;
 
     /**
+     * The index of this testcase 
+     * or <code>-1</code> if not counted (singular test) 
+     * or initialization with scheduled tests. 
+     */
+    private final int testCaseCount;
+
+    /**
      * The phase of this testcase. 
      */
     private Quality qual;
+
     /**
-     * 
+     * The failure if any; otherwise <code>null</code>. 
      */
     private Failure failure;
-    /**
-     * 
-     */
-    private final int testCaseCount;
 
     /**
      * The meaning depends on {@link #qual}: 
@@ -75,24 +79,15 @@ class TestCase {
      */
     TestCase(Description desc, Quality qual, int testCaseCount) {
 	this.desc = desc;
-	this.qual = qual;//Quality.Started;
 	this.testCaseCount = testCaseCount;
+
+	assert qual == Quality.Scheduled 
+	    || qual == Quality.Started 
+	    || qual == Quality.Ignored;
+	this.qual = qual;
 	//setRetried();
 	this.failure = null;
-	switch (this.qual) {
-	case Scheduled:
-	    this.time = -1;
-	    break;
-	case Ignored:
-	    this.time = 0;
-	    break;
-	case Started:
-	    this.time = System.currentTimeMillis();
-	    break;
-	default:
-	    this.time = System.currentTimeMillis() - this.time;
-	    break;
-	}
+	this.time = this.qual.time(this.time);
      }
 
 
@@ -100,58 +95,8 @@ class TestCase {
      * methods.                                                             *
      * -------------------------------------------------------------------- */
 
-    void setFailure(Failure failure) {
-	assert failure != null;
-	this.failure = failure;
-	assert this.desc == this.failure.getDescription();
-	this.qual = isFailure() ? Quality.Failure : Quality.Error;
-    }
-
-    void setAssumptionFailure(Failure failure) {
-	assert failure != null;
-	this.failure = failure;
-	assert this.desc == this.failure.getDescription();
-	assert failure.getException() instanceof AssumptionViolatedException;
-	this.qual = Quality.Invalidated;
-    }
-
-    void setFinished() {
-	this.qual = this.qual.setFinished();
-	this.time = System.currentTimeMillis() - this.time;
-    }
-
-    void setIgnored() {
-	assert this.qual == Quality.Started;
-	this.qual = Quality.Ignored;
-	this.time = 0;
-    }
-
-    final void setRetried() {
-	this.qual = Quality.Started;
-	this.failure = null;
-	this.time = System.currentTimeMillis();
-    }
-
-    boolean isSuccess() {
-	return this.qual == Quality.Success;
-    }
-
-    boolean hasFailed() {
-	return getException() != null;
-    }
-
-    private boolean isFailure() {
-	Throwable thrw = this.failure.getException();
-	return thrw instanceof AssertionFailedError
-	    || thrw instanceof AssertionError;// **** does not seem reasonable 
-    }
-
     Description getDesc() {
-	return this.desc;
-    }
-
-    Throwable getException() {
-	return this.failure == null ? null : this.failure.getException();
+    	return this.desc;
     }
 
     // **** ignore Ignored
@@ -163,7 +108,59 @@ class TestCase {
 	return this.testCaseCount;
     }
 
-    public String toString() {
-	return this.qual + ": " + getDesc().toString();
+    void setFailure(Failure failure) {
+	assert failure != null;
+	assert this.desc == this.failure.getDescription();
+
+	this.failure = failure;
+	this.qual = this.qual.setFailure(failure);
+   }
+
+    void setAssumptionFailure(Failure failure) {
+	assert failure != null;
+	assert this.desc == this.failure.getDescription();
+	assert failure.getException() instanceof AssumptionViolatedException;
+
+	this.failure = failure;
+	this.qual = this.qual.setAssumptionFailure();
     }
+
+    void setFinished() {
+	this.qual = this.qual.setFinished();// does not change anything 
+	this.time = this.qual.time(this.time);
+    }
+
+    final void setRetried() {
+	this.qual = Quality.Started;
+	this.failure = null;
+	this.time = this.qual.time(this.time);
+    }
+
+    boolean isSuccess() {
+    	return this.qual == Quality.Success;
+    }
+
+    /**
+     * Returns whether {@link #getException()} returns non-<code>null</code>. 
+     * true also for {@link Quality#Invalidated}. 
+     */
+    boolean hasFailed() {
+	return getException() != null;
+    }
+
+    /**
+     * Returns <code>null</code> if no failure occurred. 
+     * It returns non-<code>null</code> 
+     * if {@link #qual} is 
+     * {@link Quality#Error}, {@link Quality#Failure} or 
+     * {@link Quality#Invalidated}. 
+     */
+    Throwable getException() {
+	return this.failure == null ? null : this.failure.getException();
+    }
+
+    public String toString() {
+	return this.qual + ": " + this.desc.toString();
+    }
+
 } // class TestCase 
