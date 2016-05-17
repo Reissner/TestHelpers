@@ -757,12 +757,10 @@ class GUIRunner {
      * both, passed and to be performed altogether, 
      * the tests already ignored and those a failure or an error was found. 
      * <p>
-     * The numbers {@link #numRunsDone}, {@link #numRuns}, {@link #numIgn},
-     * {@link #numFails} and {@link #numExc} 
-     * represent the numbe of runs done, the number of runs done, 
-     * the overall number of runs, done or not, 
-     * the number of ignored tests of failed tests and of tests in error, 
-     * i.e. which caused an error or an exception. 
+     * The numbers {@link #numRunsDone}, {@link #numRuns} and {@link #qual2num} 
+     * represent the number of runs done, 
+     * the overall number of runs, done or not, and 
+     * the number of finished tests of the according quality. 
      */
     static class RunsErrorsFailures extends JComponent {
 
@@ -780,7 +778,8 @@ class GUIRunner {
 
 	/**
 	 * Maps the quality with any level
-	 * to the number of testcases with according state. 
+	 * to the number of testcases already finished or ignored 
+	 * with according state. 
 	 */
 	private final Map<Quality, Integer> qual2num;
 
