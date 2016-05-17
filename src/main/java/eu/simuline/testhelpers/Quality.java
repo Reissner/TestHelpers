@@ -146,28 +146,12 @@ enum Quality {
 	Quality setAssumptionFailure() {
 	    return Invalidated;
 	}
+	// **** should be based on AssertionFailedError only, 
+	// but junit does not admit this. 
  	Quality setFailure(org.junit.runner.notification.Failure failure) {
 	    Throwable thrw = failure.getException();
-	    return thrw instanceof AssertionFailedError ? Failure : Error;
-	}
-    },
-    /**
-     * The execution of the testcase ran onto an hurt assumption 
-     * before maybe running into further exceptions or errors 
-     * and is thus invalidated. 
-     */
-    Invalidated(1) {
-	ImageIcon getIcon() {
-	    return GifResource.getIcon(AssumptionFailure.class);
-	}
-	Quality setFinished() {
-	    return this;
-	}
-	String status() {
-	    return "invalidated by failed assumption";
-	}
-	boolean isIgnored() {
-	    return true;
+	    return thrw instanceof AssertionFailedError 
+		|| thrw instanceof AssertionError ? Failure : Error;
 	}
     },
     /**
@@ -187,6 +171,22 @@ enum Quality {
 	}
     },
     /**
+     * The execution of the testcase ran onto an hurt assumption 
+     * before maybe running into further exceptions or errors 
+     * and is thus invalidated. 
+     */
+    Invalidated(1) {
+	ImageIcon getIcon() {
+	    return GifResource.getIcon(AssumptionFailure.class);
+	}
+	Quality setFinished() {
+	    return this;
+	}
+	String status() {
+	    return "invalidated by failed assumption";
+	}
+    },
+    /**
      * The testcase was ignored, i.e. was scheduled for execution 
      * but then decided not to start execution. 
      * In particular, nothing can be said about the course of the test run. 
@@ -197,9 +197,6 @@ enum Quality {
 	}
 	long time(long time) {
 	    return 0;
-	}
-	boolean isIgnored() {
-	    return true;
 	}
 	Quality setFinished() {
 	    throw new IllegalStateException
@@ -223,9 +220,6 @@ enum Quality {
 	String status() {
 	    return "failed";
 	}
-	boolean isIrregular() {
-	    return true;
-	}
     }, 
     /**
      * The execution of the testcase failed 
@@ -239,9 +233,6 @@ enum Quality {
 	}
 	String status() {
 	    return "had an error";
-	}
-	boolean isIrregular() {
-	    return true;
 	}
     };
 
@@ -386,14 +377,17 @@ enum Quality {
      * @see #max(Quality)
      */
     Color getColor() {
-	if (isIrregular()) {
-	    return COLOR_FAIL;
-	}
-	if (isIgnored()) {
+	switch (this.level) {
+	case 0:
+	    return COLOR_OK;
+	case 1:
 	    return COLOR_IGNORED;
+	case 2:
+	    return COLOR_FAIL;
+	default:
+	    throw new IllegalStateException
+		("Found undefined level " + this.level + ". ");
 	}
-
-	return COLOR_OK;
     }
 
     /**
@@ -430,16 +424,26 @@ enum Quality {
      * This is the case only for {@link #Failure} and {@link #Error}. 
      */
     boolean isIrregular() {
-	return false;
+	return this.level == 2;
     }
 
     /**
-     * Returns whether the underlying tescase is ignored. 
+     * Returns whether the underlying testcase is ignored. 
      * This is <code>false</code> 
      * except for {@link #Ignored} and {@link #Invalidated}. 
      */
     boolean isIgnored() {
-	return false;
+	return this.level == 1;
+    }
+
+   /**
+     * Returns whether the underlying testcase is 
+     * neither finished unsuccessfully nor ignored. 
+     * This is <code>false</code> 
+     * except for {@link #Scheduled}, {@link #Started} and {@link #Success}. 
+     */
+    boolean isNeutral() {
+	return this.level == 0;
     }
 
     /**
