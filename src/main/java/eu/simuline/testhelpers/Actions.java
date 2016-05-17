@@ -184,8 +184,7 @@ public class Actions {
     /**
      * A thread in which a testclass is executed 
      * or at least a single testcase out of this testclass. 
-     * Essentially, this is defined by the class {@link #testClass} 
-     * to be tested and the execution is delegated to {@link #core}. 
+     * Essentially, this is defined by the class {@link #testClass}. 
      * The major task of this class is, to reload {@link #testClass} 
      * using a classloader which allows reloading 
      * each test run without restarting the tester application. 
@@ -384,18 +383,7 @@ public class Actions {
     }
 
     /**
-     * Sets {@link #singTest} according to <code>singTest</code> 
-     * and also {@link #listener} accordingly: 
-     * <ul>
-     * <li>
-     * If <code>singTest</code> is not <code>null</code>, 
-     * i.e. signifies a single testcase, 
-     * then {@link #listener} is set to {@link #listenerSingle}. 
-     * <li>
-     * If <code>singTest</code> is <code>null</code>, 
-     * then {@link #listener} is set to {@link #listenerAll}. 
-     * </ul>
-     * 
+     * Sets {@link #singTest} according to <code>singTest</code>. 
      */
     void setSingleTest(TestCase singTest) {
 	this.singTest = singTest;
