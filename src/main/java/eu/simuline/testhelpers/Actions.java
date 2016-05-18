@@ -68,15 +68,8 @@ public class Actions {
 		return;
 	    }
 	    assert clsName != null;
+	    Actions.this.coreRunner = new CoreRunner(clsName);
 
-	    try {
-		Class<?> cls = new TestCaseClassLoader()
-		    .loadClass(clsName, true);
-		Actions.this.coreRunner = new CoreRunner(cls);
-	    } catch (ClassNotFoundException e) {
-		System.out.println
-		    ("Could not find testclass '" + clsName + "'. ");
-	    }
 	    // clears list of failed testcases
 	    Actions.this.guiRunner.resetTestCaseLister();
 	    Actions.this.getStartAction().actionPerformed(null);
@@ -202,10 +195,9 @@ public class Actions {
 	private final RunNotifier notifier;
 
 	/**
-	 * The class to be tested. 
+	 * The name of the class to be tested. 
 	 */
-	private final Class<?> testClass;
-	
+	private final String testClassName;
 
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
@@ -214,18 +206,18 @@ public class Actions {
 	/**
 	 * Creates a runner running all testcases in the given test class. 
 	 */
-	CoreRunner(Class<?> testClass)  {
+	CoreRunner(String testClassName)  {
 	    this.notifier = new RunNotifier();
 	    this.notifier.addListener(Actions.this.listener);
 
-	    this.testClass = testClass;
+	    this.testClassName = testClassName;
 	}
 
 	/**
 	 * Copy constructor. 
 	 */
 	CoreRunner(CoreRunner other)  {
-	    this(other.testClass);
+	    this(other.testClassName);
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -239,11 +231,10 @@ public class Actions {
 	    Class<?> newTestClass = null;
 	    try {
 		newTestClass = new TestCaseClassLoader()
-		    .loadClass(this.testClass.getName(), 
-					 true);
+		    .loadClass(this.testClassName, true);
 	    } catch (ClassNotFoundException e) {
 		throw new IllegalStateException// NOPMD
-		    ("Testclass '" + this.testClass + "' disappeared. ");
+		    ("Testclass '" + this.testClassName + "' disappeared. ");
 		// **** This makes the problem 
 		// that in the GUI the run button is shaded 
 		// (and the stop button is not). 
@@ -292,10 +283,6 @@ public class Actions {
      * -------------------------------------------------------------------- */
 
 
-    private CoreRunner coreRunner;
-
-    private final GUIRunListener listener;
-
     /**
      * The action to open a new testclass. 
      */
@@ -319,7 +306,11 @@ public class Actions {
     private final BreakAction breakAction;
 
     private final GUIRunner guiRunner;
+    private CoreRunner coreRunner;
 
+    private final GUIRunListener listener;
+
+ 
     /**
      * Defines whether a test is running. 
      * This is used to activate/deactivate the actions 
@@ -341,20 +332,19 @@ public class Actions {
      * Creates a new <code>Actions</code> instance.
      *
      */
-    public Actions(Class<?> testClass) {
+   public Actions(String testClassName) {
 
-	this.singTest = null;// leads to running all testcases 
 	this. openAction = new  OpenAction();
 	this.startAction = new StartAction();
 	this. stopAction = new  StopAction();
 	this.breakAction = new BreakAction();
 
-
 	this.guiRunner  = new GUIRunner(this);
 	this.listener   = new GUIRunListener(this);
-	this.coreRunner = new CoreRunner(testClass);
 
-	this.isRunning = false;
+	this.coreRunner = new CoreRunner(testClassName);
+	this.isRunning  = false;
+	this.singTest   = null;// leads to running all testcases 
     }
 
     /* -------------------------------------------------------------------- *
@@ -367,15 +357,23 @@ public class Actions {
      * with body <code>Actions.run(<testclass>.class);</code>. 
      */
     public static void run(final Class<?> testClass) {
+	run(testClass.getName());
+    }
+
+    public static void run(final String testClassName) {
       Runnable guiCreator = new Runnable() {
 		public void run() {
 		    // parameter null is nowhere used. 
-		    new Actions(testClass).startAction.actionPerformed(null);
+		    new Actions(testClassName).startAction.actionPerformed(null);
 		}
         };
  
         // execute in Event-Dispatch-Thread 
         SwingUtilities.invokeLater(guiCreator);
+    }
+
+    public static void runFromMain() {
+	run(new Throwable().getStackTrace()[1].getClassName());
     }
 
     GUIRunner getRunner() {
@@ -429,6 +427,10 @@ public class Actions {
 
     AbstractAction getExitAction() {
 	return new ExitAction();
+    }
+
+    public static void main(String[] args) {
+	runFromMain();
     }
 
 }
