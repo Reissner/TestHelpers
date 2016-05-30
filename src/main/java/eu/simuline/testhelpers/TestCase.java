@@ -4,7 +4,7 @@ import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 
-import junit.framework.AssertionFailedError;
+import junit.framework.AssertionFailedError;// NOPMD
 
 /**
  * Represents a test which may be a single case or a suite 
