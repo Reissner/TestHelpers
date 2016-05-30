@@ -26,8 +26,9 @@ import org.javalobby.icons20x20.Delete;
 
 /**
  * Represents the actions of the test GUI inspired by old junit GUI. 
- * The fundamental method is {@link #run(Class)} 
- * which runs the test class. 
+ * The fundamental methods are {@link #runFromMain()} 
+ * which runs the test class from its main method 
+ * and {@link #runTstCls(String)} which runs a testclass with the given name. 
  *
  * @see GUIRunner
  * @see GUIRunListener
@@ -355,12 +356,11 @@ public class Actions {
      * The fundamental method to start tests with the underlying JUnit-GUI. 
      * The test class is supposed to define a method <code>main</code> 
      * with body <code>Actions.run(<testclass>.class);</code>. 
+     *
+     * @see JUnitSingleTester
+     * @see #runFromMain()
      */
-    public static void run(final Class<?> testClass) {
-	run(testClass.getName());
-    }
-
-    public static void run(final String testClassName) {
+    static void runTstCls(final String testClassName) {
       Runnable guiCreator = new Runnable() {
 		public void run() {
 		    // parameter null is nowhere used. 
@@ -372,8 +372,15 @@ public class Actions {
         SwingUtilities.invokeLater(guiCreator);
     }
 
+    /**
+     * The fundamental method to start tests with the underlying JUnit-GUI. 
+     * The test class is supposed to define a method <code>main</code> 
+     * with body <code>Actions.runFromMain();</code>. 
+     * Essentially invokes {@link #runTstCls(String)} 
+     * with the proper test class name. 
+     */
     public static void runFromMain() {
-	run(new Throwable().getStackTrace()[1].getClassName());
+	runTstCls(new Throwable().getStackTrace()[1].getClassName());
     }
 
     GUIRunner getRunner() {
