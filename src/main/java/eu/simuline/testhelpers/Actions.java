@@ -178,8 +178,8 @@ public class Actions {
     /**
      * A thread in which a testclass is executed 
      * or at least a single testcase out of this testclass. 
-     * Essentially, this is defined by the class {@link #testClass}. 
-     * The major task of this class is, to reload {@link #testClass} 
+     * Essentially, this is defined by the class {@link #testClassName}. 
+     * The major task of this class is, to reload {@link #testClassName} 
      * using a classloader which allows reloading 
      * each test run without restarting the tester application. 
      * The core of the code is copied from {@link JUnitCore}. 
