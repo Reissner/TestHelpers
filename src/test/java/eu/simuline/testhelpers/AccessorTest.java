@@ -607,7 +607,7 @@ public class AccessorTest {
      * Uncomment either the textual UI, Swing UI, or AWT UI.
      */
     public static void main(String args[]) {
-	Actions.run(AccessorTest.class);
+	Actions.runFromMain();
     }
 
 }
