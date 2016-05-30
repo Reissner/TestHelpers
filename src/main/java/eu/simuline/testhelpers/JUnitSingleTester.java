@@ -5,22 +5,15 @@ import eu.simuline.util.Finder;
 
 import java.io.File;
 
+/**
+ * Runs a bunch of tests using {@link Actions#runTstCls(String)}. 
+ */
 public class JUnitSingleTester {
-
-    static class RunnerThread extends Thread {
-	Class<?> tstCls;
-	RunnerThread(Class<?> tstCls) {
-	    this.tstCls = tstCls;
-	}
-
-	public void run() {
-	    Actions.run(tstCls);
-	}
-    } // class RunnerThread 
 
     /**
      * Runs all testclasses in the directory given by the 0th argument 
-     * in the package **** given by the second argument. 
+     * in the package given by the 1st argument. 
+     * The package separator is the file separator. 
      */
     public static void main(String[] args) throws ClassNotFoundException {
 	File baseDir = new File(args[0]+args[1]);
@@ -36,7 +29,6 @@ public class JUnitSingleTester {
 
 	File clsFile;
 	String clsName;
-	Class<?> tstCls;
 
 	while (finder.hasNext()) {
 	    clsFile = finder.next();
@@ -51,9 +43,7 @@ System.out.println("clsName"+clsName);
 	    clsName = clsName.replace(System.getProperty("file.separator")
 				      .charAt(0),'.');
 	    System.out.println("clsName: "+clsName);
-	    tstCls = Class.forName(clsName);
-	    //Actions.run(tstCls);
-	    new RunnerThread(tstCls).start();
+	    Actions.runTstCls(clsName);
 	} // while 
 
     }
