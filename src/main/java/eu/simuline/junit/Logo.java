@@ -3,7 +3,7 @@ package eu.simuline.junit;
 import  eu.simuline.util.GifResource;
 
 /**
- * Represents the JUnit logo.
+ * Represents the JUnit logo. 
  *
  *
  * Created: Sun Jun  4 20:50:12 2006

@@ -3,8 +3,10 @@ package eu.simuline.junit;
 import  eu.simuline.util.GifResource;
 
 /**
- * Represents the testcase AssumtionFailure icon in JUnit.
- *
+ * Represents the testcase AssumptionFailure icon in JUnit. 
+ * This is a yellow cross 
+ * and so resembles the cross icons signifying failures 
+ * but also the {@link Ignored} icon which is a yellow hook. 
  *
  * Created: Sun Jun  4 20:50:12 2006
  *

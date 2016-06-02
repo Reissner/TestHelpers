@@ -3,7 +3,7 @@ package eu.simuline.junit;
 import  eu.simuline.util.GifResource;
 
 /**
- * Describe class GifResource here.
+ * Represents the testcase Succeeded icon in JUnit. 
  *
  *
  * Created: Sun Jun  4 20:50:12 2006

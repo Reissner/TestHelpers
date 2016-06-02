@@ -3,7 +3,7 @@ package eu.simuline.junit;
 import  eu.simuline.util.GifResource;
 
 /**
- * Describe class GifResource here.
+ * Represents the testsuite hierarchy icon in JUnit. (not yet used. )
  *
  *
  * Created: Sun Jun  4 20:50:12 2006
