@@ -67,10 +67,12 @@ public class TextRunListener extends RunListener {
 
 
     /**
-     * Called before any tests have been run. 
+     * Called before any tests 
+     * of a suite described by <code>desc</code> have been run. 
+     * This may be called on an arbitrary thread.
      *
      * @param desc
-     *    describes the tests to be run
+     *    describes the suite of tests to be run. 
      */
     // api-docs inherited from class RunListener
     public void testRunStarted(Description desc) throws Exception {//NOPMD
@@ -78,11 +80,16 @@ public class TextRunListener extends RunListener {
     }
 
     /**
-     * Called when all tests have finished. 
-     * Prints a statistics on the result to the standard output. 
+     * Called when all tests of the suite 
+     * announced by {@link #testRunStarted(Description)} have finished. 
+     * This may be called on an arbitrary thread. 
+     * <p>
+     * Prints a statistics on the result of the test suite 
+     * to the standard output. 
      *
      * @param result 
-     *    the summary of the test run, including all the tests that failed
+     *    the summary of the outcoming of the suite of tests run, 
+     *    including all the tests that failed
       */
     // api-docs inherited from class RunListener
     public void testRunFinished(Result result) throws Exception {//NOPMD
@@ -101,6 +108,42 @@ public class TextRunListener extends RunListener {
     }
 
     /**
+     * Called when a test suite is about to be started. 
+     * If this method is called for a given {@link Description}, 
+     * then {@link #testSuiteFinished(Description)} 
+     * will also be called for the same {@code Description}. 
+     * <p>
+     * Note that not all runners will call this method, so runners should 
+     * be prepared to handle {@link #testStarted(Description)} calls for tests 
+     * where there was no cooresponding {@link #testSuiteStarted()} call 
+     * for the parent {@link Description}.
+     *
+     * @param desc
+     *    the description of the test suite that is about to be run
+     *    (generally a class name)
+     * @since 4.13
+     */
+    // api-docs inherited from class RunListener
+    public void testSuiteStarted(Description desc) throws Exception {//NOPMD
+	System.out.println("S testSuiteStarted(...   " + desc);
+    }
+
+    /**
+     * Called when a test suite has finished, 
+     * whether the test suite succeeds or fails.
+     * This method will not be called for a given {@link Description} 
+     * unless {@link #testSuiteStarted(Description)} was called 
+     * for the same {@link Description}.
+     *
+     * @param desc 
+     *    the description of the test suite that just ran
+     * @since 4.13
+     */
+    public void testSuiteFinished(Description desc) throws Exception {//NOPMD
+	System.out.println("S testSuiteFinished(...  " + desc);
+    }
+
+    /**
      * Called when an atomic test is about to be started. 
      * An ignored test is never started. 
      *
@@ -111,7 +154,7 @@ public class TextRunListener extends RunListener {
      */
     // api-docs inherited from class RunListener
     public void testStarted(Description desc) throws Exception {//NOPMD
-	System.out.println("T testStarted(..." + desc);
+	System.out.println("T testStarted(...       " + desc);
     }
 
     /**
@@ -127,26 +170,40 @@ public class TextRunListener extends RunListener {
      */
     // api-docs inherited from class RunListener
     public void testFinished(Description desc) throws Exception {//NOPMD
-	System.out.println("T testFinished(" + desc);
+	System.out.println("T testFinished(         " + desc);
     }
 
     /** 
      * Called when an atomic test fails to execute properly 
-     * throwing a Throwable. 
-     * This method is invoked after {@link #testStarted(Description)} 
+     * throwing a Throwable, or when a listener throws an exception. 
+     * <p>
+     * In the case of a failure of an atomic test, 
+     * this method is invoked after {@link #testStarted(Description)} 
      * and before {@link #testFinished(Description)}
-     * with the according description. 
+     * with the according description of <code>failure</code> 
+     * from the same thread that called {@link #testStarted(Description)}. 
      * In case of a failed assumption, instead of this method 
      * {@link #testAssumptionFailure(Failure)} is invoked 
      * for the according test. 
+     * <p>
+     * In the case of a listener throwing an exception, 
+     * this method will be called with the description of <code>failure</code> 
+     * given by {@link Description#TEST_MECHANISM}, 
+     * and may be called on an arbitrary thread.
      *
      * @param failure 
-     *    describes the test that failed and the exception that was thrown
+     *    describes the test that failed and the exception that was thrown 
+     *    or indicates that a listener has thrown an exception 
+     *    and the according exception. 
      */
     // api-docs inherited from class RunListener
     public void testFailure(Failure failure) throws Exception {//NOPMD
-	// description and exception
-	System.out.println("T testFailure(" + failure);
+	// description and exception 
+	if (failure.getDescription().equals(Description.TEST_MECHANISM)) {
+	    System.out.println("FRAMEWORK testFailure(          " + failure);
+	}
+
+	System.out.println("T testFailure(          " + failure);
     }
 
     /**
@@ -155,7 +212,7 @@ public class TextRunListener extends RunListener {
      * This is treated as ignored with the description of the failure. 
      * This method is invoked after {@link #testStarted(Description)} 
      * and before {@link #testFinished(Description)}
-     * with the according description. 
+     * with the according description of <code>failure</code>. 
      * A failed assertion does not count as a failure 
      * and so {@link #testFailure(Failure)} is not invoked 
      * for the according test. 
@@ -179,7 +236,7 @@ public class TextRunListener extends RunListener {
     /**
      * Called when a test will not be run, 
      * generally because a test method is annotated 
-     * with <code>@Ignored</code>. 
+     * with {@link org.junit.Ignore}. 
      * This implies 
      * that neither {@link #testStarted(Description)} 
      * nor {@link #testFinished(Description)} are invoked 
@@ -192,6 +249,6 @@ public class TextRunListener extends RunListener {
      */
     // api-docs inherited from class RunListener
     public void testIgnored(Description desc) throws Exception {//NOPMD
-	System.out.println("T testIgnored("+desc);
+	System.out.println("T testIgnored(          " + desc);
     }
 }
