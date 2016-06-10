@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Enumeration;
 
-import java.util.concurrent.RejectedExecutionException;
-
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -83,10 +81,6 @@ public class TestCaseClassLoader extends ClassLoader {
      * fields.                                                              *
      * -------------------------------------------------------------------- */
 
-    // **** better done with instrumentation. 
-    static boolean STOP;
-
-
     /** scanned class path */
     private JavaPath jPath;
 
@@ -129,7 +123,6 @@ public class TestCaseClassLoader extends ClassLoader {
     private TestCaseClassLoader(String classPath) {
 	this.jPath = new JavaPath(classPath);
 	readExcludedPackages();
-	STOP = false;
     }
 
     /* -------------------------------------------------------------------- *
@@ -171,15 +164,8 @@ public class TestCaseClassLoader extends ClassLoader {
 	return defineClass(name, data, 0, data.length);
     }
 
-    void pleaseBreak() {
-	STOP = true;
-    }
-	
     public synchronized Class<?> loadClass(String name, boolean resolve)
 	throws ClassNotFoundException {
-	if (STOP) {
-	    throw new RejectedExecutionException("User interrupt");// **** 
-	}
 
 	Class<?> cls = findLoadedClass(name);
 	if (cls != null) {
