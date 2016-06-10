@@ -31,13 +31,13 @@ import org.junit.runner.notification.RunListener;// for javadoc only
  * notified by a {@link RunListener} as depicted below. 
 
  * <pre>
- *                                     |testRunStarted
+ *                                     |{@link RunListener#testRunStarted(Description)}
  *                                     |
  *                          {@link #Scheduled}
  *                                    /|
  *                                   / |
  * {@link RunListener
- *#testIgnored(Description)}          /  |{@link RunListener#testStarted(Description)}
+ *#testIgnored(Description)}        /    |{@link RunListener#testStarted(Description)}
  *                                 /   |
  *                                /    |
  *                 {@link #Ignored}    |
@@ -58,21 +58,27 @@ import org.junit.runner.notification.RunListener;// for javadoc only
  *
  * Accordingly, 
  * there are methods <code>setXXX</code> for transition to the next state: 
+ * {@link #setScheduled()}, {@link #setStarted()} prior to testing, 
+ * {@link #setIgnored()} if not to be tested and 
  * {@link #setFinished()}, {@link #setAssumptionFailure()} and 
- * {@link #setFailure(org.junit.runner.notification.Failure)}. 
+ * {@link #setFailure(org.junit.runner.notification.Failure)} 
+ * after the test finished. 
+ * All these methods prevent invalid phase transitions 
+ * throwin an {@link IllegalStateException}. 
  * 
  * <p>
  * For each of these phases, there are methods to represent the quality 
  * or further aspects of a testcase graphically: Each Quality defines 
  * <ul>
  * <li>a separate icon given by {@link #getIcon()}, 
- * <li>a status message given by {@link #status()} 
+ * <li>a status message given by {@link #getMessage()} 
  * <li>a color {@link #getColor()} influencing the color of the progress bar 
- * <li>a method {@link #time(long)} to compute the time required for a test run.
+ * <li>a method {@link #setTime(long)} to compute the time 
+ * required for a test run.
  * </ul>
  *
  * Finally, there are further methods to ask for certain properties 
- * as {@link #isIrregular()}, {@link #isIgnored()} and {@link #allowsRerun()}. 
+ * as {@link #isNeutral()} and {@link #hasFailure()}. 
  *
  * Created: Wed Jun 12 16:41:14 2006
  *
@@ -98,23 +104,21 @@ enum Quality {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(File.class);
 	}
+	Quality setStarted() {
+	    return Started;
+	}
 	Quality setFinished() {
 	    throw new IllegalStateException
 		("Found testcase finished before started. ");
 	}
-	// **** seems strange and contradicts introduction **** 
 	Quality setIgnored() {
-	    throw new IllegalStateException
-		("Found testcase ignored before started. ");// shall be ok. 
+	    return Ignored;
 	}
-	String status() {
-	    throw new UnsupportedOperationException();
+	String getMessage() {
+	    return "Scheduled";
 	}
-	long time(long time) {
+	long setTime(long time) {
 	    return -1;
-	}
-	boolean allowsRerun() {
-	    return false;
 	}
     },
 
@@ -132,16 +136,22 @@ enum Quality {
 	    return Success;
 	}
 	Quality setIgnored() {
-	    return Ignored;
+	    throw new IllegalStateException
+		("Found testcase to be ignored while running. ");
 	}
-	String status() {
+	Quality setScheduled() {
+	    throw new IllegalStateException
+		("Found testcase scheduled before started. ");
+	}
+	Quality setStarted() {
+	    throw new IllegalStateException
+		("Found testcase started while running. ");
+	}
+	String getMessage() {
 	    return "started";
 	}
-	long time(long time) {
+	long setTime(long time) {
 	    return System.currentTimeMillis();
-	}
-	boolean allowsRerun() {
-	    return false;
 	}
 	Quality setAssumptionFailure() {
 	    return Invalidated;
@@ -166,7 +176,7 @@ enum Quality {
 	    throw new IllegalStateException
 		("Found testcase successful before finished. ");
 	}
-	String status() {
+	String getMessage() {
 	    return "succeeded";
 	}
     },
@@ -179,10 +189,7 @@ enum Quality {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(AssumptionFailure.class);
 	}
-	Quality setFinished() {
-	    return this;
-	}
-	String status() {
+	String getMessage() {
 	    return "invalidated by failed assumption";
 	}
     },
@@ -195,14 +202,14 @@ enum Quality {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(Ignored.class);
 	}
-	long time(long time) {
+	long setTime(long time) {
 	    return 0;
 	}
 	Quality setFinished() {
 	    throw new IllegalStateException
 		("Found testcase finished and ignored. ");
 	}
-	String status() {
+	String getMessage() {
 	    return "was ignored";
 	}
     }, 
@@ -217,7 +224,7 @@ enum Quality {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(Failure.class);
 	}
-	String status() {
+	String getMessage() {
 	    return "failed";
 	}
     }, 
@@ -231,7 +238,7 @@ enum Quality {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(Error.class);
 	}
-	String status() {
+	String getMessage() {
 	    return "had an error";
 	}
     };
@@ -289,8 +296,52 @@ enum Quality {
     private static final Color COLOR_IGNORED = Color.yellow;
 
     /* -------------------------------------------------------------------- *
-     * methods.                                                             *
+     * methods for phase transitions.                                       *
      * -------------------------------------------------------------------- */
+
+  
+    /**
+     * Returns the next phase 
+     * when {@link RunListener#testRunStarted(Description)} is invoked. 
+     * 
+     * @return
+     *    {@link #Scheduled} except this is {@link #Started}. 
+     *    Even for {@link #Scheduled} itself. 
+     * @throws IllegalStateException 
+     *    for {@link #Started}. 
+     *    **** it is a decision to disallow rescheduling a running testcase. 
+     */
+    Quality setScheduled() {
+	return Scheduled;
+    }
+
+    /**
+     * Returns the next phase 
+     * when {@link RunListener#testStarted(Description)} is invoked. 
+     * 
+     * @return
+     *    {@link #Started} if this is {@link #Scheduled}. 
+     * @throws IllegalStateException 
+     *    except if this is {@link #Scheduled}
+     */
+    Quality setStarted() {
+	throw new IllegalStateException
+	    ("Found testcase started but not scheduled. ");
+    }
+
+    /**
+     * Returns the next phase 
+     * when {@link RunListener#testIgnored(Description)} is invoked. 
+     *
+     * @return
+     *    {@link #Ignored} if this is {@link #Scheduled}. 
+     * @throws IllegalStateException 
+     *    except for {@link #Scheduled}. 
+     */
+    Quality setIgnored() {
+	throw new IllegalStateException
+	    ("Found testcase ignored but not scheduled. ");
+    }
 
     /**
      * Returns the next phase 
@@ -330,7 +381,8 @@ enum Quality {
      * @return
      *    {@link #Failure} or {@link #Error} for {@link #Started} 
      *    depending on whether the thrown throwable 
-     *    is an {@link AssertionFailedError}. 
+     *    is an {@link AssertionError} 
+     *    (should be {@link AssertionFailedError}). 
      * @throws IllegalStateException 
      *    for all but {@link #Started}. 
      */
@@ -339,20 +391,19 @@ enum Quality {
 	    ("Found testcase with failure which is not started. ");
     }
 
+    /* -------------------------------------------------------------------- *
+     * methods for phase representation.                                    *
+     * -------------------------------------------------------------------- */
 
-    /**
+     /**
      * Returns an icon representing this phase on the GUI. 
      */
     abstract ImageIcon getIcon();
 
     /**
-     * Returns a status message which describes this phase 
-     * or throws an exception. 
-     *
-     * @throws UnsupportedOperationException
-     *    if applied for {@link #Scheduled}. 
+     * Returns a status message which describes this phase. 
      */
-    abstract String status();
+    abstract String getMessage();
 
     /**
      * Determines a Quality with the maximum level 
@@ -391,17 +442,8 @@ enum Quality {
     }
 
     /**
-     * Returns the difference of the current time in miliseconds 
+     * Returns the difference of the current time in milliseconds 
      *
-     * @return
-     *    <ul>
-     *    <li><code>-1</code> for {@link #Scheduled}. 
-     *    <li><code>-0</code> for {@link #Ignored}. 
-     *    <li>The current time {@link System#currentTimeMillis()} 
-     *        for {@link #Started}. 
-     *    <li>the span of time the underlying testcase took 
-     *        from start to finish. 
-     *    </ul>
      * @param time
      *    some time in milliseconds. 
      *    The details depend on this: 
@@ -412,48 +454,70 @@ enum Quality {
      *        {@link #Success} interprete <code>time</code> 
      *        as the start time of the underlying testcase. 
      *    </ul>
+     * @return
+     *    <ul>
+     *    <li><code>-1</code> for {@link #Scheduled}. 
+     *    <li><code>-0</code> for {@link #Ignored}. 
+     *    <li>The current time {@link System#currentTimeMillis()} 
+     *        for {@link #Started}. 
+     *    <li>the span of time the underlying testcase took 
+     *        from start to finish 
+     *    </ul>
      */
-    long time(long time) {
+    long setTime(long time) {
 	return System.currentTimeMillis() - time;
     }
 
 
 
-    /**
-     * Whether the run of the underlying testcase stopped irregularly. 
-     * This is the case only for {@link #Failure} and {@link #Error}. 
-     */
-    boolean isIrregular() {
-	return this.level == 2;
-    }
+    // /**
+    //  * Whether the run of the underlying testcase stopped irregularly. 
+    //  * This is the case only for {@link #Failure} and {@link #Error}. 
+    //  */
+    // boolean isIrregular() {
+    // 	return this.level == 2;
+    // }
 
-    /**
-     * Returns whether the underlying testcase is ignored. 
-     * This is <code>false</code> 
-     * except for {@link #Ignored} and {@link #Invalidated}. 
-     */
-    boolean isIgnored() {
-	return this.level == 1;
-    }
+    // /**
+    //  * Returns whether the underlying testcase is ignored. 
+    //  * This is <code>false</code> 
+    //  * except for {@link #Ignored} and {@link #Invalidated}. 
+    //  */
+    // boolean isIgnored() {
+    // 	return this.level == 1;
+    // }
 
    /**
      * Returns whether the underlying testcase is 
      * neither finished unsuccessfully nor ignored. 
      * This is <code>false</code> 
      * except for {@link #Scheduled}, {@link #Started} and {@link #Success}. 
+     * Neutral qualities do not occur in the statistics 
+     * given by {@link GUIRunner.StatisticsTestState}.  
      */
     boolean isNeutral() {
 	return this.level == 0;
     }
 
     /**
-     * Returns whether the underlying tescase allows to be rerun. 
-     * This is <code>false</code> 
-     * for {@link #Scheduled} and {@link #Started} only. 
-     * **** for Scheduled, this is not ideal. 
+     * Returns whether the given state is tied to a throwable. 
+     *
+     * @return
+     *    <code>true</code> iff this is 
+     *    {@link #Invalidated}, {@link #Failure} or {@link #Error}. 
      */
-    boolean allowsRerun() {
-	return true;
+    boolean hasFailure() {
+	switch (this.level) {
+	case 0:
+	    return false;
+	case 1:
+	    return this == Invalidated;
+	case 2:
+	    return true;
+	default:
+	    throw new IllegalStateException
+		("Found undefined level " + this.level + ". ");
+	}
     }
 
 } // enum Quality 
