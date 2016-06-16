@@ -13,6 +13,10 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Runner;
 import org.junit.runner.Result;
+import org.junit.runner.Description;
+
+import org.junit.runner.manipulation.Filter;
+
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runner.notification.StoppedByUserException;
@@ -26,6 +30,9 @@ import org.javalobby.icons20x20.Delete;
 
 /**
  * Represents the actions of the test GUI inspired by old junit GUI. 
+ * **** Moreover provides a wrapper to access junit 
+ * and the access point to run the gui started from the class to be tested. 
+ * ****
  * The fundamental methods are {@link #runFromMain()} 
  * which runs the test class from its main method 
  * and {@link #runTstCls(String)} which runs a testclass with the given name. 
@@ -39,7 +46,7 @@ import org.javalobby.icons20x20.Delete;
  * @version 1.0
  */
 public class Actions {
-
+    
     /* -------------------------------------------------------------------- *
      * inner classes and enums.                                             *
      * -------------------------------------------------------------------- */
@@ -143,6 +150,7 @@ public class Actions {
 					    ActionEvent.CTRL_MASK));
 	}
 
+	@SuppressWarnings("deprecation")// because no alternative to stop. 
 	public void actionPerformed(ActionEvent event) {
 	    //setEnableForRun(false);// !isRunning
 	    System.out.println("Break...");
@@ -228,6 +236,13 @@ public class Actions {
 
 	// api-docs inherited from Runnable 
 	// overwrites void implementation provided by class Thread 
+	/**
+	 * Loads the class with name {@link #testClassName} 
+	 * with a {@link TestCaseClassLoader} to allow reloading. 
+	 * Then creates a {@link Request} filtering it with {@link #filter} 
+	 * defining the tests to be run and runs those tests 
+	 * invoking {@link #run(Request)}. 
+	 */
 	public void run() {
 	    Class<?> newTestClass = null;
 	    try {
@@ -242,10 +257,15 @@ public class Actions {
 	    }
 	    assert newTestClass != null;
 
-	    Request request = Request.classes(newTestClass);
-	    if (Actions.this.singTest != null) {
-		request = request.filterWith(Actions.this.singTest.getDesc());
+	    Request request = Request.aClass(newTestClass);
+	    //Request request = Request.classes(newTestClass);
+	    if (Actions.this.filter != null && Actions.this.filter.isTest()) {
+		request = request.filterWith(Actions.this.filter);
+	    } else {
+		Actions.this.listener.testClassStructureLoaded
+		    (request.getRunner().getDescription());
 	    }
+
 	    try {
 		run(request);
 	    } catch (StoppedByUserException ee) {
@@ -259,8 +279,6 @@ public class Actions {
 	// almost copy from JUnitCore
 	public void run(Request request) {
 	    Runner runner = request.getRunner();
-//System.out.println("runner: "+runner);is an instance of Suite 
-	    
 	    Result result = new Result();
 	    RunListener listener = result.createListener();
 	    this.notifier.addFirstListener(listener);
@@ -307,6 +325,7 @@ public class Actions {
     private final BreakAction breakAction;
 
     private final GUIRunner guiRunner;
+
     private CoreRunner coreRunner;
 
     private final GUIRunListener listener;
@@ -323,6 +342,21 @@ public class Actions {
     // to run a single testcase **** may be null 
     // which signifies that all tests shall be executed. 
     // shall be replaced by compounds. 
+    /**
+     * Defines the filter for tests to be run. 
+     * **** may be null 
+     *
+     * @see #setFilterAndTest(Description, TestCase)
+     * @see Actions.CoreRunner#run()
+     */
+    private Description filter;
+
+    /**
+     * Defines the first atomic test to be run. 
+     * **** may be null 
+     *
+      * @see #setFilterAndTest(Description, TestCase)
+     */
     private TestCase singTest;
 
     /* -------------------------------------------------------------------- *
@@ -332,6 +366,8 @@ public class Actions {
     /**
      * Creates a new <code>Actions</code> instance.
      *
+     * @param testClassName
+     *    the name of the test class. 
      */
    public Actions(String testClassName) {
 
@@ -345,18 +381,62 @@ public class Actions {
 
 	this.coreRunner = new CoreRunner(testClassName);
 	this.isRunning  = false;
-	this.singTest   = null;// leads to running all testcases 
+	this.filter     = null;// **** to be reworked 
+	this.singTest   = null;// leads to running all testcases **** 
     }
 
     /* -------------------------------------------------------------------- *
      * methods.                                                             *
      * -------------------------------------------------------------------- */
 
+
+    private static boolean descShouldRun(Description desc, 
+					 Description desiredDesc) {
+	assert desc.isTest();
+	if (desiredDesc.isTest()) {
+	    return desiredDesc.equals(desc);
+	}
+	for (Description each : desiredDesc.getChildren()) {
+	    if (descShouldRun(desc, each)) {
+		return true;
+	    }
+	}
+	return false;
+    }
+
+    // required only because of a bug in junit. 
+    /**
+     * Returns a {@code Filter} that only runs methods in 
+     * desiredDesc. 
+     *
+     * @param desiredDesc
+     *    a description of the tests to be run. 
+     * @return
+     *    a {@code Filter} that only runs methods in <code>desiredDesc</code>. 
+     */
+    public static Filter desc2filter(final Description desiredDesc) {
+        return new Filter() {
+            @Override
+            public boolean shouldRun(Description desc) {
+		return descShouldRun(desc, desiredDesc);
+               }
+
+            @Override
+            public String describe() {
+                return String.format("Methods %s", 
+				     desiredDesc.getDisplayName());
+            }
+        };
+    }
+
+
     /**
      * The fundamental method to start tests with the underlying JUnit-GUI. 
      * The test class is supposed to define a method <code>main</code> 
      * with body <code>Actions.run(<testclass>.class);</code>. 
      *
+     * @param testClassName
+     *    the name of the test class to represent and run. 
      * @see JUnitSingleTester
      * @see #runFromMain()
      */
@@ -388,14 +468,19 @@ public class Actions {
     }
 
     /**
-     * Sets {@link #singTest} according to <code>singTest</code>. 
+     * Sets {@link #singTest} according to <code>testCase</code> 
+     * if that is a single test; otherwise <code>null</code>. ****
+     *
+     * @param filter
+     *    the filter for the tests to be run 
+     * @param testCase
+     *    the all in all testcase to be represented in the tree 
+     *    which comprises <code>filter</code>. 
      */
-    void setSingleTest(TestCase singTest) {
-	this.singTest = singTest;
-    }
-
-    TestCase getSingleTest() {
-	return this.singTest;
+    void setFilterAndTest(Description filter, TestCase testCase) {
+	assert filter != null && testCase != null && testCase.isTest();
+	this.filter = filter;
+	this.singTest = testCase;
     }
 
     /**
@@ -442,15 +527,3 @@ public class Actions {
 
 }
 
-// well, i did not find any reasonable alternatie to stop. 
-// maybe instrumentation is a way, but... 
-// seems to be quite complicated. 
-//
-//
-// warning: [options] bootstrap class path not set in conjunction with -source 1.6
-// Actions.java:155: warning: [deprecation] stop() in Thread has been deprecated
-// Actions.this.coreRunner.stop();//interrupt();
-//                        ^
-// 2 warnings
-
-// Compilation finished at Tue May 10 01:51:04
