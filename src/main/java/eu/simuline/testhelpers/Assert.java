@@ -372,7 +372,16 @@ ite.getTargetException().printStackTrace();
      * which is assumed to have signature <code>double norm(Cls actual)</code> 
      * with <code>Cls</code> the class of <code>expected</code>. 
      *
-     *
+     * @param message
+     *    the error message displayed if the test fails regularly, 
+     *    i.e. if <code>computeNorm2(norm, expected, actual)</code> 
+     *    can be evaluated without throwing an exception. 
+     * @param expected
+     *    The expected object (see the actual object). 
+     * @param actual
+     *    The actual object 
+     *    which is expected to deviate from <code>expected</code> 
+     *    by at most <code>delta</code> in norm 
      * @param norm
      *    the name of a metric method, 
      *    i.e. of a member method of the form 
@@ -384,6 +393,8 @@ ite.getTargetException().printStackTrace();
      *        yield the same result, 
      *    <li><code>x.norm(y)+y.norm(z)\(\ge\) x.norm(z)</code>. 
      *    </ul>
+     * @param delta
+     *    the allowed deviation as a <code>double</code> value. 
      * @throws IllegalArgumentException
      *    if the test cannot be performed, i.e. 
      *    <ul>
@@ -459,6 +470,11 @@ ite.getTargetException().printStackTrace();
      *    <code>x.norm()+y.norm()\(\ge (x+y)\).norm(z)</code>, 
      *    where \(x+y\) represents the sum of vectors. 
      *    </ul>
+     * @param expected
+     *    The object from which the norm is to be computed. 
+     * @return
+     *    the norm of <code>expected</code>
+     *    defined by the method named <code>norm</code>. 
      * @throws IllegalArgumentException
      *    if the test cannot be performed, i.e. 
      *    <ul>
@@ -801,7 +817,7 @@ ite.getTargetException().printStackTrace();
      *    if invoking <code>cmp.compare(expected,actual)</code> 
      *    raises an exception. 
      * @throws AssertionFailedError
-     *    if the value of code>cmp.compare(expected,actual)</code> 
+     *    if the value of <code>cmp.compare(expected,actual)</code> 
      *    is not as specified by <code>cmpObj</code>. 
      * @see #assertIs(CmpObj,Object,Object,Comparator)
      */
@@ -866,7 +882,7 @@ ite.getTargetException().printStackTrace();
      *    if invoking <code>cmp.compare(expected,actual)</code> 
      *    raises an exception. 
      * @throws AssertionFailedError
-     *    if the value of code>cmp.compare(expected,actual)</code> 
+     *    if the value of <code>cmp.compare(expected,actual)</code> 
      *    is not as specified by <code>cmpObj</code>. 
      * @see #assertIs(CmpObj,String,Object,Object,Comparator)
      */
@@ -1388,6 +1404,10 @@ ite.getTargetException().printStackTrace();
      *    between <code>expected</code> and <code>actual</code>. 
      *    This must be a non-negative value; 
      *    in particular, <code>NaN</code> is not allowed. 
+     * @return
+     *    whether the relative deviation 
+     *    between <code>expected</code> and <code>actual</code> 
+     *    exceeds <code>reldiv</code> in absolute value. 
      * @throws IllegalArgumentException 
      *    <ul>
      *    <li>
@@ -1515,7 +1535,7 @@ ite.getTargetException().printStackTrace();
      * @param reldev 
      *    the maximum relative deviation 
      *    between <code>expected</code> and <code>actual</code>. 
-     *    This is relevant for <code>expected > separateAbsRel</code> 
+     *    This is relevant for <code>expected &gt; separateAbsRel</code> 
      *    but ignored otherwise. 
      * @throws IllegalArgumentException 
      *    for <code>separateAbsRel &lt; 0</code>. 
@@ -1559,7 +1579,7 @@ ite.getTargetException().printStackTrace();
      * @param reldev 
      *    the maximum relative deviation 
      *    between <code>expected</code> and <code>actual</code>. 
-     *    This is relevant for <code>expected > separateAbsRel</code> 
+     *    This is relevant for <code>expected &gt; separateAbsRel</code> 
      *    but ignored otherwise. 
      * @throws IllegalArgumentException 
      *    for <code>separateAbsRel &lt; 0</code>. 
@@ -1595,6 +1615,10 @@ ite.getTargetException().printStackTrace();
      *    between <code>expected</code> and <code>actual</code>. 
      *    This must be a non-negative value; 
      *    in particular, <code>NaN</code> is not allowed. 
+     * @return
+     *    whether the absolute deviation 
+     *    between <code>expected</code> and <code>actual</code> 
+     *    exceeds <code>absdiv</code> in absolute value. 
      * @throws IllegalArgumentException 
      *    <ul>
      *    <li>
