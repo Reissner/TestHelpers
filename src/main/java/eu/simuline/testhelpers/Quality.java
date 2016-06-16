@@ -1,14 +1,5 @@
 package eu.simuline.testhelpers;
 
-import eu.simuline.sun.gtk.File;
-
-import eu.simuline.junit.Ok;
-import eu.simuline.junit.New;
-import eu.simuline.junit.Ignored;
-import eu.simuline.junit.AssumptionFailure;
-import eu.simuline.junit.Failure;
-import eu.simuline.junit.Error;
-
 import eu.simuline.util.GifResource;
 
 import junit.framework.AssertionFailedError;
@@ -18,6 +9,9 @@ import java.awt.Color;
 import javax.swing.ImageIcon;
 
 import org.junit.runner.notification.RunListener;// for javadoc only 
+import org.junit.runner.notification.Failure;// for javadoc only 
+
+import org.junit.AssumptionViolatedException;
 
 
 /**
@@ -61,7 +55,7 @@ import org.junit.runner.notification.RunListener;// for javadoc only
  * {@link #setScheduled()}, {@link #setStarted()} prior to testing, 
  * {@link #setIgnored()} if not to be tested and 
  * {@link #setFinished()}, {@link #setAssumptionFailure()} and 
- * {@link #setFailure(org.junit.runner.notification.Failure)} 
+ * {@link #setFailure(Throwable)} 
  * after the test finished. 
  * All these methods prevent invalid phase transitions 
  * throwin an {@link IllegalStateException}. 
@@ -102,7 +96,7 @@ enum Quality {
      */
     Scheduled(0) {
 	ImageIcon getIcon() {
-	    return GifResource.getIcon(File.class);
+	    return GifResource.getIcon(eu.simuline.sun.gtk.File.class);
 	}
 	Quality setStarted() {
 	    return Started;
@@ -130,7 +124,7 @@ enum Quality {
      */
     Started(0) {
 	ImageIcon getIcon() {
-	    return GifResource.getIcon(New.class);
+	    return GifResource.getIcon(eu.simuline.junit.New.class);
 	}
 	Quality setFinished() {
 	    return Success;
@@ -158,8 +152,7 @@ enum Quality {
 	}
 	// **** should be based on AssertionFailedError only, 
 	// but junit does not admit this. 
- 	Quality setFailure(org.junit.runner.notification.Failure failure) {
-	    Throwable thrw = failure.getException();
+ 	Quality setFailure(Throwable thrw) {
 	    return thrw instanceof AssertionFailedError 
 		|| thrw instanceof AssertionError ? Failure : Error;
 	}
@@ -170,7 +163,7 @@ enum Quality {
      */
     Success(0) {
 	ImageIcon getIcon() {
-	    return GifResource.getIcon(Ok.class);
+	    return GifResource.getIcon(eu.simuline.junit.Ok.class);
 	}
 	Quality setFinished() {
 	    throw new IllegalStateException
@@ -187,7 +180,7 @@ enum Quality {
      */
     Invalidated(1) {
 	ImageIcon getIcon() {
-	    return GifResource.getIcon(AssumptionFailure.class);
+	    return GifResource.getIcon(eu.simuline.junit.AssumptionFailure.class);
 	}
 	String getMessage() {
 	    return "invalidated by failed assumption";
@@ -200,7 +193,7 @@ enum Quality {
      */
     Ignored(1) {
 	ImageIcon getIcon() {
-	    return GifResource.getIcon(Ignored.class);
+	    return GifResource.getIcon(eu.simuline.junit.Ignored.class);
 	}
 	long setTime(long time) {
 	    return 0;
@@ -222,7 +215,7 @@ enum Quality {
      */
     Failure(2) {
 	ImageIcon getIcon() {
-	    return GifResource.getIcon(Failure.class);
+	    return GifResource.getIcon(eu.simuline.junit.Failure.class);
 	}
 	String getMessage() {
 	    return "failed";
@@ -236,7 +229,7 @@ enum Quality {
      */
     Error(2) {
 	ImageIcon getIcon() {
-	    return GifResource.getIcon(Error.class);
+	    return GifResource.getIcon(eu.simuline.junit.Error.class);
 	}
 	String getMessage() {
 	    return "had an error";
@@ -378,15 +371,20 @@ enum Quality {
      * Returns  the next phase 
      * when {@link RunListener#testFailure(Failure)} is invoked. 
      *
+     * @param thrw
+     *    a throwable which determines 
+     *    whether the returned phase indicates a failure or an error. 
      * @return
      *    {@link #Failure} or {@link #Error} for {@link #Started} 
-     *    depending on whether the thrown throwable 
+     *    depending on whether <code>thrw</code> 
      *    is an {@link AssertionError} 
      *    (should be {@link AssertionFailedError}). 
      * @throws IllegalStateException 
      *    for all but {@link #Started}. 
+     *    If this is {@link #Started} 
+     *    but <code>failure</code> is an {@link AssumptionViolatedException}. 
      */
-    Quality setFailure(org.junit.runner.notification.Failure failure) {
+    Quality setFailure(Throwable thrw) {
 	throw new IllegalStateException
 	    ("Found testcase with failure which is not started. ");
     }
@@ -397,11 +395,17 @@ enum Quality {
 
      /**
      * Returns an icon representing this phase on the GUI. 
+     *
+     * @return
+     *    an icon representing this phase on the GUI. 
      */
     abstract ImageIcon getIcon();
 
     /**
      * Returns a status message which describes this phase. 
+     *
+     * @return
+     *    a status message which describes this phase. 
      */
     abstract String getMessage();
 
@@ -411,6 +415,9 @@ enum Quality {
      * In conjunction with {@link #getColor()}, 
      * this is used to determine the color of the progress bar in a JUnit GUI 
      *
+     * @return
+     *   the Quality with the maximum level 
+     *   of <code>this</code> and <code>other</code>. 
      * @see GUIRunner.TestProgressBar#incNumRunsDone(TestCase)
      */
     Quality max(Quality other) {
@@ -425,6 +432,8 @@ enum Quality {
      * {@link #COLOR_IGNORED} is returned. 
      * Else {@link #COLOR_OK} is returned. 
      *
+     * @return
+     *    the color associated with this phase. 
      * @see #max(Quality)
      */
     Color getColor() {
@@ -493,7 +502,11 @@ enum Quality {
      * This is <code>false</code> 
      * except for {@link #Scheduled}, {@link #Started} and {@link #Success}. 
      * Neutral qualities do not occur in the statistics 
-     * given by {@link GUIRunner.StatisticsTestState}.  
+     * given by {@link GUIRunner.StatisticsTestState}. 
+     *
+     * @return
+     *    whether the underlying testcase is 
+     *    neither finished unsuccessfully nor ignored. 
      */
     boolean isNeutral() {
 	return this.level == 0;
