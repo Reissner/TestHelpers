@@ -118,7 +118,10 @@ public class TestCaseClassLoader extends ClassLoader {
 	
     /**
      * Constructs a TestCaseLoader. 
-     * It scans the class path and the excluded package paths
+     * It scans the class path and the excluded package paths. 
+     *
+     * @param classPath
+     *    the classpath. 
      */
     private TestCaseClassLoader(String classPath) {
 	this.jPath = new JavaPath(classPath);
