@@ -107,6 +107,7 @@ public class TextRunListener extends RunListener {
 	// ignored seem to be also failures
     }
 
+    // api-docs inherited from class RunListener
     /**
      * Called when a test suite is about to be started. 
      * If this method is called for a given {@link Description}, 
@@ -115,16 +116,15 @@ public class TextRunListener extends RunListener {
      * <p>
      * Note that not all runners will call this method, so runners should 
      * be prepared to handle {@link #testStarted(Description)} calls for tests 
-     * where there was no cooresponding {@link #testSuiteStarted()} call 
-     * for the parent {@link Description}.
+     * where there was no corresponding {@link #testSuiteStarted(Description)} 
+     * call for the parent {@link Description}.
      *
      * @param desc
      *    the description of the test suite that is about to be run
      *    (generally a class name)
      * @since 4.13
      */
-    // api-docs inherited from class RunListener
-    public void testSuiteStarted(Description desc) throws Exception {//NOPMD
+     public void testSuiteStarted(Description desc) throws Exception {//NOPMD
 	System.out.println("S testSuiteStarted(...   " + desc);
     }
 
