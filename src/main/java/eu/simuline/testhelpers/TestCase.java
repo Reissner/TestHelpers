@@ -40,6 +40,9 @@ import java.util.ArrayList;
  * {@link #getChildren()}, {@link #getIdx()}, {@link #getQuality()}, 
  * {@link #hasFailed()}, {@link #getThrown()} and {@link #getTime()}. 
  * <li>
+ * The special method {@link #fullSuccess()} 
+ * indicating whether this testcase including all testcases succeeded. 
+ * <li>
  * methods triggering phase transitions like 
  * {@link #setScheduledRec()}, {@link #setQualStartedIgnored(Quality)}, 
  * {@link #setFailure(Failure)}, {@link #setAssumptionFailure(Failure)} 
@@ -320,6 +323,27 @@ class TestCase {
     // **** nowhere used. **** 
     long getTime() {
 	return this.time;
+    }
+
+    /**
+     * Returns whether this test including all sub-tests succeeded. 
+     *
+     * @return
+     *    whether this test including all sub-tests succeeded. 
+     */
+    boolean fullSuccess() {
+	if (isTest()) {
+	    return getQuality() == Quality.Success;
+	}
+	assert !isTest();
+	for (TestCase child : this.children) {
+	    if (!child.fullSuccess()) {
+		// Here, at least one child did not have full success 
+		return false;
+	    }
+	}
+	// Here, all children had full success 
+	return true;
     }
 
     /**
