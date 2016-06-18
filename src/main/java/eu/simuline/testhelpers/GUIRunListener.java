@@ -217,6 +217,7 @@ System.out.println("..testFinished");
 	// GUI ignores failures in the test mechanism. 
 	// **** this may be inappropriate. 
 	if (failure.getDescription().equals(Description.TEST_MECHANISM)) {
+System.out.println("..testFailure FRAMEWORK");
 	    return;
 	}
 	Runnable runnable = new Runnable() {
