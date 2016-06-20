@@ -4,7 +4,7 @@ import eu.simuline.util.GifResource;
 
 import eu.simuline.junit.Logo;
 import eu.simuline.junit.Hierarchy;
-import eu.simuline.junit.Smalllogo;
+import eu.simuline.junit.SmallLogo;
 
 import eu.simuline.util.JavaPath;
 
@@ -75,6 +75,8 @@ import java.io.Serializable;
 
 import java.util.Map;
 import java.util.EnumMap;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * The GUI of a JUnit test-runner. 
@@ -90,7 +92,7 @@ import java.util.EnumMap;
  * <li>
  * A component displaying the number of tests to run, 
  * already runned, ignored and failed. 
- * This is an instance of the class {@link GUIRunner.RunsErrorsFailures}. 
+ * This is an instance of the class {@link GUIRunner.StatisticsTestState}. 
  * <li>
  * a treeview on the testsuite 
  * represented by the class {@link GUIRunner.HierarchyWrapper}. 
@@ -135,28 +137,28 @@ class GUIRunner {
      * The (big) JUnit-logo. 
      */
     private final static ImageIcon  logoIcon = 
-    GifResource.getIcon(Logo.class);
+	GifResource.getIcon(Logo.class);
 
     /**
      * The icon representing the hierarchy of tests: 
      * used for the tabbed pane. 
      */
     private final static ImageIcon hierarchyIcon = 
-    GifResource.getIcon(Hierarchy.class);
+	GifResource.getIcon(Hierarchy.class);
 
     /**
      * The small JUnit-logo on top left of this frame. 
      * **** still this is not displayed properly ****. 
      */
     private final static ImageIcon smallLogoIcon = 
-    GifResource.getIcon(Smalllogo.class);
+	GifResource.getIcon(SmallLogo.class);
 
 
     /**
      * Represents the horizontal space used for the boundary. 
      */
     private final static Component horizBoundary = 
-    Box.createHorizontalStrut(10);
+	Box.createHorizontalStrut(10);
 
 
     /* -------------------------------------------------------------------- *
@@ -187,7 +189,7 @@ class GUIRunner {
 	 * The maximal quality found in testcases so far. 
 	 * This determines the foreground color of this progress bar. 
 	 * This is <code>null</code> initially 
-	 * and initialized in {@link #start(Description)}. 
+	 * and initialized in {@link #startTestRun(TestCase)}. 
 	 */
 	private Quality qual;
 
@@ -211,25 +213,93 @@ class GUIRunner {
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
-	void start(Description desc) {
+	/**
+	 * Notifies that the structure of the test class may have been updated. 
+	 * <p>
+	 * Sets maximum, minimum an current value of the progress bar. 
+	 * Sets {@link #qual} to {@link Quality#Scheduled} 
+	 * indicating that no failure occurred yet 
+	 * and the color is the ok-color. 
+	 *
+	 * @param desc
+	 *    a description of the test structure defined in the test class 
+	 *    which is a hierarchy of suites and singular tests. 
+	 */
+	void initClassStructure(Description desc) {
 	    setMinimum(0);
 	    setMaximum(desc.testCount());
-	    //this.model.setExtent(0);/// **** how much is visible: 
-	    //   minimum <= value <= value+extent <= maximum 
-	    resetA();
-	}
-
-	void resetA() {
 	    setValue(0);
 	    this.qual = Quality.Scheduled;// color OK 
+	    //this.model.setExtent(0);/// **** how much is visible: 
+	    //   minimum <= value <= value+extent <= maximum 
+	}
+
+	// for TestProgressBar 
+	/**
+	 * Notifies that a test run given by <code>testCase</code> 
+	 * is going to be run next. 
+	 * <p>
+	 * Only the tests which are {@link Quality#Scheduled} are really run. 
+	 * The others just go into the length and color of the progress bar 
+	 * when starting the run: 
+	 * The initial length depends on the number of non-scheduled testcases 
+	 * and the color is the worst-case color of all these testcases. 
+	 *
+	 * @param testCase
+	 *    the hierarchy of all tests defined by the test class 
+	 *    and in particular of those to be run: 
+	 *    those which are {@link Quality#Scheduled}. 
+	 */
+	void startTestRun(TestCase testCase) {
+	    this.qual = Quality.Scheduled;// color OK 
+	    setValue(0);
+	    detValQualRec(testCase);
+	    setForeground(this.qual.getColor());
 	}
 
 	/**
+	 * Determines recursively the length of the progress bar 
+	 * and {@link #qual} based on the non-scheduled test cases. 
+	 *
+	 * @param testCase
+	 *    the hierarchy of all tests defined by the test class 
+	 *    and in particular of those to be run: 
+	 *    those which are {@link Quality#Scheduled}. 
+	 */
+	private void detValQualRec(TestCase testCase) {
+	    if (testCase.isTest()) {
+		Quality qual = testCase.getQuality();
+		switch (qual) {
+		case Started:
+		    assert false;
+		    break;
+		case Scheduled:
+		    break;
+		default:
+		    // all but Scheduled and Started: 
+		    setValue(getValue() + 1);
+		    this.qual = this.qual.max(qual);
+		    break;
+		}
+
+		return;
+	    }
+	    for (TestCase child : testCase.getChildren()) {
+		detValQualRec(child);
+	    }
+	}
+
+	/**
+	 * Notifies that the singular test <code>testCase</code> is finished. 
+	 * <p>
 	 * Pushes the progress bar one further 
 	 * and upates the color of the progress bar 
 	 * as described in {@link GUIRunner.TestProgressBar}. 
+	 *
+	 * @param testCase
+	 *    The testcase comprising the result of the singular test finished. 
 	 */
-	void incNumRunsDone(TestCase testCase) {
+	void noteReportResult(TestCase testCase) {
 	    setValue(getValue() + 1);
 	    this.qual = this.qual.max(testCase.getQuality());
 	    setForeground(this.qual.getColor());
@@ -280,8 +350,13 @@ class GUIRunner {
 
 	    DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
 	    TestCase userObj = (TestCase)node.getUserObject();
-	    setLeafIcon(userObj.getQuality().getIcon());
+	    assert userObj != null;
+	    if (userObj.getQuality() != null) {
+		// node is a leaf 
+		setLeafIcon(userObj.getQuality().getIcon());
+	    }
 
+	   
 	    return super.getTreeCellRendererComponent(tree, 
 						      value, 
 						      sel, 
@@ -307,12 +382,15 @@ class GUIRunner {
 	 * and clears other selections. 
 	 *
 	 * @param index 
-	 *    a non-negative <code>int</code> value representing an index. 
+	 *    a non-negative <code>int</code> value 
+	 *    representing the index of a testcase. 
+	 * **** CAUTION: This presupposes that in a tree 
+	 *    only the leaves can be selected. 
 	 */
 	void setSelection(int index);
 
 	/**
-	 * Clears the selection.  
+	 * Clears the selection. 
 	 */
 	void clearSelection();
 
@@ -359,31 +437,35 @@ class GUIRunner {
 	enum TreePathUpdater {
 
 	    First() {
-		void updatePath(HierarchyWrapper testHiererarchy) {
-		    testHiererarchy.currPathIter.treePathUpdater = Generic;
-		    testHiererarchy.currPathIter.setFirstPath();
+		void updatePath(TreePathIterator treePathIter) {
+		    treePathIter.treePathUpdater = Generic;
+		    treePathIter.setFirstPath();
 		}
 	    },
 	    Generic() {
-		void updatePath(HierarchyWrapper testHiererarchy) {
-		    testHiererarchy.currPathIter.incPath();
+		void updatePath(TreePathIterator treePathIter) {
+		    treePathIter.incPath();
 		}
 	    };
-	    abstract void updatePath(HierarchyWrapper testHiererarchy);
+	    abstract void updatePath(TreePathIterator treePathIter);
 	} // enum TreePathUpdater 
 
 	/* ---------------------------------------------------------------- *
 	 * attributes.                                                      *
 	 * ---------------------------------------------------------------- */
 
-	// is null after this is created. 
-	private       TreePath currPath;
-
 	/**
 	 * A model of the tree of testsuites and tests. 
 	 */
 	private final TreeModel treeModel;
 
+	// is null after this is created. 
+	private       TreePath currPath;
+
+	/**
+	 * Decides how to update the current path: 
+	 * For the first path, just inkoke ***** 
+	 */
 	private TreePathUpdater treePathUpdater;
 
 
@@ -393,33 +475,41 @@ class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	TreePathIterator(JTree tree) {
-	    this.currPath = null;// formally only 
 	    this.treeModel = tree.getModel();
+	    this.currPath = null;// formally only 
 	    this.treePathUpdater = TreePathUpdater.First;
 	}
+
+	TreePathIterator(JTree tree, int index) {
+	    this(tree);
+	    for (int i = 0; i < index; i++) {
+		updatePathI();
+	    }
+	}
+
 
 	/* ---------------------------------------------------------------- *
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
-	void updatePath(HierarchyWrapper testHiererarchy) {
-	    assert testHiererarchy.currPathIter ==  this;
-	    this.treePathUpdater.updatePath(testHiererarchy);
-	    testHiererarchy.expandAlongPath();
+	void updatePathI() {
+	    this.treePathUpdater.updatePath(this);
 	}
 
 	/**
 	 * Initializes {@link #currPath} 
 	 * with the first path in {@link #treeModel}. 
+	 * **** Shall be invoked by TreePathUpdater only **** 
 	 */
 	void setFirstPath() {
 	    TreeNode lastNode = (TreeNode) this.treeModel.getRoot();
 	    this.currPath = prolonguePath(new TreePath(lastNode));
 	}
 
-	// prolongues path as long as possible 
-	// in each step with minimal child 
-	private static TreePath prolonguePath(TreePath path) {
+	/**
+	 * Prolongues path as long as possible in each step with 0th child. 
+	 */
+	static TreePath prolonguePath(TreePath path) {
 	    TreeNode lastNode = (TreeNode)path.getLastPathComponent();
 	    while (!lastNode.isLeaf()) {
 		// one has to add the 0th child of lastNode. 
@@ -432,10 +522,18 @@ class GUIRunner {
 
 	/**
 	 * Replaces {@link #currPath} removing the last node 
-	 * as long as the last node is the last child 
-	 * and returns the 
+	 * as long as the last node in the path 
+	 * is the last child of the last but one node 
+	 * and after having done this 
+	 * returns the index of the last node 
+	 * as a child of the last but one node. 
+	 * <p>
+	 * CAUTION: This method shall be invoked only 
+	 * if {@link #currPath} can be incremented. 
+	 *
+	 * @throws NullPointerException
+	 *    if {@link #currPath} cannot be incremented. 
 	 */
-
 	private int shortenPath() {
 	    TreeNode lastNode = (TreeNode)
 		this.currPath.getLastPathComponent();
@@ -446,13 +544,16 @@ class GUIRunner {
 	    while (index == lastButOneNode.getChildCount()-1) {
 		this.currPath = prefix;
 		lastNode = lastButOneNode;
+		// if currPath is the root, prefix is null 
 		prefix = this.currPath.getParentPath();
+		assert prefix != null : "tried to ";
 		lastButOneNode = (TreeNode)prefix.getLastPathComponent();
 		index = lastButOneNode.getIndex(lastNode);
 	    }
 	    return index;
 	}
 
+	// **** Shall be invoked by TreePathUpdater only **** 
 	/**
 	 * Increments {@link #currPath} and returns the result. 
 	 */
@@ -474,7 +575,7 @@ class GUIRunner {
     /**
      * Represents the hierarchy of testsuites and testcases 
      * as a tree {@link #hierarchyTree} possibly with a single selected node 
-     * given by {@link #singleSelectedNode} 
+     * given by {@link #singleSelectedNode}. 
      */
     static class HierarchyWrapper 
 	implements Selector, TreeSelectionListener {
@@ -488,28 +589,27 @@ class GUIRunner {
 	/**
 	 * The hierarchy of testsuites and testcases as a tree. 
 	 * After creation this is a default tree, 
-	 * after invocation of {@link #start(Description)} 
-	 * the hierarchy reflects {@link #desc}. 
+	 * after invocation of {@link #initClassStructure(TestCase)} 
+	 * the hierarchy reflects the given testcase. 
 	 * The selection model is given by {@link #treeSelection} 
 	 * and this is the {@link TreeSelectionListener}. 
 	 */
 	private final JTree hierarchyTree;
 
 	/**
-	 * Set by {@link #start(Description)} initially <code>null</code>: 
-	 * Reflects the hierarchy of testsuites and tests 
-	 * to be represented by {@link #hierarchyTree}. 
-	 */
-	private Description desc;
-
-	/**
 	 * The selection model for {@link #hierarchyTree}. 
+	 * At most one entry is selected. 
+	 * If the entry represents a failure, the according element in 
+	 * {@link GUIRunner.TestCaseLister#failureSelection} is selected also. 
+	 *
+	 * @see #valueChanged(TreeSelectionEvent)
 	 */
 	private final TreeSelectionModel treeSelection;
 
 	/**
 	 * This is used only by {@link #valueChanged(TreeSelectionEvent)} 
-	 * to set the testcase via {@link Actions#setSingleTest(TestCase)}. 
+	 * to set the filter via 
+	 * {@link Actions#setFilter(Description)}. 
 	 */
 	private final Actions actions;
 
@@ -517,14 +617,15 @@ class GUIRunner {
 	 * Represents the selected node in {@link #hierarchyTree}. 
 	 * This is <code>null</code> if nothing selected 
 	 * which is also the initial value. 
-	 * This is set by {@link #valueChanged(TreeSelectionEvent)}. 
+	 * This is set by {@link #valueChanged(TreeSelectionEvent)} 
+	 * and updated also by {@link #initClassStructure(TestCase)}. 
 	 */
 	private DefaultMutableTreeNode singleSelectedNode;
 
 	/**
-	 * Is <code>null</code> after this is created 
-	 * and is initialized by {@link #start(Description)}. 
 	 * Represents the path to the testcase currently run. 
+	 * This is <code>null</code> after this is created 
+	 * and is initialized by {@link #startTestRun(Description)}. 
 	 */
 	private TreePathIterator currPathIter;
 
@@ -556,14 +657,13 @@ class GUIRunner {
 		(TreeSelectionModel.SINGLE_TREE_SELECTION);
 	    this.hierarchyTree.setSelectionModel(this.treeSelection);
 	    this.hierarchyTree.addTreeSelectionListener(this);
-	    this.hierarchyTree.setRootVisible(false);
+	    this.hierarchyTree.setRootVisible(true);
 
 	    TreeNode root = (TreeNode)this.hierarchyTree.getModel().getRoot();
 	    this.hierarchyTree.setModel(new DefaultTreeModel(root));
 	    this.actions = actions;
 
 	    // purely formally 
-	    this.desc               = null;
 	    this.singleSelectedNode = null;
 	    this.currPathIter       = null;
 	    this.selector           = null;
@@ -573,74 +673,158 @@ class GUIRunner {
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
-	// **** Descriptions instead of testcases 
-	// bad: design and problem with selecting testcases not yet run. 
-	// 
-	private static MutableTreeNode desc2treeNode(Description desc) {
-//System.out.println("desc2treeNode(");
-	    DefaultMutableTreeNode ret = new DefaultMutableTreeNode
-		(new TestCase(desc, Quality.Scheduled, -1));
-	    if (desc.isTest()) {
-//System.out.println("ret1: "+ret);
-		return ret;
+	/**
+	 * Converts the (tree of) testcases given by <code>testCase</code> 
+	 * **** 
+	 */
+	private static 
+	    DefaultMutableTreeNode testCase2treeNode(TestCase testCase) {
+	    if (testCase.isTest()) {
+		return new DefaultMutableTreeNode(testCase);
 	    }
-
-	    List<Description> childrenIn = desc.getChildren();
-//	    List<TreeNode> childrenOut = new ArrayList<TreeNode>();
-	    MutableTreeNode childOut;
-	    for (Description childIn : childrenIn) {
-		childOut = desc2treeNode(childIn);
-		//childOut.setParent(ret);
+	    DefaultMutableTreeNode ret = new DefaultMutableTreeNode(testCase);
+	    List<TestCase> childrenIn = testCase.getChildren();
+	    DefaultMutableTreeNode childOut;
+	    for (TestCase childIn : childrenIn) {
+		childOut = testCase2treeNode(childIn);
 		ret.add(childOut);
 	    }
-	
 	    return ret;
 	}
 
-
-	void updatePath() {
-	    this.currPathIter.updatePath(this);
+	TestCase getRoot() {
+	    DefaultMutableTreeNode root = (DefaultMutableTreeNode)
+		this.hierarchyTree.getModel().getRoot();
+	    return (TestCase)root.getUserObject();
 	}
 
-	void updateSingular() {
-	    ((DefaultTreeModel)this.hierarchyTree.getModel())
-	    	.nodeChanged(this.singleSelectedNode);
-	}
+
 
 	/* ---------------------------------------------------------------- *
 	 * further methods.                                                 *
 	 * ---------------------------------------------------------------- */
 
+
 	/**
-	 * Sets the description {@link #desc}, 
-	 * sets the according tree model of {@link #hierarchyTree} 
-	 * using {@link #desc2treeNode(Description)}, 
-	 * after that the cell renderer and the path incrementor 
-	 * {@link #currPathIter} in conjunction with the ***** bad design. 
+	 * Notifies that the structure of the test class may have been updated. 
+	 * <p>
+	 * Converts the overall test case hierarchy <code>testCase</code> 
+	 * into a a tree node hierarchy 
+	 * invoking {@link #testCase2treeNode(TestCase)}. 
+	 * This defines the tree model of the hierarchy {@link #hierarchyTree}. 
+	 * The selected node {@link #singleSelectedNode} is set to the root. 
+	 * <p>
+	 * Since {@link #currPathIter} points to the first testcase run, 
+	 * it is set to <code>null</code>. 
+	 * Finally, {@link #actions} is notified about the test to be run next 
+	 * which is specified by the testcase given by the selected node. 
+	 * by invoking {@link #setFilterSel()}. 
+	 *
+	 * @param testCase
+	 *    a description of the test structure defined in the test class 
+	 *    which is a hierarchy of suites and singular tests. 
 	 */
-	void start(Description desc) {
-	    this.desc = desc;
-	    MutableTreeNode treeNode = desc2treeNode(this.desc);
-	    TreeModel newModel = new DefaultTreeModel(treeNode);
+	void initClassStructure(TestCase testCase) {
+	    this.singleSelectedNode = testCase2treeNode(testCase);
+	    TreeModel newModel = new DefaultTreeModel(this.singleSelectedNode);
 	    this.hierarchyTree.setModel(newModel);
 	    // cell renderer after model. 
 	    this.hierarchyTree.setCellRenderer(new TestTreeCellRenderer());
-	    //this.testHierarcy.update(this.testHierarcy.getGraphics());
 
-	    this.currPathIter = new TreePathIterator(this.hierarchyTree);
-
-//Tree  TreePath 	getLeadSelectionPath() 
-//Tree   TreePath 	getSelectionPath() 
+	    this.currPathIter = null;
+	    setFilter();
 	}
 
+	// invoked by {@link #initClassStructure(TestCase)} 
+	// and by {@link #valueChanged(TreeSelectionEvent)} 
+	/**
+	 * Sets the filter (given by a description) 
+	 * invoking {@link Actions#setFilter(Description)}: 
+	 * The description is taken from {@link #singleSelectedNode}. 
+	 */
+	private void setFilter() {
+	    TestCase testCase = (TestCase)this.singleSelectedNode
+		.getUserObject();
+	    this.actions.setFilter(testCase.getDesc());
+	}
+
+	// for HierarchyWrapper 
+	/**
+	 * Notifies that a test run with structure given by <code>desc</code> 
+	 * is going to be run next. 
+	 * <p>
+	 * Sets the quality of the testcases 
+	 * given by {@link #singleSelectedNode} 
+	 * recursively to {@link Quality#Scheduled} 
+	 * and sets {@link #currPathIter}. 
+	 *
+	 * @param desc 
+	 *    describes the (hierarchy of) tests to be run. 
+	 *    This is a sub-hierarchy of the one given by the test class. 
+	 *    This parameter is purely formally 
+	 *    because it is given by {@link #singleSelectedNode}. 
+	 */
+	void startTestRun(Description desc) {
+	    TestCase testCase = (TestCase)
+		this.singleSelectedNode.getUserObject();
+	    assert desc == testCase.getDesc();
+	    testCase.setScheduledRec();
+
+	    testCase = (TestCase)this.singleSelectedNode.getFirstLeaf()
+		.getUserObject();
+	    this.currPathIter = new TreePathIterator
+		(this.hierarchyTree, testCase.getIdx());
+	}
+
+	/**
+	 * Expands the path to the leaf {@link #currPathIter} points to. 
+	 * This is invoked by {@link #noteTestStartedI(Quality)} 
+	 * when a testcase is started or ignored. 
+	 *
+	 * @see #collapseAlongPath()
+	 */
 	void expandAlongPath() {
-	    this.hierarchyTree.expandPath
-		(this.currPathIter.getPath().getParentPath());
+	    this.hierarchyTree.expandPath(this.currPathIter.getPath()
+					  // that the last node is no leaf 
+					  .getParentPath());
 	}
 
+	/**
+	 * Collapses the path to the leaf {@link #currPathIter} points to 
+	 * as much as possible in order not to hide {@link #singleSelectedNode} 
+	 * and the leafs corresponding with singular tests 
+	 * which failed already (assumption failure, failure and error). 
+	 * This is invoked by {@link #noteReportResult()} 
+	 * when a testcase is finished or after being ignored. 
+	 *
+	 * @see #expandAlongPath()
+	 */
 	void collapseAlongPath() {
-	    this.hierarchyTree.collapsePath
-		(this.currPathIter.getPath().getParentPath());
+	    Collection<?> selPath = 
+		Arrays.asList(this.singleSelectedNode.getPath());
+
+	    TreePath treePath = this.currPathIter.getPath().getParentPath();
+	    Object[] pathArr = treePath.getPath();
+	    TestCase testCase;
+	    DefaultMutableTreeNode node;
+	    for (int idx = pathArr.length-1; idx >= 0; idx--) {
+		node = (DefaultMutableTreeNode)pathArr[idx];
+		if (selPath.contains(node)) {
+		    break;
+		}
+
+		testCase = (TestCase)node.getUserObject();
+
+		if (testCase.fullSuccess()) {
+		    Object[] pathArrNew = new Object[idx+1];//0,...,idx 
+		    System.arraycopy(pathArr, 0, 
+				     pathArrNew, 0 , 
+				     pathArrNew.length);
+		    treePath = new TreePath(pathArrNew);
+		    assert treePath.getLastPathComponent() == pathArr[idx];
+		    this.hierarchyTree.collapsePath(treePath);
+		}
+	    } // for 
 	}
 
 	JTree getTree() {
@@ -652,10 +836,46 @@ class GUIRunner {
 	    return this.currPathIter.getPath();
 	}
 
-	void setResult(TestCase result) {
+	// invoked by noteTestStartedI(Quality)
+	/**
+	 * Notifies that an atomic test is started or ignored. 
+	 * <p>
+	 * To Updates {@link #currPathIter} pointing to the current testcase 
+	 * and expands along the path given by the current testcase. 
+	 * Then sets the quality of the according testcase 
+	 * to <code>qual</code> and updates the according tree node. 
+	 *
+	 * @param qual
+	 *    the quality of the testcase: 
+	 *    This is {@link Quality#Started} or {@link Quality#Ignored}. 
+	 * @return
+	 *    the current testcase. 
+	 */
+	TestCase noteTestStartedI(Quality qual) {
+	    this.currPathIter.updatePathI();
+	    expandAlongPath();
+
+	    DefaultMutableTreeNode lastNode = (DefaultMutableTreeNode)
+		this.currPathIter.getPath().getLastPathComponent();
+	    TestCase result = (TestCase)lastNode.getUserObject();
+	    result.setQualStartedIgnored(qual);
+	    ((DefaultTreeModel)this.hierarchyTree.getModel())
+	    	.nodeChanged(lastNode);
+	    return result;
+	}
+
+	// invoked by noteReportResult(TestCase) 
+	/**
+	 * Notifies that a singular test is finished. 
+	 * <p>
+	 * Collapses the current path invoking {@link #collapseAlongPath()} 
+	 * and updates the tree node {@link #currPathIter} points to. 
+	 */
+	void noteReportResult() {
+	    collapseAlongPath();
+  
 	    MutableTreeNode lastNode = (MutableTreeNode)
 		this.currPathIter.getPath().getLastPathComponent();
-	    lastNode.setUserObject(result);
 	    ((DefaultTreeModel)this.hierarchyTree.getModel())
 	    	.nodeChanged(lastNode);
 	}
@@ -664,22 +884,24 @@ class GUIRunner {
 	 * methods implementing Selector.                                   *
 	 * ---------------------------------------------------------------- */
 
+	// api-docs inherited from Selector 
 	public void setSelection(int index) {
-	    TreePathIterator iter = new TreePathIterator(this.hierarchyTree);
-	    iter.setFirstPath();
-	    for (int i = 0; i < index; i++) {
-		iter.incPath();
-	    }
-	    this.treeSelection.addSelectionPath(iter.getPath());
+	    // **** note: for index==0 one update is required and so index+1
+	    // abuse of TreePathIterator to obtain the right selection path 
+	    TreePathIterator currPathIter = 
+		new TreePathIterator(this.hierarchyTree, index+1);
+	    this.treeSelection.addSelectionPath(currPathIter.getPath());
 	    //**** still a problem with update 
 	    // what follows does not solve the problem. 
 	    //this.frame.update(this.frame.getGraphics());
 	}
 
+	// api-docs inherited from Selector 
 	public void clearSelection() {
 	    this.treeSelection.clearSelection();
 	}
 
+	// api-docs inherited from Selector 
 	public void registerSelector(Selector selector) {
 	    assert selector instanceof TestCaseLister
 		|| selector == TabChangeListener.EMPTY_SELECTOR;
@@ -690,67 +912,70 @@ class GUIRunner {
 	 * methods implementing TreeSelectionListener.                      *
 	 * ---------------------------------------------------------------- */
 
-	// as a side effect affects {@link #treeSelection}, 
-	// {@link #singleSelectedNode} and {@link #selector}
+	/**
+	 * Called whenever the value of the selection changes. 
+	 * Note that deselection is treated as selection of the root, 
+	 * so w.l.o.g, we have to consider selections only. 
+	 * <p>
+	 * If an entry is selected, 
+	 * {@link #singleSelectedNode} holds the selected node.
+	 * Next {@link #selector} is notified of the selection: 
+	 * <ul>
+	 * <li>
+	 * if a failure is selected (which is a leaf) 
+	 * triggers according selection in the failure list, 
+	 * otherwise triggers a deselection. 
+	 * </ul>
+	 * Both have further effects invoking 
+	 * {@link GUIRunner.TestCaseLister#valueChanged(ListSelectionEvent)}.
+	 * <p>
+	 * Finally, 
+	 * invokes {@link Actions#setFilter(Description)} 
+	 * setting the filter for the next test run. 
+	 */
 	public void valueChanged(TreeSelectionEvent selEvent) {
-//public boolean isAddedPath(TreePath path)
-//public boolean isAddedPath(int index)
-// indicate whether 
-// true:  formerly not selected but now selected, or 
-// false: the other way round. 
-
-//public TreePath[] getPaths()
-
-
 	    // paths is a list of paths with changed selection 
 	    TreePath[] paths = selEvent.getPaths();
+	    // two paths if one selected and the other deselected. 
+	    // one path: either selected or deselected 
+	    assert paths.length == 1 || paths.length == 2;
 
-	    DefaultMutableTreeNode lastNode;
-	    int index;
-	    TestCase testCase;
 	    for (int i = 0; i < paths.length; i++) {
-		lastNode = (DefaultMutableTreeNode)
-		    paths[i].getLastPathComponent();
 
-
+		// set singleSelectedNode 
 		if (selEvent.isAddedPath(paths[i])) {
 		    // Here, paths[i] has been selected 
-		    
-
-		    // Here one has to notify 
-		    // the demanded description. 
-
-		    // ****
-
-		    if (lastNode.isLeaf()) {
-			testCase = (TestCase)lastNode.getUserObject();
-			if (!testCase.getQuality().allowsRerun()) {
-			    // no rerun, no selection possible 
-			    this.treeSelection.clearSelection();
-			    this.     selector.clearSelection();
-			    continue;
-			}
-
-			// ***** for the moment better here. 
-			this.actions.setSingleTest(testCase);
-			this.singleSelectedNode = lastNode;
-			index = testCase.getNum();
-			this.selector.setSelection(index);
-		    } else {
-			// **** for the moment: other selections: rebuild all 
-			this.actions.setSingleTest(null);
-			this.singleSelectedNode = null;
-			this.selector.clearSelection();
+		    this.singleSelectedNode = (DefaultMutableTreeNode)
+			paths[i].getLastPathComponent();
+		} else {
+		    // Here, paths[i] has been deselected 
+		    if (paths.length == 2) {
+			// Here, the other path is selected 
+			// which handles all we need 
+			continue;
 		    }
-		    continue;
-		}
-		// Here, paths[i] has been deselected (continue)
-	    } // for
 
-	    //selEvent.isAddedPath(index);
+		    // Here, the deselection is the only change 
+		    assert paths.length == 1;
+		    // treat as if root was selected 
+		    // **** this is merely a copy! 
+		    this.singleSelectedNode = (DefaultMutableTreeNode)
+			paths[i].getPathComponent(0);
+		}
+
+		setFilter();
+
+		if (this.singleSelectedNode.isLeaf()) {
+		    TestCase testCase = (TestCase)
+			this.singleSelectedNode.getUserObject();
+		    this.selector.setSelection(testCase.getIdx());
+		} else {
+		    this.selector.clearSelection();
+		}
+	    } // for
 	}
 
-    } // HierarchyWrapper 
+    } // class HierarchyWrapper 
 
     /**
      * Represents the table displaying the number of runs, 
@@ -762,7 +987,7 @@ class GUIRunner {
      * the overall number of runs, done or not, and 
      * the number of finished tests of the according quality. 
      */
-    static class RunsErrorsFailures extends JComponent {
+    static class StatisticsTestState extends JComponent {
 
 	private static final long serialVersionUID = -2479143000061671589L;
 
@@ -808,11 +1033,11 @@ class GUIRunner {
 	 * constructors.                                                    *
 	 * ---------------------------------------------------------------- */
 
-	RunsErrorsFailures() {
+	StatisticsTestState() {
 	    super();
 
 	    this.runs    = new JLabel();
-	    this.numRuns = 0;// formally. This is set by #start()
+	    //this.numRuns = 0;// formally. This is set by #start()
 
 	    this.qual2label = new EnumMap<Quality, JLabel>(Quality.class);
 	    for (Quality qual : Quality.values()) {
@@ -822,8 +1047,6 @@ class GUIRunner {
 		this.qual2label.put(qual, new JLabel());
 	    }
 	    this.qual2num = new EnumMap<Quality, Integer>(Quality.class);
-
-	    resetB();
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -850,20 +1073,25 @@ class GUIRunner {
 	}
 
 	/**
-	 * Initiates {@link #numRuns} 
-	 * with the testcount from <code>desc</code> 
-	 * and resets this component invoking {@link #resetB()}. 
+	 * Notifies that the structure of the test class may have been updated. 
+	 * <p>
+	 * Initiates 
+	 * <ul>
+	 * <li>
+	 * {@link #numRuns} with the testcount given by <code>desc</code>, 
+	 * <li>
+	 * {@link #numRunsDone} and all numbers in {@link #qual2num} 
+	 * with <code>0</code>, 
+	 * </ul>
+	 * and updates the labels {@link #runs} 
+	 * and those in {@link #qual2label}. 
+	 *
+	 * @param desc
+	 *    a description of the test structure defined in the test class 
+	 *    which is a hierarchy of suites and singular tests. 
 	 */
-	void start(Description desc) {
+	void initClassStructure(Description desc) {
 	    this.numRuns = desc.testCount();
-	    resetB();
-	}
-
-	/**
-	 * Resets all counters to <code>0</code> except {@link #numRuns} 
-	 * and updates all labels invoking {@link #updateLabels()}. 
-	 */
-	void resetB() {
 	    this.numRunsDone = 0;
 
 	    for (Quality qual : Quality.values()) {
@@ -873,27 +1101,92 @@ class GUIRunner {
 	    updateLabels();
 	}
 
+	// for StatisticsTestState 
 	/**
-	 * Updates all counters and labels after a test has been run 
-	 * according to its <code>result</code>: 
+	 * Notifies that a test with structure given by <code>desc</code> 
+	 * is going to be run next. 
+	 * <p>
+	 * 
+	 * Initiates 
+	 * <ul>
+	 * <li>
+	 * {@link #numRunsDone} to <code>0</code>, 
+	 * <li>
+	 * {@link #qual2num} with the testcount given by <code>testCase</code> 
+	 * invoking {@link #detQual2NumRec(TestCase)}, 
+	 * </ul>
+	 * and updates the labels {@link #runs} 
+	 * and those in {@link #qual2label}. 
+	 *
+	 * @param testCase 
+	 *    describes the (hierarchy of) tests defined by the test class. 
+	 *    Those which are in phase {@link Quality#Scheduled} 
+	 *    are to be run. 
+	 */
+	void startTestRun(TestCase testCase) {
+	    this.numRunsDone = 0;
+	    detQual2NumRec(testCase);
+	    updateLabels();
+	}
+
+	/**
+	 * Initializes teh statistics in {@link #qual2num} 
+	 * according to <code>testCase</code>. 
+	 *
+	 * @param testCase 
+	 *    describes the (hierarchy of) tests defined by the test class. 
+	 *    Those which are in phase {@link Quality#Scheduled} 
+	 *    are to be run. 
+	 */
+	private void detQual2NumRec(TestCase testCase) {
+	    if (testCase.isTest()) {
+		Quality qual = testCase.getQuality();
+		switch (qual) {
+		case Started:
+		    assert false;
+		    break;
+		case Scheduled:
+		    break;
+		default:
+		    this.numRunsDone++;
+		    break;
+		}
+
+		int num = this.qual2num.get(qual);
+		this.qual2num.put(qual, ++num);
+		return;
+	    }
+	    assert !testCase.isTest();
+	    for (TestCase child : testCase.getChildren()) {
+		detQual2NumRec(child);
+	    }
+	}
+
+	/**
+	 * Notifies that the singular test <code>testCase</code> is finished. 
+	 * <p>
+	 * Updates all counters and labels 
+	 * according to <code>testCase</code>'s quality: 
 	 * It may succeed, be ignored, had a failure or 
 	 * could not be executed due to an exception or an error. 
 	 *
+	 * @param testCase
+	 *    The testcase comprising the result of the singular test finished. 
 	 * @see TestCase#getQuality()
 	 */
-	void incNumRunsDone(TestCase result) {
+	void noteReportResult(TestCase testCase) {
 	    this.numRunsDone++;
 
-	    int num = this.qual2num.get(result.getQuality());
-	    /*      */this.qual2num.put(result.getQuality(), ++num);
+	    int num = this.qual2num.get(testCase.getQuality());
+	    /*      */this.qual2num.put(testCase.getQuality(), ++num);
 
 	    updateLabels();
 	}
 
 	/**
 	 * Updates all labels if a counter has changed. 
-	 * This is invoked by {@link #resetB()} 
-	 * and by {@link #incNumRunsDone(TestCase)}. 
+	 * This is invoked by {@link #initClassStructure(Description)} 
+	 * and by {@link #startTestRun(TestCase)}. 
 	 */
 	private void updateLabels() {
 	    this.runs.setText("Runs: " + this.numRunsDone + 
@@ -908,7 +1201,7 @@ class GUIRunner {
 			     this.qual2num  .get(qual) + "    ");
 	    }
 	}
-    } // class RunsErrorsFailures 
+    } // class StatisticsTestState 
 
 
     /**
@@ -1186,8 +1479,8 @@ class GUIRunner {
 	
 	    // for rerun testcases which eventually do no longer fail. 
 	    Label textLabel = new Label(testCase.hasFailed() 
-					? thrwToString(testCase.getException()) 
-					: testCase.getQuality().status());
+					? thrwToString(testCase.getThrown()) 
+					: testCase.getQuality().getMessage());
 	    iconLabel.setDetails(list,isSelected,cellHasFocus);
 	    iconLabel.setDetails(list,isSelected,cellHasFocus);
 	    failureEntry.add(iconLabel);
@@ -1196,7 +1489,6 @@ class GUIRunner {
 
 	    return failureEntry;
 	}
-
 
 	/**
 	 * A subclass of DefaultListCellRenderer that implements UIResource.
@@ -1207,8 +1499,9 @@ class GUIRunner {
 	 * <strong>Warning:</strong>
 	 * Serialized objects of this class will not be compatible with
 	 * future Swing releases. The current serialization support is
-	 * appropriate for short term storage or RMI between applications running
-	 * the same version of Swing.  As of 1.4, support for long term storage
+	 * appropriate for short term storage or RMI 
+	 * between applications running the same version of Swing.  
+	 * As of 1.4, support for long term storage
 	 * of all JavaBeans<sup><font size="-2">TM</font></sup>
 	 * has been added to the <code>java.beans</code> package.
 	 * Please see <code>java.beans.XMLEncoder</code>.
@@ -1220,11 +1513,6 @@ class GUIRunner {
 	  }
 	*/
 
-	public static void main(String[] args) {
-	    System.out.println(": "+(new AssertionError((AssertionError)null).getMessage()==null));
-
-	
-	}
     } // class TestListCellRenderer 
 
 
@@ -1235,19 +1523,36 @@ class GUIRunner {
      * and a {@link #stackTraceLister} 
      * which represents the stack trace box below the tabbed pane. 
      */
-    class TestCaseLister implements ListSelectionListener, Selector {
+    static class TestCaseLister implements ListSelectionListener, Selector {
 
 	/* ---------------------------------------------------------------- *
 	 * fields.                                                          *
 	 * ---------------------------------------------------------------- */
 
-	// now not only failures but ALL testcases 
-	private final List<TestCase> testsDoneList;
-
+	/**
+	 * The current selection of {@link #failureListMod}. 
+	 * At most one entry is selected. 
+	 * If so, the according element in 
+	 * {@link GUIRunner.HierarchyWrapper#treeSelection} is selected also. 
+	 *
+	 * @see #valueChanged(ListSelectionEvent)
+	 */
 	private final ListSelectionModel failureSelection;
 
+	/**
+	 * The list of testcases which are either ignored, 
+	 * failed in some sense or with hurt assumption. 
+	 */
 	private final DefaultListModel<TestCase> failureListMod;
 
+	/**
+	 * Contains the stack trace 
+	 * if a failure in {@link #failureListMod} is selected 
+	 * which caused an exception. 
+	 * This is true if an assertion was wrong, an assumption was wron 
+	 * or if the execution of a testcase could not be completed 
+	 * due to an exception. 
+	 */
 	private final StackTraceLister stackTraceLister;
 
 	// selector to be influenced. 
@@ -1265,8 +1570,6 @@ class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	TestCaseLister() {
-	    // init testsDoneList 
-	    this.testsDoneList = new ArrayList<TestCase>();
 	    // init failureSelection 
 	    this.failureSelection = new DefaultListSelectionModel();
 	    this.failureSelection
@@ -1285,6 +1588,7 @@ class GUIRunner {
 	 * methods.                                                         *
 	 * ---------------------------------------------------------------- */
 
+	// invoked by {@link GUIRunner#setCenter(Actions)} 
 	JList<TestCase> getFailList() {
 	    JList<TestCase> jFailureList = 
 		new JList<TestCase>(this.failureListMod);
@@ -1293,6 +1597,7 @@ class GUIRunner {
 	    return jFailureList;
 	}
 
+	// invoked by {@link GUIRunner#setCenter(Actions)} 
 	Component getStackTraceBox() {
 	    return this.stackTraceLister.getStackTraceBox();
 	}
@@ -1301,73 +1606,101 @@ class GUIRunner {
 	 * further methods.                                                 *
 	 * ---------------------------------------------------------------- */
 
-	// does not depend on desc 
-	void start(Description desc) {
-	    resetTCL();
+	/**
+	 * Does nothing, purely formally 
+	 */
+	void initClassStructure() {
 	}
 
-	void resetTCL() {
-	    this.testsDoneList   .clear();
+	// for TestCaseLister
+
+	// maybe remove from failureListMod only 
+	// what is in desc 
+	void startTestRun() {
+	}
+
+	// invoked by {@link GUIRunner#resetTestCaseLister()}
+	void clear() {
 	    this.failureSelection.clearSelection();
 	    this.failureListMod  .clear();
 	    this.stackTraceLister.clearStack();
 	}
 
-	void updateSingular(TestCase testCase) {
+	/**
+	 * Notifies that the singular test <code>testCase</code> is finished. 
+	 * <p>
+	 * If the test failed, 
+	 * it should be in the failure list {@link #failureListMod}. 
+	 * If so the element is added if not yet present. 
+	 * <p>
+	 * If 
+	 * <ul>
+	 * <li>
+	 * <code>testCase</code> is not newly added to the failure list, 
+	 * <li>
+	 * and <code>testCase</code> is selected 
+	 * </ul>
+	 * then if <code>testCase</code> failed, 
+	 * the stack trace {@link #stackTraceLister} 
+	 * is set to the stacktrace of the failure; 
+	 * otherwise it is cleared. 
+	 *
+	 * @param testCase
+	 *    The testcase comprising the result of the singular test finished. 
+	 */
+	void noteReportResult(TestCase testCase) {
 	    if (testCase.hasFailed()) {
-		this.stackTraceLister.setStack(testCase.getException());
+		if (!this.failureListMod.contains  (testCase)) {
+		     this.failureListMod.addElement(testCase);
+		    // Here, the new element is not selected 
+		    // and so stackTraceLister need not be updated. 
+		    return;
+		}
+	    }
+
+	    int selIndex = this.failureSelection.getMinSelectionIndex();
+	    if (selIndex == -1) {
+		// Here, as before no testcase is selected  
+		// and so stackTraceLister is empty and need not be updated. 
+		return;
+	    }
+	    if (testCase != this.failureListMod.getElementAt(selIndex)) {
+		// Here, result is not selected 
+		// and so stackTraceLister need not be updated. 
+		return;
+	    }
+	    // Here, result is selected 
+	    if (testCase.hasFailed()) {
+		this.stackTraceLister.setStack(testCase.getThrown());
 	    } else {
 		this.stackTraceLister.clearStack();
 	    }
-	    updateG();
-	}
-
-	boolean toBeAdded(TestCase result) {
-	    return result.hasFailed();
-	}
-
-	void recordTestDone(TestCase result) {
-	    // the ordering is important! 
-	    this.testsDoneList.add(result);
-	    if (!toBeAdded(result)) {
-		return;
-	    }
-
-	    this.failureListMod.addElement(result);
-	    if (this.failureListMod.getSize() == 1) {
-		this.failureSelection.setSelectionInterval(0,0);
-	    }
-	    // the following is superfluous: triggered by selection event
-	    //this.stackTraceLister.setStack(thrw);
 	}
 
 	/* ---------------------------------------------------------------- *
 	 * methods implementing Selector.                                   *
 	 * ---------------------------------------------------------------- */
 
+	// api-docs inherited from Selector 
 	// index starts with 0 
 	public void setSelection(int index) {
-	    TestCase testCase = this.testsDoneList.get(index);
-	    if (!toBeAdded(testCase)) {
-		clearSelection();
-		return;
-	    }
-
-	    int indAdded = 0;
-	    for (int i = 0; i < index; i++) {
-		if (toBeAdded(this.testsDoneList.get(i))) {
-		    indAdded++;
+	    for (int idx = 0; idx < this.failureListMod.getSize(); idx++) {
+		// **** this.failureListMod.get(idx) == testCase should do 
+		if (this.failureListMod.get(idx).getIdx() == index) {
+		    this.failureSelection.setSelectionInterval(idx,idx);
+		    return;
 		}
 	    }
-
-	    this.failureSelection.setSelectionInterval(indAdded,indAdded);
+	    clearSelection();
 	}
 
+	// api-docs inherited from Selector 
 	public void clearSelection() {
 	    this.failureSelection.clearSelection();
 	    this.stackTraceLister.clearStack();
 	}
 
+	// api-docs inherited from Selector 
 	public void registerSelector(Selector selector) {
 	    assert selector instanceof HierarchyWrapper
 		|| selector == TabChangeListener.EMPTY_SELECTOR;
@@ -1378,8 +1711,24 @@ class GUIRunner {
 	 * methods implementing ListSelectionListener.                      *
 	 * ---------------------------------------------------------------- */
 
-
+	/**
+	 * Called whenever the value of the selection changes. 
+	 * <p>
+	 * CAUTION: From the documentation of ListSelectionEvent: 
+	 * queries from ListSelectionModel, rather from ListSelectionEvent. 
+	 * <p>
+	 * If an entry is selected, 
+	 * {@link #stackTraceLister} is notified of the stacktrace 
+	 * of the throwable of the according testcase 
+	 * and {@link #selector} is notified of the selection 
+	 * to trigger the according selection 
+	 * which in turn has further effects invoking 
+	 * {@link GUIRunner.HierarchyWrapper#valueChanged(TreeSelectionEvent)}.
+	 * Deselection causes {@link #stackTraceLister} to clear the stacktrace 
+	 * and also affects {@link #selector} like selection of the root. 
+	 */
 	public void valueChanged(ListSelectionEvent lse) {
+	    // the index of the (single) selected entry or -1 if none selected 
 	    int selIndex = this.failureSelection.getMinSelectionIndex();
 	    if (selIndex == -1) {
 		// Here, the selection is empty. 
@@ -1389,9 +1738,10 @@ class GUIRunner {
 	    }
 	    // Here, the selection consists of a single entry. 
 	    TestCase testCase = this.failureListMod.getElementAt(selIndex);
-	    this.selector.setSelection(testCase.getNum());
-	    this.stackTraceLister.setStack(testCase.getException());
-	    GUIRunner.this.splitPane.resetToPreferredSizes();
+	    this.stackTraceLister.setStack(testCase.getThrown());
+	    this.selector.setSelection(testCase.getIdx());
+
+	    //GUIRunner.this.splitPane.resetToPreferredSizes();
 	}
 
     } // class TestCaseLister 
@@ -1508,7 +1858,9 @@ class GUIRunner {
 	    if (thrw == null) {
 		// **** can only occur for rerun testcases 
 		// which eventually succeed. 
-		// is like clearing the stack trace 
+		// and from testcase selected without exception, 
+		// as ignored testcases. 
+		// This is like clearing the stack trace 
 		return;
 	    }
 
@@ -1573,7 +1925,7 @@ class GUIRunner {
 	 * Note that the failure list is the 0th tab for some reason 
 	 * It must be the one initially in the foreground. 
 	 */
-	private final static int SEL_IND1 = 1;
+	private final static int SEL_IND1 = 0;
 
 	/**
 	 * Registered with the unselected Selector. 
@@ -1643,9 +1995,10 @@ class GUIRunner {
 	}
 
 	/* ---------------------------------------------------------------- *
-	 * methods.                                                         *
+	 * methods implementing ChangeListener.                             *
 	 * ---------------------------------------------------------------- */
 
+	// Invoked when the target of the listener has changed its state.
 	public void stateChanged(ChangeEvent che) {
 	    assert this.tabbedPane == che.getSource();
 	    setSelUnSel(this.tabbedPane.getSelectedIndex());
@@ -1769,7 +2122,7 @@ class GUIRunner {
      * both passed and to be performed altogether, 
      * the tests already ignored and those in which an error was found. 
      */
-    private final RunsErrorsFailures runsErrorsFailures;
+    private final StatisticsTestState statisticsTestState;
 
     /**
      * Represents the list of testcases already failed. 
@@ -1820,12 +2173,14 @@ class GUIRunner {
     }
 
     /**
-     * Creates a new <code>GUIRunner</code> instance.
+     * Creates a new <code>GUIRunner</code> instance 
+     * which defines components with unloaded test class. 
+     * Loading is done 
+     * by invoking {@link #testClassStructureLoaded(Description)}. 
      */
     public GUIRunner(Actions actions) {
 	assert SwingUtilities.isEventDispatchThread();
 	this.frame = new JFrame("JUnit GUI");
-System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 	this.frame.setIconImage(smallLogoIcon.getImage());
 	this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -1833,10 +2188,7 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 
 	setMenuBar(actions);
 
-
 	this.className = new JLabel("class name");
-
-
 	this.statusBar = new JLabel("status bar");
 
 	Container content = this.frame.getContentPane();
@@ -1844,8 +2196,7 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 	//content.setLayout(new BorderLayout());
 
 
-	this.runsErrorsFailures = new RunsErrorsFailures();
-
+	this.statisticsTestState = new StatisticsTestState();
 
 	setCenter(actions);
 
@@ -1867,8 +2218,8 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 	progLogo.add(horizBoundary);
 	this.frame.add(progLogo);
 
-	// add separator and line with runs ignored, failures and errors
- 	this.frame.add(this.runsErrorsFailures.getBox());
+	// add separator and line with runs statistics 
+ 	this.frame.add(this.statisticsTestState.getBox());
  	this.frame.add(new JSeparator());
 	this.frame.add(Box.createVerticalStrut(10));
 
@@ -1966,14 +2317,6 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
 	this.frame.update(this.frame.getGraphics());
     }
 
-    // invoked if a test is started or ignored. 
-    void noteTestStartedI(TestCase testCase) {
-//	assert SwingUtilities.isEventDispatchThread();
-	setStatus(testCase);
-	this.testHierarchy.updatePath();
-	this.testHierarchy.setResult(testCase);// sounds strange. 
-    }
-
     /**
      * Sets the message <code>msg</code> to the status bar. 
      */
@@ -1989,58 +2332,104 @@ System.out.println("smallLogoIcon.getImage()"+smallLogoIcon.getImage());
      */
     private void setStatus(TestCase testCase) {
 	setStatus("Test " + 
-		  testCase.getQuality().status() + ": " + 
+		  testCase.getQuality().getMessage() + ": " + 
 		  testCase.getDesc());
-	//this.frame.update();
     }
 
-    // invoked if a test is finished, whether successful or not 
-    // or after noteTestStartedI(TestCase) if it is ignored 
-    void noteReportResult(TestCase testCase) {
-//	assert SwingUtilities.isEventDispatchThread();
-	if (testCase.isSuccess()) {
-	    this.testHierarchy.collapseAlongPath();
-	}
-	setStatus                             (testCase);
-	this.testHierarchy     .setResult     (testCase);
-	this.progress          .incNumRunsDone(testCase);
-	this.runsErrorsFailures.incNumRunsDone(testCase);
-	this.testCaseLister    .recordTestDone(testCase);
-
-	this.splitPane         .resetToPreferredSizes();
-    }
-
+    // **** invoked by Actions.OpenAction#actionPerformed(ActionEvent)
     void resetTestCaseLister() {
-	this.testCaseLister.resetTCL();
+     	this.testCaseLister.clear();
     }
 
     /**
+     * Notifies that an atomic test is started or ignored. 
+     *
+     * @param qual
+     *   the quality of the testcase: 
+     *   This is either {@link Quality#Started} or {@link Quality#Ignored}. 
+     */
+    TestCase noteTestStartedI(Quality qual) {
+//	assert SwingUtilities.isEventDispatchThread();
+	assert qual == Quality.Started
+	    || qual == Quality.Ignored;
+	TestCase testCase = this.testHierarchy.noteTestStartedI(qual); 
+	setStatus(testCase);
+	return testCase;
+    }
+
+    /**
+     * Notifies that the singular test <code>testCase</code> is finished, 
+     * whether successful or not or that a test is ignored 
+     * after invoking {@link #noteTestStartedI(Quality)} 
+     * with parameter {@link Quality#Ignored}. 
+     *
+     * @param testCase
+     *    The testcase comprising the result of the singular test finished. 
+     */
+    void noteReportResult(TestCase testCase) {
+	//	assert SwingUtilities.isEventDispatchThread();
+	
+	assert testCase.getQuality() == Quality.Ignored
+	    || testCase.getQuality() == Quality.Invalidated
+	    || testCase.getQuality() == Quality.Success
+	    || testCase.getQuality() == Quality.Failure
+	    || testCase.getQuality() == Quality.Error;
+
+	this.testHierarchy      .noteReportResult();
+	this.progress           .noteReportResult(testCase);
+	this.statisticsTestState.noteReportResult(testCase);
+	this.testCaseLister     .noteReportResult(testCase);
+	setStatus                                (testCase);
+
+	//this.splitPane          .resetToPreferredSizes();
+    }
+
+    /**
+     * Notifies that the structure of the test class may have been updated. 
+     *
+     * @param desc
+     *    a description of the test structure defined in the test class 
+     *    which is a hierarchy of suites and singular tests. 
+     * @see #testRunStarted(Description)
+     */
+    void testClassStructureLoaded(Description desc) {
+//	assert SwingUtilities.isEventDispatchThread();
+	setStatus("testClassLoaded(");
+
+	// **** strange way to obtain the classname ***** 
+	this.className.setText(desc.getChildren().get(0).toString());
+	TestCase testCaseAll = new TestCase(desc);
+
+	this.testHierarchy      .initClassStructure(testCaseAll);
+	this.testCaseLister     .initClassStructure();// purely formally 
+	this.progress           .initClassStructure(desc);
+	this.statisticsTestState.initClassStructure(desc);
+    }
+
+    /**
+     * Notifies that a test with structure given by <code>desc</code> 
+     * is going to be run next. 
      * Called before any tests have been run. 
-     * Essentially distributes <code>desc</code> to various components. 
+     * At least once before this one, 
+     * {@link #testClassStructureLoaded(Description)} has been invoked. 
      *
      * @param desc 
-     *    describes the tests to be run
+     *    describes the (hierarchy of) tests to be run. 
+     *    This is a sub-hierarchy of the one given by the test class. 
      */
     void testRunStarted(final Description desc) {
 //	assert SwingUtilities.isEventDispatchThread();
 	// **** strange way to obtain the classname ***** 
 	setStatus("testRunStarted(");
-	this.className.setText(desc.getChildren().get(0).toString());
 
-	this.progress          .start(desc);
-	this.runsErrorsFailures.start(desc);
-	this.testHierarchy     .start(desc);
-	this.testCaseLister    .start(desc);// does not depend on desc: no fail
+	TestCase root = this.testHierarchy.getRoot();
+
+	this.testHierarchy      .startTestRun(desc);
+	this.testCaseLister     .startTestRun();// purely formally 
+	this.progress           .startTestRun(root);
+	this.statisticsTestState.startTestRun(root);
     }
 
-    void updateSingularStarted() {
-//	assert SwingUtilities.isEventDispatchThread();
-	this.testHierarchy.updateSingular();
-    }
-    void updateSingularFinished(TestCase testCase) {
-//	assert SwingUtilities.isEventDispatchThread();
-	this.testCaseLister.updateSingular(testCase);
-    }
 
 } // NOPMD coupling is not that high!
 
