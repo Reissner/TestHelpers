@@ -704,7 +704,7 @@ public final class Accessor<T> {
      *    instead of the <code>int</code>-value <code>5</code>. 
      *    <li>
      *    If the return type is void, 
-     *    i.e. <code>java.lang.Void.TYPE<code>, 
+     *    i.e. <code>java.lang.Void.TYPE</code>, 
      *    <code>null</code> is returned. 
      *    </ul>
      * @throws IllegalArgumentException
@@ -774,7 +774,7 @@ public final class Accessor<T> {
      *    instead of the <code>int</code>-value <code>5</code>. 
      *    <li>
      *    If the return type is void, 
-     *    i.e. <code>java.lang.Void.TYPE<code>, 
+     *    i.e. <code>java.lang.Void.TYPE</code>, 
      *    <code>null</code> is returned. 
      *    </ul>
      * @throws InvocationTargetException 
@@ -894,7 +894,7 @@ public final class Accessor<T> {
      *    instead of the <code>int</code>-value <code>5</code>. 
      *    <li>
      *    If the return type is void, 
-     *    i.e. <code>java.lang.Void.TYPE<code>, 
+     *    i.e. <code>java.lang.Void.TYPE</code>, 
      *    <code>null</code> is returned. 
      *    </ul>
      * @throws IllegalArgumentException 
