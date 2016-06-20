@@ -346,18 +346,10 @@ public class Actions {
      * Defines the filter for tests to be run. 
      * **** may be null 
      *
-     * @see #setFilterAndTest(Description, TestCase)
+     * @see #setFilter(Description)
      * @see Actions.CoreRunner#run()
      */
     private Description filter;
-
-    /**
-     * Defines the first atomic test to be run. 
-     * **** may be null 
-     *
-      * @see #setFilterAndTest(Description, TestCase)
-     */
-    private TestCase singTest;
 
     /* -------------------------------------------------------------------- *
      * constructor.                                                         *
@@ -382,7 +374,6 @@ public class Actions {
 	this.coreRunner = new CoreRunner(testClassName);
 	this.isRunning  = false;
 	this.filter     = null;// **** to be reworked 
-	this.singTest   = null;// leads to running all testcases **** 
     }
 
     /* -------------------------------------------------------------------- *
@@ -441,10 +432,11 @@ public class Actions {
      * @see #runFromMain()
      */
     static void runTstCls(final String testClassName) {
-      Runnable guiCreator = new Runnable() {
+	Runnable guiCreator = new Runnable() {
 		public void run() {
 		    // parameter null is nowhere used. 
-		    new Actions(testClassName).startAction.actionPerformed(null);
+		    new Actions(testClassName)
+			.startAction.actionPerformed(null);
 		}
         };
  
@@ -468,20 +460,15 @@ public class Actions {
     }
 
     /**
-     * Sets {@link #singTest} according to <code>testCase</code> 
-     * if that is a single test; otherwise <code>null</code>. ****
+     * Sets {@link #filter} according to <code>filter</code>. 
      *
      * @param filter
      *    the filter for the tests to be run 
-     * @param testCase
-     *    the all in all testcase to be represented in the tree 
-     *    which comprises <code>filter</code>. 
      */
-    void setFilterAndTest(Description filter, TestCase testCase) {
-	assert filter != null && testCase != null && testCase.isTest();
+    void setFilter(Description filter) {
+	assert filter != null;
 	this.filter = filter;
-	this.singTest = testCase;
-    }
+   }
 
     /**
      * Updates the action-enablements 
