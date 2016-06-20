@@ -303,7 +303,9 @@ System.out.println("...testIgnored");
     }
 
     // homemade extension 
-    // invoked for stop and for break 
+    /**
+     * Invoked for stop and for break originated by the user. 
+     */
     // not clear which test has been aborted. 
     public void testRunAborted() {
 	assert !SwingUtilities.isEventDispatchThread();
@@ -322,6 +324,7 @@ System.out.println("...testIgnored");
 	} catch (InvocationTargetException e) {
 	    e.printStackTrace();
 	}
+	System.out.println("..testRunAborted(");
     }
 
     // homemade extension 
@@ -333,7 +336,8 @@ System.out.println("...testIgnored");
 	System.out.println("S testClassStructureLoaded(" + desc);
 	Runnable runnable = new Runnable() {
 		public void run() {
-		    GUIRunListener.this.guiRunner.testClassStructureLoaded(desc);
+		    GUIRunListener.this.guiRunner
+			.testClassStructureLoaded(desc);
 		}
 	    };
 	try {
