@@ -369,7 +369,7 @@ public class Actions {
 	this.breakAction = new BreakAction();
 
 	this.guiRunner  = new GUIRunner(this);
-	this.listener   = new GUIRunListener(this);
+	this.listener   = new GUIRunListener(this.guiRunner);
 
 	this.coreRunner = new CoreRunner(testClassName);
 	this.isRunning  = false;
