@@ -27,8 +27,6 @@ public class GUIRunListener extends TextRunListener {
      * fields.                                                              *
      * -------------------------------------------------------------------- */
 
-    private final Actions actions;
-
     private final GUIRunner guiRunner;
 
     private TestCase testCase;
@@ -38,9 +36,8 @@ public class GUIRunListener extends TextRunListener {
      * constructor.                                                         *
      * -------------------------------------------------------------------- */
 
-    public GUIRunListener(Actions actions) {
-	this.actions = actions;
-	this.guiRunner = this.actions.getRunner();
+    public GUIRunListener(GUIRunner guiRunner) {
+	this.guiRunner = guiRunner;
     }
 
     /* -------------------------------------------------------------------- *
@@ -66,7 +63,6 @@ public class GUIRunListener extends TextRunListener {
 	
 	Runnable runnable = new Runnable() {
 		public void run() {
-		    GUIRunListener.this.actions.setEnableForRun(true);//running 
 		    GUIRunListener.this.guiRunner.testRunStarted(desc);
 		}
 	    };
@@ -90,10 +86,7 @@ public class GUIRunListener extends TextRunListener {
 
 	Runnable runnable = new Runnable() {
 		public void run() {
-		    GUIRunListener.this.guiRunner
-		    	.setStatus("testRunFinished(required: " + 
-		    		   result.getRunTime() + "ms. ");
-		    GUIRunListener.this.actions.setEnableForRun(false);//!runnin
+		    GUIRunListener.this.guiRunner.testRunFinished(result);
 		}
 	    };
 	SwingUtilities.invokeAndWait(runnable);
@@ -318,8 +311,7 @@ System.out.println("...testIgnored");
 
 	Runnable runnable = new Runnable() {
 		public void run() {
-		    GUIRunListener.this.guiRunner.setStatus("testRunAborted(");
-		    GUIRunListener.this.actions.setEnableForRun(false);
+		    GUIRunListener.this.guiRunner.testRunAborted();
 		}
 	    };
 	try {
@@ -340,10 +332,7 @@ System.out.println("...testIgnored");
 	System.out.println("S testClassStructureLoaded(" + desc);
 	Runnable runnable = new Runnable() {
 		public void run() {
-		    GUIRunListener.this.guiRunner
-			.testClassStructureLoaded(desc);
-		    //GUIRunListener.this.guiRunner.setStatus("testlassLoaded(");
-		    //GUIRunListener.this.actions.setEnableForRun(false);
+		    GUIRunListener.this.guiRunner.testClassStructureLoaded(desc);
 		}
 	    };
 	try {
