@@ -418,7 +418,7 @@ enum Quality {
      * @return
      *   the Quality with the maximum level 
      *   of <code>this</code> and <code>other</code>. 
-     * @see GUIRunner.TestProgressBar#incNumRunsDone(TestCase)
+     * @see GUIRunner.TestProgressBar#noteReportResult(TestCase)
      */
     Quality max(Quality other) {
 	return (this.level > other.level) ? this : other;

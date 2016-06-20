@@ -727,7 +727,7 @@ class GUIRunner {
 	 * it is set to <code>null</code>. 
 	 * Finally, {@link #actions} is notified about the test to be run next 
 	 * which is specified by the testcase given by the selected node. 
-	 * by invoking {@link #setFilterSel()}. 
+	 * by invoking {@link #setFilter()}. 
 	 *
 	 * @param testCase
 	 *    a description of the test structure defined in the test class 
