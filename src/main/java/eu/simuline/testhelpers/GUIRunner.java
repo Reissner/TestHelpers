@@ -698,7 +698,16 @@ class GUIRunner {
 	    return (TestCase)root.getUserObject();
 	}
 
-
+	/**
+	 * Returns the action. Invoked by the enclosing GUIRunner. 
+	 *
+	 * @see GUIRunner#testRunStarted(Description)
+	 * @see GUIRunner#testRunFinished(long)
+	 * @see GUIRunner#testRunAborted()
+	 */
+	Actions getActions() {
+	    return this.actions;
+	}
 
 	/* ---------------------------------------------------------------- *
 	 * further methods.                                                 *
@@ -2417,10 +2426,11 @@ class GUIRunner {
      *    describes the (hierarchy of) tests to be run. 
      *    This is a sub-hierarchy of the one given by the test class. 
      */
-    void testRunStarted(final Description desc) {
+    void testRunStarted(Description desc) {
 //	assert SwingUtilities.isEventDispatchThread();
 	// **** strange way to obtain the classname ***** 
 	setStatus("testRunStarted(");
+	this.testHierarchy.getActions().setEnableForRun(true);//running 
 
 	TestCase root = this.testHierarchy.getRoot();
 
@@ -2430,6 +2440,25 @@ class GUIRunner {
 	this.statisticsTestState.startTestRun(root);
     }
 
+    /**
+     * Notifies that a test has been finished sufficiently or not. 
+     *
+     * @param runTime
+     *    the time execution of the test took in milliseconds. 
+     */
+    void testRunFinished(long runTime) {
+	setStatus("testRunFinished(required: " + 
+		 runTime + "ms. ");
+	this.testHierarchy.getActions().setEnableForRun(false);//!running
+    }
+
+    /**
+     * Notifies that a test has been aborted by the user. 
+     */
+    void testRunAborted() {
+	setStatus("testRunAborted(");
+	this.testHierarchy.getActions().setEnableForRun(false);//!running
+    }
 
 } // NOPMD coupling is not that high!
 
