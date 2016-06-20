@@ -86,7 +86,8 @@ public class GUIRunListener extends TextRunListener {
 
 	Runnable runnable = new Runnable() {
 		public void run() {
-		    GUIRunListener.this.guiRunner.testRunFinished(result);
+		    GUIRunListener.this.guiRunner
+			.testRunFinished(result.getRunTime());
 		}
 	    };
 	SwingUtilities.invokeAndWait(runnable);
