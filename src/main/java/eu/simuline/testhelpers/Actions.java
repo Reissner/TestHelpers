@@ -424,7 +424,7 @@ public class Actions {
     /**
      * The fundamental method to start tests with the underlying JUnit-GUI. 
      * The test class is supposed to define a method <code>main</code> 
-     * with body <code>Actions.run(<testclass>.class);</code>. 
+     * with body <code>Actions.run(&lt;testclass&gt;.class);</code>. 
      *
      * @param testClassName
      *    the name of the test class to represent and run. 

@@ -56,9 +56,9 @@ import junit.framework.AssertionFailedError;
  * {@link #assertStringEquals(String expected, String actual)} 
  * is designed for testing long strings. 
  * It provides error messages suitable to find deviations quickly. 
- * <ul>
+ * </ul>
  *
- * @author <a href="mailto:">Ernst Reissner</a>
+ * @author <a href="mailto:rei3ner@arcor.de">Ernst Reissner</a>
  */
 public abstract class Assert<E> extends junit.framework.Assert {
 
