@@ -16,7 +16,6 @@ import java.awt.Color;
 import java.awt.Rectangle;
 
 import java.util.List;
-import java.util.ArrayList;
 
 import java.io.IOException;
 import java.io.File;
@@ -1658,27 +1657,26 @@ class GUIRunner {
 	 *    The testcase comprising the result of the singular test finished. 
 	 */
 	void noteReportResult(TestCase testCase) {
-	    if (testCase.hasFailed()) {
-		if (!this.failureListMod.contains  (testCase)) {
-		     this.failureListMod.addElement(testCase);
-		    // Here, the new element is not selected 
-		    // and so stackTraceLister need not be updated. 
-		    return;
-		}
+	    // add testCase to failureListMod by need 
+	    if (testCase.hasFailed()
+		&& !this.failureListMod.contains  (testCase)) {
+		/**/this.failureListMod.addElement(testCase);
+		// Here, the new element is not selected 
+		// and so stackTraceLister needs no update. 
+		return;
 	    }
 
+	    // update stackTraceLister by need 
 	    int selIndex = this.failureSelection.getMinSelectionIndex();
-	    if (selIndex == -1) {
-		// Here, as before no testcase is selected  
-		// and so stackTraceLister is empty and need not be updated. 
+	    if (selIndex == -1 
+		|| testCase != this.failureListMod.getElementAt(selIndex)) {
+		// Here, as before no testcase is selected 
+		// or some testcase is selected but not testCase. 
+		// In any case, stackTraceLister is empty and needs no update. 
 		return;
 	    }
-	    if (testCase != this.failureListMod.getElementAt(selIndex)) {
-		// Here, result is not selected 
-		// and so stackTraceLister need not be updated. 
-		return;
-	    }
-	    // Here, result is selected 
+
+	    // Here, testCase is selected 
 	    if (testCase.hasFailed()) {
 		this.stackTraceLister.setStack(testCase.getThrown());
 	    } else {
