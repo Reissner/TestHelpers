@@ -1410,12 +1410,12 @@ public final class Accessor<T> {
      *    the <code>Class</code> object represented by the parameters. 
      * @throws IllegalArgumentException
      *    if either of the parameters is <code>null</code>. 
-     * @throws NoSuchInnerClassException
+     * @throws IllegalArgumentException
      *    if the specified class does not exist. 
      * @see #getInnerClass(Class,String)
      */
     public static Class<?> getInnerClass(Class<?> enclosingCls,
-				      String[] pathToInner) {
+					 String[] pathToInner) {
 	Class<?> result = enclosingCls;
 	for (int i = 0; i < pathToInner.length; i++) {
 	    result = getInnerClass(result,pathToInner[i]);
@@ -1452,7 +1452,7 @@ public final class Accessor<T> {
      * @see #getInnerClass(Class,String[])
      */
     public static Class<?> getInnerClass(Class<?> enclosingCls,
-				      String innerClsName) {
+					 String innerClsName) {
 
 	if (enclosingCls == null) {
 	    throw new IllegalArgumentException(STR_SPEC_NULL_CLS);
