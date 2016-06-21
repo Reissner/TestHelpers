@@ -1641,17 +1641,11 @@ class GUIRunner {
 	 * it should be in the failure list {@link #failureListMod}. 
 	 * If so the element is added if not yet present. 
 	 * <p>
-	 * If 
-	 * <ul>
-	 * <li>
-	 * <code>testCase</code> is not newly added to the failure list, 
-	 * <li>
-	 * and <code>testCase</code> is selected 
-	 * </ul>
+	 * If <code>testCase</code> is selected 
 	 * then if <code>testCase</code> failed, 
 	 * the stack trace {@link #stackTraceLister} 
 	 * is set to the stacktrace of the failure; 
-	 * otherwise it is cleared. 
+	 * otherwise the stacktrace is cleared. 
 	 *
 	 * @param testCase
 	 *    The testcase comprising the result of the singular test finished. 
@@ -1670,7 +1664,7 @@ class GUIRunner {
 	    int selIndex = this.failureSelection.getMinSelectionIndex();
 	    if (selIndex == -1 
 		|| testCase != this.failureListMod.getElementAt(selIndex)) {
-		// Here, as before no testcase is selected 
+		// Here, no testcase is selected 
 		// or some testcase is selected but not testCase. 
 		// In any case, stackTraceLister is empty and needs no update. 
 		return;
