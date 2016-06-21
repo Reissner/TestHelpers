@@ -60,7 +60,7 @@ import junit.framework.AssertionFailedError;
  *
  * @author <a href="mailto:rei3ner@arcor.de">Ernst Reissner</a>
  */
-public abstract class Assert<E> extends junit.framework.Assert {
+public abstract class Assert<E> extends org.junit.Assert {
 
     /* -------------------------------------------------------------------- *
      * inner classes.                                                       *
@@ -1773,3 +1773,10 @@ ite.getTargetException().printStackTrace();
     // 	Double res = (Double)Assert.class.getMethod("test").invoke(null);
     // }
 }
+
+// Assert.java:63: warning: [deprecation] Assert in junit.framework has been deprecated
+// public abstract class Assert<E> extends junit.framework.Assert {
+//                                                        ^
+// 1 warning
+
+// Compilation finished at Tue Jun 21 20:36:15

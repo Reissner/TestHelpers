@@ -231,7 +231,7 @@ public final class Accessor<T> {
 	try {
 	    return method.invoke(target,parameters);
 	} catch(IllegalAccessException ie) {
-	    throw new IllegalStateException
+	    throw new IllegalStateException// NOPMD
 		("Method should be accessible; still is not. "); 
 	}
     }
@@ -454,7 +454,7 @@ public final class Accessor<T> {
 	try {
 	    return aField.get(target);
 	} catch (IllegalAccessException e) {
-	    throw new IllegalStateException
+	    throw new IllegalStateException// NOPMD
 		("Field \"" + fieldName + STR_IN_CLS + 
 		 (aClass == null ? target.getClass() : aClass).getName() + 
 		 "is not accessible although it should. ");
@@ -607,11 +607,11 @@ public final class Accessor<T> {
 	    }
 	    String clsName = aClass.getName();
 	    if (Modifier.isFinal(aField.getModifiers())) {
-		throw new IllegalArgumentException
+		throw new IllegalArgumentException// NOPMD
 		    ("Field \"" + fieldName + STR_IN_CLS + clsName + 
 		     "\" is declared final and is hence not accessible. ");
 	    }
-	    throw new IllegalStateException
+	    throw new IllegalStateException// NOPMD
 		("Field \"" + fieldName + STR_IN_CLS + clsName + 
 		 "\" is not accessible although it should. ");
 	}
@@ -954,7 +954,7 @@ public final class Accessor<T> {
 	     candClass != null;
 	     candClass = candClass.getSuperclass()) {
 	    try {
-		toBeInvoked = candClass.getDeclaredMethod(methodName,paramCls);
+		toBeInvoked = candClass.getDeclaredMethod(methodName, paramCls);
 	    } catch (NoSuchMethodException e) {
 		// method is not found: look it up in subclass. 
 		continue;
@@ -963,7 +963,7 @@ public final class Accessor<T> {
 		return null;
 	    }
 	    toBeInvoked.setAccessible(true);
-	    return toBeInvoked;
+	    return toBeInvoked;// NOPMD 
 	}
 	// Here, the desired method is not found. 
 
@@ -1170,7 +1170,7 @@ public final class Accessor<T> {
 	try {
 	    return toBeInvoked.newInstance(parameters);
 	} catch(IllegalAccessException ie) {
-	    throw new IllegalStateException
+	    throw new IllegalStateException// NOPMD
 		("Constructor should be accessible; still is not. "); 
 	}
     }
