@@ -244,7 +244,7 @@ public class AccessorTest {
 			       new ForTests(),
 			       "aStaticPrimitiveField");
 	} catch (IllegalArgumentException e) {
-	    assertEquals("The specified field \"aStaticPrimitiveField\" should " + 
+	    assertEquals("The specified field 'aStaticPrimitiveField' should " + 
 			 "not be static. ",
 			 e.getMessage());
 	} // end of try-catch
@@ -259,7 +259,7 @@ public class AccessorTest {
 			       null,
 			       "aPrimitiveField");
 	} catch (IllegalArgumentException e) {
-	    assertEquals("The specified field \"aPrimitiveField\" should " + 
+	    assertEquals("The specified field 'aPrimitiveField' should " + 
 			 "be static. ",
 			 e.getMessage());
 	} // end of try-catch
@@ -412,7 +412,7 @@ public class AccessorTest {
 			       "aStaticPrimitiveField",
 			       Integer.valueOf(-1));
 	} catch (IllegalArgumentException e) {
-	    assertEquals("The specified field \"aStaticPrimitiveField\" should " + 
+	    assertEquals("The specified field 'aStaticPrimitiveField' should " + 
 			 "not be static. ",
 			 e.getMessage());
 	} // end of try-catch
@@ -428,7 +428,7 @@ public class AccessorTest {
 			       "aPrimitiveField",
 			       Integer.valueOf(-1));
 	} catch (IllegalArgumentException e) {
-	    assertEquals("The specified field \"aPrimitiveField\" should " + 
+	    assertEquals("The specified field 'aPrimitiveField' should " + 
 			 "be static. ",
 			 e.getMessage());
 	} // end of try-catch
@@ -443,9 +443,9 @@ public class AccessorTest {
 			       "aFinalField",
 			       Integer.valueOf(-1));
 	} catch (IllegalArgumentException e) {
-	    assertEquals("Field \"aFinalField\" in class \"" + 
+	    assertEquals("Field 'aFinalField' in class '" + 
 			 ForTests.class.getName() + 
-			 "\" is declared final and is hence not accessible. ",
+			 "' is declared final and is hence not accessible. ",
 			 e.getMessage());
 	} // end of try-catch
 
@@ -460,10 +460,10 @@ public class AccessorTest {
 			      null);
 	} catch (IllegalArgumentException e) {
 	    assertEquals("Tried to assign null-value " + 
-			 "to field \"aStaticPrimitiveField\"" +
-			 " in class \"" + ForTests.class.getName() + 
-			 "\" although its type \"" + Integer.TYPE + 
-			 "\" is primitive. ",
+			 "to field 'aStaticPrimitiveField'" +
+			 " in class '" + ForTests.class.getName() + 
+			 "' although its type '" + Integer.TYPE + 
+			 "' is primitive. ",
 			 e.getMessage());
 	} // end of try-catch
 
@@ -581,8 +581,8 @@ public class AccessorTest {
 	 try {
 	     Accessor.getInnerClass(AccessorTest.class,"noInnerClass");
 	 } catch (IllegalArgumentException e) {
-	     assertEquals("Class \"" + AccessorTest.class.getName() + 
-			  "\" has no inner class named \"" + "noInnerClass" + "\". ",
+	     assertEquals("Class '" + AccessorTest.class.getName() + 
+			  "' has no inner class named '" + "noInnerClass" + "'. ",
 			  e.getMessage());
 	 } // end of try-catch
 
