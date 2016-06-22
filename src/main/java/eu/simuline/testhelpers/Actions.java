@@ -79,7 +79,7 @@ public class Actions {
 	    Actions.this.coreRunner = new CoreRunner(clsName);
 
 	    // clears list of failed testcases
-	    Actions.this.guiRunner.resetTestCaseLister();
+	    Actions.this.filter = null;
 	    Actions.this.getStartAction().actionPerformed(null);
 	}
     } // class OpenAction 
