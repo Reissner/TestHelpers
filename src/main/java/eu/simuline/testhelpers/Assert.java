@@ -1,8 +1,6 @@
 
 package eu.simuline.testhelpers;
 
-import eu.simuline.util.BasicTypesCompatibilityChecker;
-
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -1220,8 +1218,17 @@ ite.getTargetException().printStackTrace();
 	return message.toString();
     }
 
-    private static String failMessageDelta(Object expectedEntry, 
-					   Object actualEntry, 
+    /**
+     * Returns a failure message indicating that 
+     * in comparing nested arrays of final float type 
+     * as <code>double[][]</code>, 
+     * the corresponding entries given by index path <code>indices</code> 
+     * deviate at least <code>delta</code>. 
+     * 
+     */
+    // used in assertRecArraysEquals(Object, Object, int[], double)
+    private static String failMessageDelta(double expectedEntry, 
+					   double actualEntry, 
 					   int[] indices, 
 					   double delta) {
 
@@ -1249,6 +1256,32 @@ ite.getTargetException().printStackTrace();
 	return message.toString();
     }
 
+    private static String failMessageLength(int expectedLen, 
+					    int actualLen, 
+					    int[] indices) {
+	// Determine indices of entry
+	StringBuffer message = new StringBuffer(45);
+	if (indices.length > 0) {
+	    message.append("In entry [");
+	    for (int j = 0; j < indices.length-1; j++) {
+		message.append(indices[j]);
+		message.append(", ");
+	    }
+	    message.append(indices[indices.length-1]);// NOPMD
+	    message.append("] expected lengths <");
+	} else {
+	    message.append("Expected lengths <");
+	}
+
+	// ""+obj  works for null; obj.toString() does not
+	message.append(expectedLen);
+	message.append(STR_BUTWAS);
+	message.append(actualLen);
+	message.append(STR_ASTOP);
+	return message.toString();
+    }
+
+
     /**
      * Is a deep version of method 
      * <code>junit.framework.Assert.assertEquals(Object,Object)</code> 
@@ -1262,9 +1295,10 @@ ite.getTargetException().printStackTrace();
      * </ul>
      *
      * @param expected 
-     *    an array. 
+     *    the expected array. 
      * @param actual 
-     *    an array. 
+     *    the actual array 
+     *    which is assumed to be of same type as <code>expected</code>. 
      * @param delta 
      *    the allowed deviation as a <code>double</code> value. 
      * @exception IllegalArgumentException 
@@ -1281,9 +1315,9 @@ ite.getTargetException().printStackTrace();
 					  Object actual, 
 					  double delta) {
 
-	checkArraysSameClass(expected,actual);
+	checkArraysSameClass(expected, actual);
 	// Here, both are arrays or neither of them. 
-	assertRecArraysEquals(expected,actual,new int[0],delta);
+	assertRecArraysEquals(expected, actual, new int[0], delta);
     }
 
     /**
@@ -1296,9 +1330,10 @@ ite.getTargetException().printStackTrace();
      * and both are arrays. 
      *
      * @param expected 
-     *    an array. 
+     *    the expected array. 
      * @param actual 
-     *    an array. 
+     *    the actual array 
+     *    which is assumed to be of same type as <code>expected</code>. 
      * @param indices 
      *    contains the list of indices of the arrays 
      *    <code>expected</code> and <code>actual</code> 
@@ -1308,19 +1343,24 @@ ite.getTargetException().printStackTrace();
      *    for an <code>AssertionFailedError</code>. 
      * @param delta 
      *    the allowed deviation as a <code>double</code> value. 
+     * @throws IllegalArgumentException
+     *    if <code>expected</code> or <code>actual</code> is not an array. 
      * @throws AssertionFailedError
-     *    if the the two arrays do not coincide in their lenght 
+     *    if the the two arrays do not coincide in their length 
      *    or in some entry. 
+     * @throws eu.simuline.util.NotYetImplementedException
+     *    if <code>expected</code> is not 'finally' of primitive type. 
      */
     private static void assertRecArraysEquals(Object expected, 
 					      Object actual, 
 					      int[] indices,
 					      double delta) {
 
+	// throws IllegalArgumentException if not an array 
 	if (Array.getLength(expected) != Array.getLength(actual)) {
-
-	    fail("expected length: <" + Array.getLength(expected) + 
-		 STR_BUTWAS +       Array.getLength(actual) + STR_ASTOP);
+	    fail(failMessageLength(Array.getLength(expected),
+				   Array.getLength(actual),
+				   indices));
 	}
 	// Here, both are arrays and their lengths coincide. 
 
@@ -1336,56 +1376,56 @@ ite.getTargetException().printStackTrace();
 	    actualEntry   = Array.get(actual,  i);
 
 	    int[] newInd = new int[indices.length+1];
-	    System.arraycopy(indices,0,newInd,0,indices.length);
+	    System.arraycopy(indices, 0, newInd, 0, indices.length);
 	    newInd[newInd.length-1] = i;
 
-	    if (expectedEntry.getClass().isArray()) {
+	    Class<?> entryClass = expectedEntry.getClass();
+	    if (entryClass.isArray()) {
 		// Here, both of the objects are arrays with the same type. 
 		assertRecArraysEquals(expectedEntry,actualEntry,newInd,delta);
-	    } else {
-		// Here, neither of the objects are arrays 
-		// (but their types coincide). 
-		Class<?> wrappedClass = BasicTypesCompatibilityChecker
-		    .getWrappedCls(expectedEntry.getClass());
-		if (wrappedClass == null) {
-		    // not primitive: use as is. 
-		    // **** no, this requires a special norm or metric 
-		    // and can thus not be handled uniformly. 
-		    throw new IllegalArgumentException
-			("Primitive type expected; found " + 
-			 expectedEntry.getClass() + ". ");
-		    // assertEquals(failMessage(expectedEntry,
-		    // 			     actualEntry,
-		    // 			     newInd),
-		    // 		 expectedEntry,actualEntry,delta);
-		} else {
-		    // primitive: unwrap before use. 
-		    if (wrappedClass == Double.TYPE) {
-			assertEquals(failMessageDelta(expectedEntry,
-						      actualEntry,
-						      newInd,
-						      delta),
-				     ((Double)expectedEntry).doubleValue(),
-				     ((Double)  actualEntry).doubleValue(),
-				     delta);
-		    } else if (wrappedClass == Float.TYPE) {
-			assertEquals(failMessageDelta(expectedEntry,
-						      actualEntry,
-						      newInd,
-						      delta),
-				     ((Float)expectedEntry).floatValue(),
-				     ((Float)  actualEntry).floatValue(),
-				     (float)delta);
-		    } else {
-			throw new IllegalArgumentException
-			    ("For primitive type " + wrappedClass + 
-			     " no method assertEquals(" + wrappedClass + 
-			     "," + wrappedClass + "," + wrappedClass + 
-			     ") exists. ");
-		    }
-		}
+		return;
 	    }
-	}
+
+	    // Here, neither of the objects are arrays 
+	    // (but their types coincide). 
+	    if (entryClass.isPrimitive()) {
+		// primitive: unwrap before use. 
+		if (entryClass == Double.TYPE) {
+		    assertEquals(failMessageDelta((double)expectedEntry,
+						  (double)actualEntry,
+						  newInd,
+						  delta),
+				 (double)expectedEntry,
+				 (double)  actualEntry,
+				 delta);
+		} else if (entryClass == Float.TYPE) {
+		    assertEquals(failMessageDelta((double)expectedEntry,
+						  (double)actualEntry,
+						  newInd,
+						  delta),
+				 (float)expectedEntry,
+				 (float)  actualEntry,
+				 (float)delta);
+		} else {
+		    throw new IllegalArgumentException
+			("For primitive type " + entryClass + 
+			 " no method assertEquals(" + entryClass + 
+			 "," + entryClass + "," + entryClass + 
+			 ") exists. ");
+		}
+	    } else {
+		// not primitive: use as is. 
+		// **** no, this requires a special norm or metric 
+		// and can thus not be handled uniformly. 
+		throw new eu.simuline.util.NotYetImplementedException();
+		    // ("Primitive type expected; found " + 
+		    //  expectedEntry.getClass() + ". ");
+		// assertEquals(failMessage(expectedEntry,
+		// 			     actualEntry,
+		// 			     newInd),
+		// 		 expectedEntry,actualEntry,delta);
+	    } // else 
+	} // for 
     }
 
     /**
@@ -1393,7 +1433,7 @@ ite.getTargetException().printStackTrace();
      * between <code>expected</code> and <code>actual</code> 
      * exceeds <code>reldiv</code> in absolute value. 
      *
-      * @param expected 
+     * @param expected 
      *    the <code>double</code> value expected. 
      *    This may be neither <code>0.0</code>, nor an infinite value 
      *    nor <code>NaN</code>. 

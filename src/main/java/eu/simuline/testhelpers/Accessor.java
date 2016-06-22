@@ -123,7 +123,7 @@ public final class Accessor<T> {
 
     // several string literals occurring more than once. 
     private final static String STR_DNE = " does not exist. ";
-    private final static String STR_IN_CLS = "\" in class \"";
+    private final static String STR_IN_CLS = "' in class '";
     private final static String STR_SPEC_NULL_CLS = "Specified null-class. ";
 
     /* -------------------------------------------------------------------- *
@@ -157,7 +157,7 @@ public final class Accessor<T> {
     private static String paramsToString(Class... paramCls) {
 	StringBuffer ret = new StringBuffer();
 	String clsString;
-	ret.append("(");
+	ret.append('(');
 	if (paramCls.length != 0) {
 	    clsString = paramCls[0] == null 
 		?  UNSPECIFIED_CLASS
@@ -171,7 +171,7 @@ public final class Accessor<T> {
 		ret.append(clsString);
 	    }
 	}
-	ret.append(")");
+	ret.append(')');
 	return ret.toString();
     }
 
@@ -229,7 +229,7 @@ public final class Accessor<T> {
 	}
 
 	try {
-	    return method.invoke(target,parameters);
+	    return method.invoke(target, parameters);
 	} catch(IllegalAccessException ie) {
 	    throw new IllegalStateException// NOPMD
 		("Method should be accessible; still is not. "); 
@@ -381,8 +381,8 @@ public final class Accessor<T> {
 		    if (shouldBeStatic != 
 			Modifier.isStatic(cands[i].getModifiers())) {
 			throw new IllegalArgumentException
-			    ("The specified field \"" + fieldName + 
-			     "\" should " + 
+			    ("The specified field '" + fieldName + 
+			     "' should " + 
 			     (shouldBeStatic ? "" : "not ") + 
 			     "be static. ");
 		    }
@@ -455,7 +455,7 @@ public final class Accessor<T> {
 	    return aField.get(target);
 	} catch (IllegalAccessException e) {
 	    throw new IllegalStateException// NOPMD
-		("Field \"" + fieldName + STR_IN_CLS + 
+		("Field '" + fieldName + STR_IN_CLS + 
 		 (aClass == null ? target.getClass() : aClass).getName() + 
 		 "is not accessible although it should. ");
 	}
@@ -592,11 +592,11 @@ public final class Accessor<T> {
 
 	if (aField.getType().isPrimitive() && value == null) {
 	    throw new IllegalArgumentException
-		("Tried to assign null-value to field \"" + fieldName + 
+		("Tried to assign null-value to field '" + fieldName + 
 		 STR_IN_CLS + 
 		 (aClass == null ? target.getClass() : aClass).getName() + 
-		 "\" although its type \"" + aField.getType() + 
-		 "\" is primitive. ");
+		 "' although its type '" + aField.getType() + 
+		 "' is primitive. ");
 	}
 	
 	try {
@@ -608,12 +608,12 @@ public final class Accessor<T> {
 	    String clsName = aClass.getName();
 	    if (Modifier.isFinal(aField.getModifiers())) {
 		throw new IllegalArgumentException// NOPMD
-		    ("Field \"" + fieldName + STR_IN_CLS + clsName + 
-		     "\" is declared final and is hence not accessible. ");
+		    ("Field '" + fieldName + STR_IN_CLS + clsName + 
+		     "' is declared final and is hence not accessible. ");
 	    }
 	    throw new IllegalStateException// NOPMD
-		("Field \"" + fieldName + STR_IN_CLS + clsName + 
-		 "\" is not accessible although it should. ");
+		("Field '" + fieldName + STR_IN_CLS + clsName + 
+		 "' is not accessible although it should. ");
 	}
     }
 
@@ -1483,8 +1483,8 @@ public final class Accessor<T> {
 	// Here, the specified inner class is not found. 
 
 	throw new IllegalArgumentException
-	    ("Class \"" + enclosingCls.getName() + 
-	     "\" has no inner class named \"" + innerClsName + "\". ");
+	    ("Class '" + enclosingCls.getName() + 
+	     "' has no inner class named '" + innerClsName + "'. ");
     }
 }
 
