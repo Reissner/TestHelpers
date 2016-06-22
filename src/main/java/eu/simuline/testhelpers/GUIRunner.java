@@ -473,14 +473,16 @@ class GUIRunner {
 	 * constructors.                                                    *
 	 * ---------------------------------------------------------------- */
 
-	TreePathIterator(JTree tree) {
+	// for index==0, treePathUpdater is First, 
+	// setFirstPath not invoked and so like null-pointer 
+	// and so after next update iterator points to 0th entry 
+	// for index>0, treePathUpdater is Generic, 
+	// iterator points to one before correct position 
+	// and so aftter next update iterator points to index-th entry 
+	TreePathIterator(JTree tree, int index) {
 	    this.treeModel = tree.getModel();
 	    this.currPath = null;// formally only 
 	    this.treePathUpdater = TreePathUpdater.First;
-	}
-
-	TreePathIterator(JTree tree, int index) {
-	    this(tree);
 	    for (int i = 0; i < index; i++) {
 		updatePathI();
 	    }
@@ -501,8 +503,11 @@ class GUIRunner {
 	 * **** Shall be invoked by TreePathUpdater only **** 
 	 */
 	void setFirstPath() {
+//System.out.println("setFirstPath()..");
+	    
 	    TreeNode lastNode = (TreeNode) this.treeModel.getRoot();
 	    this.currPath = prolonguePath(new TreePath(lastNode));
+//System.out.println("..setFirstPath()");
 	}
 
 	/**
@@ -557,12 +562,14 @@ class GUIRunner {
 	 * Increments {@link #currPath} and returns the result. 
 	 */
 	TreePath incPath() {
+//System.out.println("incPath()..");
 	    int index = shortenPath();
 	    TreePath prefix = this.currPath.getParentPath();
 	    TreeNode lastButOneNode = (TreeNode)prefix.getLastPathComponent();
 	    TreeNode lastNode = lastButOneNode.getChildAt(index+1);
 	    this.currPath = prefix.pathByAddingChild(lastNode);
 	    this.currPath = prolonguePath(this.currPath);
+//System.out.println("..incPath()");
 	    return this.currPath;
 	}
 
@@ -775,7 +782,9 @@ class GUIRunner {
 	void startTestRun(Description desc) {
 	    TestCase testCase = (TestCase)
 		this.singleSelectedNode.getUserObject();
-	    assert desc == testCase.getDesc();
+	    // no longer true: **** 
+//assert testCase.getDesc().equals(desc);
+//assert desc == testCase.getDesc();
 	    testCase.setScheduledRec();
 
 	    testCase = (TestCase)this.singleSelectedNode.getFirstLeaf()
@@ -1220,15 +1229,15 @@ class GUIRunner {
     static class TestListCellRenderer 
 	implements ListCellRenderer<TestCase>, Serializable {
 
-	static class Label extends JLabel {
+	static class XLabel extends JLabel {
 
 	    private static final long serialVersionUID = -2479143000061671589L;
 
-	    Label(Icon icon) {
+	    XLabel(Icon icon) {
 		super(icon);
 	    }
 
-	    Label(String text) {
+	    XLabel(String text) {
 		super(text);
 	    }
 
@@ -1344,7 +1353,7 @@ class GUIRunner {
 					      Object oldValue, 
 					      Object newValue) {
 		// Strings get interned...
-		if (propertyName=="text") {
+		if (propertyName=="text") {// NOPMD
 		    super.firePropertyChange(propertyName, oldValue, newValue);
 		}
 	    }
@@ -1436,7 +1445,7 @@ class GUIRunner {
 					   boolean newValue) {
 		// is empty. 
 	    }
-	} // class Label 
+	} // class XLabel 
 
 	private static final long serialVersionUID = -2479143000061671589L;
 
@@ -1483,10 +1492,10 @@ class GUIRunner {
 
 	    Box failureEntry = Box.createHorizontalBox();
 
-	    Label iconLabel = new Label(testCase.getQuality().getIcon());
+	    XLabel iconLabel = new XLabel(testCase.getQuality().getIcon());
 	
 	    // for rerun testcases which eventually do no longer fail. 
-	    Label textLabel = new Label(testCase.hasFailed() 
+	    XLabel textLabel = new XLabel(testCase.hasFailed() 
 					? thrwToString(testCase.getThrown()) 
 					: testCase.getQuality().getMessage());
 	    iconLabel.setDetails(list,isSelected,cellHasFocus);
@@ -1655,6 +1664,8 @@ class GUIRunner {
 		// and so stackTraceLister needs no update. 
 		return;
 	    }
+	    assert !testCase.hasFailed() 
+		|| this.failureListMod.contains(testCase);
 
 	    // update stackTraceLister by need 
 	    int selIndex = this.failureSelection.getMinSelectionIndex();
@@ -2341,6 +2352,7 @@ class GUIRunner {
      *   This is either {@link Quality#Started} or {@link Quality#Ignored}. 
      */
     TestCase noteTestStartedI(Quality qual) {
+	
 //	assert SwingUtilities.isEventDispatchThread();
 	assert qual == Quality.Started
 	    || qual == Quality.Ignored;
@@ -2410,7 +2422,7 @@ class GUIRunner {
      *    This is a sub-hierarchy of the one given by the test class. 
      */
     void testRunStarted(Description desc) {
-//	assert SwingUtilities.isEventDispatchThread();
+ //	assert SwingUtilities.isEventDispatchThread();
 	// **** strange way to obtain the classname ***** 
 	setStatus("testRunStarted(");
 	this.testHierarchy.getActions().setEnableForRun(true);//running 
