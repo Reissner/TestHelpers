@@ -1615,9 +1615,12 @@ class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	/**
-	 * Does nothing, purely formally 
+	 * Clears the failure list, its selection and the failure stack. 
 	 */
 	void initClassStructure() {
+	    this.failureSelection.clearSelection();
+	    this.failureListMod  .clear();
+	    this.stackTraceLister.clearStack();
 	}
 
 	// for TestCaseLister
@@ -1625,13 +1628,6 @@ class GUIRunner {
 	// maybe remove from failureListMod only 
 	// what is in desc 
 	void startTestRun() {
-	}
-
-	// invoked by {@link GUIRunner#resetTestCaseLister()}
-	void clear() {
-	    this.failureSelection.clearSelection();
-	    this.failureListMod  .clear();
-	    this.stackTraceLister.clearStack();
 	}
 
 	/**
@@ -2337,11 +2333,6 @@ class GUIRunner {
 		  testCase.getDesc());
     }
 
-    // **** invoked by Actions.OpenAction#actionPerformed(ActionEvent)
-    void resetTestCaseLister() {
-     	this.testCaseLister.clear();
-    }
-
     /**
      * Notifies that an atomic test is started or ignored. 
      *
@@ -2402,7 +2393,7 @@ class GUIRunner {
 	TestCase testCaseAll = new TestCase(desc);
 
 	this.testHierarchy      .initClassStructure(testCaseAll);
-	this.testCaseLister     .initClassStructure();// purely formally 
+	this.testCaseLister     .initClassStructure();
 	this.progress           .initClassStructure(desc);
 	this.statisticsTestState.initClassStructure(desc);
     }
