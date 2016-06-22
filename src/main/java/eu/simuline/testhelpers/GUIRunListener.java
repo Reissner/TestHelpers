@@ -67,7 +67,8 @@ public class GUIRunListener extends TextRunListener {
 		}
 	    };
 	SwingUtilities.invokeAndWait(runnable);
-    }
+System.out.println("..testRunStarted");
+     }
 
     /**
      * Called when all tests have finished. 
@@ -91,7 +92,8 @@ public class GUIRunListener extends TextRunListener {
 		}
 	    };
 	SwingUtilities.invokeAndWait(runnable);
-    }
+ System.out.println("..testRunFinished");
+   }
 
     /**
      * Called when a test suite is about to be started. 
@@ -177,7 +179,7 @@ System.out.println("..testStarted");
 	assert !SwingUtilities.isEventDispatchThread();
 	// output text 
 	super.testFinished(desc);
-	assert GUIRunListener.this.testCase.getDesc() == desc;
+//	assert GUIRunListener.this.testCase.getDesc() == desc;
 
 	Runnable runnable = new Runnable() {
 		public void run() {
