@@ -242,6 +242,7 @@ System.out.println("keep searching **** although excluded. ");
      * If the remaining path is nontrivial, it is added to {@link #excluded}. 
      * </ol>
      */
+    @SuppressWarnings("PMD.NPathComplexity")
     private void readExcludedPackages() {		
 	this.excluded = new ArrayList<String>(10);
 	for (int i = 0; i < this.defaultExclusions.length; i++) {
