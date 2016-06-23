@@ -503,11 +503,8 @@ class GUIRunner {
 	 * **** Shall be invoked by TreePathUpdater only **** 
 	 */
 	void setFirstPath() {
-//System.out.println("setFirstPath()..");
-	    
 	    TreeNode lastNode = (TreeNode) this.treeModel.getRoot();
 	    this.currPath = prolonguePath(new TreePath(lastNode));
-//System.out.println("..setFirstPath()");
 	}
 
 	/**
@@ -562,14 +559,12 @@ class GUIRunner {
 	 * Increments {@link #currPath} and returns the result. 
 	 */
 	TreePath incPath() {
-//System.out.println("incPath()..");
 	    int index = shortenPath();
 	    TreePath prefix = this.currPath.getParentPath();
 	    TreeNode lastButOneNode = (TreeNode)prefix.getLastPathComponent();
 	    TreeNode lastNode = lastButOneNode.getChildAt(index+1);
 	    this.currPath = prefix.pathByAddingChild(lastNode);
 	    this.currPath = prolonguePath(this.currPath);
-//System.out.println("..incPath()");
 	    return this.currPath;
 	}
 
