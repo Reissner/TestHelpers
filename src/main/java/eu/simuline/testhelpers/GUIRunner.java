@@ -124,7 +124,7 @@ import java.util.Collection;
  * @author <a href="mailto:ernst@">Ernst Reissner</a>
  * @version 1.0
  */
-//@SuppressWarnings("")
+@SuppressWarnings("PMD.ExcessiveClassLength")
 class GUIRunner {
 
     /* -------------------------------------------------------------------- *
