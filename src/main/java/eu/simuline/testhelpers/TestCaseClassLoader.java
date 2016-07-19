@@ -110,7 +110,7 @@ public class TestCaseClassLoader extends ClassLoader {
 
     /**
      * Constructs a TestCaseLoader. 
-     * It scans the class path and the excluded package paths
+     * It scans the class path and the excluded package paths. 
      */
     public TestCaseClassLoader() {
 	this(System.getProperty("java.class.path"));
