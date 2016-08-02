@@ -615,6 +615,15 @@ class GUIRunner {
 	private final Actions actions;
 
 	/**
+	 * The the {@link TestCaseLister} 
+	 * listing the failed test cases. 
+	 * This is used in {@link #noteReportResult(TestCase)} only 
+	 * and is to notify that a certain tescase failed 
+	 * and is selected. 
+	 */
+	private final TestCaseLister testCaseLister;
+
+	/**
 	 * Represents the selected node in {@link #hierarchyTree}. 
 	 * This is <code>null</code> if nothing selected 
 	 * which is also the initial value. 
@@ -639,16 +648,23 @@ class GUIRunner {
 	 */
 	private Selector selector;
 
-
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
 	 * ---------------------------------------------------------------- */
 
 	/**
-	 * Creates a new HierarchyWrapper with the given <code>actions</code> 
-	 * which is used to initialize {@link #actions}. 
+	 * Creates a new HierarchyWrapper 
+	 * with the given <code>actions</code> and <code>testCaseLister</code>
+	 * which are used 
+	 * to initialize {@link #actions} and {@link #testCaseLister}. 
+	 *
+	 * @param actions
+	 *    the Actions to be written into {@link #actions}. 
+	 * @param testCaseLister
+	 *    TestCaseListerto be written into {@link #testCaseLister}. 
 	 */
-	HierarchyWrapper(Actions actions) {
+	HierarchyWrapper(Actions actions,
+			 TestCaseLister testCaseLister) {
 	    assert SwingUtilities.isEventDispatchThread();
 
 	    this.hierarchyTree = new JTree();
@@ -662,7 +678,11 @@ class GUIRunner {
 
 	    TreeNode root = (TreeNode)this.hierarchyTree.getModel().getRoot();
 	    this.hierarchyTree.setModel(new DefaultTreeModel(root));
+
+	    assert actions != null;
 	    this.actions = actions;
+	    assert testCaseLister != null;
+	    this.testCaseLister = testCaseLister;
 
 	    // purely formally 
 	    this.singleSelectedNode = null;
@@ -878,18 +898,51 @@ class GUIRunner {
 
 	// invoked by noteReportResult(TestCase) 
 	/**
-	 * Notifies that a singular test is finished. 
+	 * Notifies that the singular test <code>testCase</code> is finished. 
 	 * <p>
-	 * Collapses the current path invoking {@link #collapseAlongPath()} 
-	 * and updates the tree node {@link #currPathIter} points to. 
+	 * Collapses the current path invoking {@link #collapseAlongPath()}, 
+	 * updates the tree node {@link #currPathIter} points to 
+	 * and notifies {@link #testCaseLister} 
+	 * if <code>testCase</code> failed and is selected invoking 
+	 * {@link TestCaseLister#addSelectedTestCaseByNeed(TestCase)}. 
+	 *
+	 * @param testCase
+	 *    The testcase comprising the result of the singular test finished. 
 	 */
-	void noteReportResult() {
+	void noteReportResult(TestCase testCase) {
 	    collapseAlongPath();
   
 	    MutableTreeNode lastNode = (MutableTreeNode)
 		this.currPathIter.getPath().getLastPathComponent();
 	    ((DefaultTreeModel)this.hierarchyTree.getModel())
 	    	.nodeChanged(lastNode);
+
+	    // If testCase is selected and testCase.hasFailed(), 
+	    // it shall be added to testCaseLister if not yet listed. 
+	    if (testCase.hasFailed() && isSelected(testCase)) {
+		this.testCaseLister.addSelectedTestCaseByNeed(testCase);
+	    }
+	}
+
+	/**
+	 * Returns whether the given testcase <code>testCase</code> 
+	 * is selected in this HierarchyTree. 
+	 *
+	 * @return
+	 *    whether the given testcase <code>testCase</code> 
+	 *    is selected in this HierarchyTree. 
+	 */
+	private boolean isSelected(TestCase testCase) {
+	    int numSel = this.treeSelection.getSelectionCount();
+	    if (numSel == 0) {
+		return false;
+	    }
+	    assert numSel == 1;
+	    DefaultMutableTreeNode selNode = (DefaultMutableTreeNode)
+		this.treeSelection.getSelectionPath().getLastPathComponent();
+	    TestCase selTestCase = (TestCase)selNode.getUserObject();
+
+	    return selTestCase == testCase;
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -941,8 +994,7 @@ class GUIRunner {
 	 * Both have further effects invoking 
 	 * {@link GUIRunner.TestCaseLister#valueChanged(ListSelectionEvent)}.
 	 * <p>
-	 * Finally, 
-	 * invokes {@link Actions#setFilter(Description)} 
+	 * Finally, invokes {@link #setFilter()} 
 	 * setting the filter for the next test run. 
 	 */
 	public void valueChanged(TreeSelectionEvent selEvent) {
@@ -1680,6 +1732,38 @@ class GUIRunner {
 	    }
 	}
 
+	/**
+	 * Adds <code>testCase</code> to the failure list if not yet listed. 
+	 * It is assumed that <code>testCase</code> failed 
+	 * and that it is selected in the {@link HierarchyTree}. 
+	 *
+	 * @param testCase
+	 *    a testcase which failed. 
+	 */
+	void addSelectedTestCaseByNeed(TestCase testCase) {
+	    assert testCase.hasFailed();
+	    int selIndex;
+	    if (this.failureListMod.contains(testCase)) {
+		// nothing to be added; check only 
+		selIndex = this.failureSelection.getMinSelectionIndex();
+		assert this.failureListMod.get(selIndex) == testCase;
+	    } else {
+		// add testCase and select it 
+		this.failureListMod.addElement(testCase);
+
+		selIndex = this.failureSelection.getMinSelectionIndex();
+		// because testCase is selected in the HierarchyTree, 
+		// and selections are synchronized, 
+		// nothing is selected in the list
+		assert selIndex == -1;
+
+		selIndex = this.failureListMod.size()-1;
+		assert this.failureListMod.get(selIndex) == testCase;
+		this.failureSelection.setSelectionInterval(selIndex, selIndex);
+		// Here, testCase is in the list and is selected. 
+	    }
+	}
+
 	/* ---------------------------------------------------------------- *
 	 * methods implementing Selector.                                   *
 	 * ---------------------------------------------------------------- */
@@ -1717,8 +1801,9 @@ class GUIRunner {
 	/**
 	 * Called whenever the value of the selection changes. 
 	 * <p>
-	 * CAUTION: From the documentation of ListSelectionEvent: 
-	 * queries from ListSelectionModel, rather from ListSelectionEvent. 
+	 * CAUTION: From the documentation of {@link ListSelectionEvent}: 
+	 * queries from {@link ListSelectionModel}, 
+	 * rather from {@link ListSelectionEvent}. 
 	 * <p>
 	 * If an entry is selected, 
 	 * {@link #stackTraceLister} is notified of the stacktrace 
@@ -1991,8 +2076,8 @@ class GUIRunner {
 	 */
 	private void setSelUnSel(int index) {
 	    assert index == 0 || index == 1;
-	    Selector    sel = selectors[  index];
-	    Selector notSel = selectors[1-index];
+	    Selector    sel = this.selectors[  index];
+	    Selector notSel = this.selectors[1-index];
 	    sel   .registerSelector(notSel);
 	    notSel.registerSelector(EMPTY_SELECTOR);
 	}
@@ -2294,7 +2379,8 @@ class GUIRunner {
 			  Quality.Error.getIcon(),
 			  new JScrollPane(this.testCaseLister.getFailList()));
 	// add Tree as second because otherwise a problem becomes visible 
-	this.testHierarchy = new HierarchyWrapper(actions);
+	this.testHierarchy = new HierarchyWrapper(actions,
+						  this.testCaseLister);
 	tabbedPane.addTab("Test Hierarchy",
 			  hierarchyIcon,
 			  new JScrollPane(this.testHierarchy.getTree()));
@@ -2374,7 +2460,7 @@ class GUIRunner {
 	    || testCase.getQuality() == Quality.Failure
 	    || testCase.getQuality() == Quality.Error;
 
-	this.testHierarchy      .noteReportResult();
+	this.testHierarchy      .noteReportResult(testCase);
 	this.progress           .noteReportResult(testCase);
 	this.statisticsTestState.noteReportResult(testCase);
 	this.testCaseLister     .noteReportResult(testCase);
