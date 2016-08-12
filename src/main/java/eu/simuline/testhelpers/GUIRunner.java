@@ -661,7 +661,7 @@ class GUIRunner {
 	 * @param actions
 	 *    the Actions to be written into {@link #actions}. 
 	 * @param testCaseLister
-	 *    TestCaseListerto be written into {@link #testCaseLister}. 
+	 *    TestCaseLister to be written into {@link #testCaseLister}. 
 	 */
 	HierarchyWrapper(Actions actions,
 			 TestCaseLister testCaseLister) {
@@ -826,7 +826,7 @@ class GUIRunner {
 	 * as much as possible in order not to hide {@link #singleSelectedNode} 
 	 * and the leafs corresponding with singular tests 
 	 * which failed already (assumption failure, failure and error). 
-	 * This is invoked by {@link #noteReportResult()} 
+	 * This is invoked by {@link #noteReportResult(TestCase)} 
 	 * when a testcase is finished or after being ignored. 
 	 *
 	 * @see #expandAlongPath()
@@ -942,7 +942,7 @@ class GUIRunner {
 		this.treeSelection.getSelectionPath().getLastPathComponent();
 	    TestCase selTestCase = (TestCase)selNode.getUserObject();
 
-	    return selTestCase == testCase;
+	    return selTestCase == testCase;// NOPMD
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -1735,7 +1735,7 @@ class GUIRunner {
 	/**
 	 * Adds <code>testCase</code> to the failure list if not yet listed. 
 	 * It is assumed that <code>testCase</code> failed 
-	 * and that it is selected in the {@link HierarchyTree}. 
+	 * and that it is selected in the {@link HierarchyWrapper}. 
 	 *
 	 * @param testCase
 	 *    a testcase which failed. 
