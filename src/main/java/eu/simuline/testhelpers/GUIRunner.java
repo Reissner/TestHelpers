@@ -2011,6 +2011,7 @@ class GUIRunner {
 	 * The index of the tab selected initially. 
 	 * This may be 0 or 1. 
 	 * Note that the failure list is the 0th tab for some reason 
+	 * as seen from {@link GUIRunner#setCenter(Actions)}. 
 	 * It must be the one initially in the foreground. 
 	 */
 	private final static int SEL_IND1 = 0;
@@ -2047,8 +2048,8 @@ class GUIRunner {
 			  HierarchyWrapper testHierarchy) {
 	    this.tabbedPane = tabbedPane;
 	    this.selectors = new Selector[] {
-		testCaseLister,
 		testHierarchy,
+		testCaseLister,
 	    };
 	    setSelUnSel(SEL_IND1);
 	}
@@ -2375,17 +2376,17 @@ class GUIRunner {
 	final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
 	// add FailureList 
 	this.testCaseLister = new TestCaseLister();
-	tabbedPane.addTab("Failures",
-			  Quality.Error.getIcon(),
-			  new JScrollPane(this.testCaseLister.getFailList()));
 	// add Tree as second because otherwise a problem becomes visible 
 	this.testHierarchy = new HierarchyWrapper(actions,
 						  this.testCaseLister);
+
+
 	tabbedPane.addTab("Test Hierarchy",
 			  hierarchyIcon,
 			  new JScrollPane(this.testHierarchy.getTree()));
-
-
+	tabbedPane.addTab("Failures",
+			  Quality.Error.getIcon(),
+			  new JScrollPane(this.testCaseLister.getFailList()));
 	tabbedPane
 	    .addChangeListener(new TabChangeListener(tabbedPane,
 						     this.testCaseLister,
