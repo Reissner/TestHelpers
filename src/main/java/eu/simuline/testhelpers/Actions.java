@@ -482,10 +482,10 @@ public class Actions {
     void setEnableForRun(boolean isRunning) {	
 	assert this.isRunning ^ isRunning;
 	this.isRunning = isRunning;
-	Actions.this. openAction.setEnabled(!this.isRunning);
-	Actions.this.startAction.setEnabled(!this.isRunning);
-	Actions.this. stopAction.setEnabled( this.isRunning);
-	Actions.this.breakAction.setEnabled( this.isRunning);//(true);
+	this. openAction.setEnabled(!this.isRunning);
+	this.startAction.setEnabled(!this.isRunning);
+	this. stopAction.setEnabled( this.isRunning);
+	this.breakAction.setEnabled( this.isRunning);//(true);
     }
 
     AbstractAction getOpenAction() {

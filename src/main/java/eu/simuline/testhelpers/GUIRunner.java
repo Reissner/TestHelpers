@@ -1639,8 +1639,7 @@ class GUIRunner {
 	    this.failureSelection
 		.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    this.failureSelection.setValueIsAdjusting(true);
-	    this.failureSelection
-		.addListSelectionListener(TestCaseLister.this);
+	    this.failureSelection.addListSelectionListener(this);
 	    // init failureListMod 
 	    this.failureListMod = new DefaultListModel<TestCase>();
 	    // init stacktrace 
@@ -1903,7 +1902,7 @@ class GUIRunner {
 		.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    this.stackElemSelection.setValueIsAdjusting(true);
 	    this.stackElemSelection
-		.addListSelectionListener(StackTraceLister.this);
+		.addListSelectionListener(this);
 	}
 
 	/* ---------------------------------------------------------------- *

@@ -8,7 +8,7 @@ import java.io.File;
 /**
  * Runs a bunch of tests using {@link Actions#runTstCls(String)}. 
  */
-public class JUnitSingleTester {
+public abstract class JUnitSingleTester {
 
     /**
      * Runs all testclasses in the directory given by the 0th argument 
