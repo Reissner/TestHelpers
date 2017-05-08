@@ -374,7 +374,7 @@ class GUIRunner {
      *
      * @see GUIRunner.TabChangeListener
      */
-    static interface Selector {
+    interface Selector {
 
 	/**
 	 * Sets selection of <code>index</code>th item 
@@ -2169,9 +2169,8 @@ class GUIRunner {
 	    if (!clsFile.exists()) {
 		return null;
 	    }
-	    String clsName = this.clsPath.absFile2cls(clsFile,
-						      JavaPath.ClsSrc.Class);
-	    return clsName;
+	    return this.clsPath.absFile2cls(clsFile,
+					    JavaPath.ClsSrc.Class);
 	}
     } // class ClassChooser 
 

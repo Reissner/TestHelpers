@@ -79,7 +79,7 @@ public abstract class Assert<E> extends org.junit.Assert {
      * @see #EQUAL
      * @see #NOT_EQUAL
      */
-    public static enum CmpObj {
+    public enum CmpObj {
 
 	LESS_EQ(" less or equal") {
 	    boolean isValid(int flag3) {
