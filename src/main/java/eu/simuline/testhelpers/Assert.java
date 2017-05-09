@@ -567,7 +567,7 @@ ite.getTargetException().printStackTrace();
 	checkNullsB(norm, expected, actual);
 	double diff = computeNorm2(norm, expected, actual);
 	// get the norm method 
-	Method mNorm1 = Accessor.getToBeInvoked(expected.getClass(), norm);
+	//Method mNorm1 = Accessor.getToBeInvoked(expected.getClass(), norm);
 	double dNorm = computeNorm1(norm, expected);
 
 	if (diff/dNorm > reldev) {
