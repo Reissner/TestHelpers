@@ -244,12 +244,12 @@ public abstract class Assert<E> extends org.junit.Assert {
      * thrower methods.                                                     *
      * -------------------------------------------------------------------- */
 
-    private final static void thrwAccessible(Method method) {
+    private static void thrwAccessible(Method method) {
 	throw new IllegalStateException
 	    ("Method " + method + " is not accessible although it should. ");
     }
 
-    private final static void thrwWrongArgs(Method method) {
+    private static void thrwWrongArgs(Method method) {
 	throw new IllegalStateException
 	    ("Method " + method + 
 	     " is provided with illegal arguments " + 
