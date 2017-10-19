@@ -56,7 +56,7 @@ import junit.framework.AssertionFailedError;
  * It provides error messages suitable to find deviations quickly. 
  * </ul>
  *
- * @author <a href="mailto:rei3ner@arcor.de">Ernst Reissner</a>
+ * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  */
 public abstract class Assert<E> extends org.junit.Assert {
 

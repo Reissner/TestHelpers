@@ -98,7 +98,7 @@ import java.lang.reflect.InvocationTargetException;
  * to avoid ambiguities, one has to specify the types of the parameters 
  * and use {@link #create(Class,Class[],Object[])} instead. 
  *
- * @author <a href="mailto:rei3ner@arcor.de">Ernst Reissner</a>
+ * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0
  */
 public final class Accessor<T> {
