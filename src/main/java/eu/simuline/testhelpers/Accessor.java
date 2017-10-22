@@ -969,18 +969,6 @@ public final class Accessor<T> {
 
 	return null;
     }
-// cd /home/ernst/Software/src/eu/simuline/testhelpers/
-// /usr/local/java/latest/bin/javac -classpath /home/ernst/Software/cls:/home/ernst/Software/jars/junit-4.1.jar:/home/ernst/SysAdmin/JUnitExt/junitext-0.1.2/build/lib/junit-ui-runners-3.8.2.jar:/usr/local/java/latest/lib/tools.jar:/home/ernst/Software/jars/profile.jar -sourcepath /home/ernst/Software/src -encoding ISO-8859-1 -g:lines,vars,source -d /home/ernst/Software/cls -deprecation -target 1.6 -source 1.6 -Xlint Accessor.java
-
-// Accessor.java:955: warning: [unchecked] unchecked call to getDeclaredMethod(java.lang.String,java.lang.Class<?>...) as a member of the raw type java.lang.Class
-// 		toBeInvoked = candClass.getDeclaredMethod(methodName,paramCls);
-// 		                                         ^
-// Accessor.java:1017: warning: [unchecked] unchecked cast
-// found   : java.lang.reflect.Constructor<?>[]
-// required: java.lang.reflect.Constructor<T>[]
-// 			   (Constructor<T>[])aClass.getDeclaredConstructors(),
-// 			                                                   ^
-// 2 warnings
 
 
     /*----------------------------------------------------------------------*
@@ -1488,22 +1476,45 @@ public final class Accessor<T> {
     }
 }
 
-// usr/lib64/jvm/javaLatest/bin/javac -classpath /home/ernst/Software/target/test-classes:/home/ernst/Software/target/classes:/home/ernst/Software/jars/junitLatest.jar:/home/ernst/Software/jars/javaoctaveLatest.jar:/home/ernst/Software/jars/commons-loggingLatest.jar:/home/ernst/Software/jars/antlr-3.5-complete.jar:/home/ernst/Software/jars/jnaLatest.jar:/home/ernst/Software/jars/jnaPlatformLatest.jar -sourcepath /home/ernst/Software/src/main/java -encoding UTF-8 -d /home/ernst/Software/target/classes -deprecation -target 1.6 -source 1.6 -Xlint Accessor.java
 
-// warning: [options] bootstrap class path not set in conjunction with -source 1.6
-// Accessor.java:1031: warning: [unchecked] unchecked cast
+
+// Accessor.java:157: warning: [rawtypes] found raw type: Class
+//     private static String paramsToString(Class... paramCls) {
+//                                          ^
+//   missing type arguments for generic class Class<T>
+//   where T is a type-variable:
+//     T extends Object declared in class Class
+// Accessor.java:910: warning: [rawtypes] found raw type: Class
+// 				Class[] paramCls,
+// 				^
+//   missing type arguments for generic class Class<T>
+//   where T is a type-variable:
+//     T extends Object declared in class Class
+// Accessor.java:1019: warning: [unchecked] unchecked cast
 // 			   (Constructor<T>[])aClass.getDeclaredConstructors(),
 // 			                                                   ^
 //   required: Constructor<T>[]
 //   found:    Constructor<?>[]
 //   where T is a type-variable:
 //     T extends Object declared in method <T>create(Class<T>,Object...)
-// Accessor.java:1241: warning: [rawtypes] found raw type: Constructor
-//     private static boolean constructorMatches(Constructor cand,
-//                                               ^
-//   missing type arguments for generic class Constructor<T>
+// Accessor.java:1123: warning: [rawtypes] found raw type: Class
+// 			       Class[] paramCls,
+// 			       ^
+//   missing type arguments for generic class Class<T>
 //   where T is a type-variable:
-//     T extends Object declared in class Constructor
-// 3 warnings
+//     T extends Object declared in class Class
+// Accessor.java:1250: warning: [rawtypes] found raw type: Class
+//     private static boolean paramsMatch(Class[] paramTypes,
+//                                        ^
+//   missing type arguments for generic class Class<T>
+//   where T is a type-variable:
+//     T extends Object declared in class Class
+// Accessor.java:1453: warning: [rawtypes] found raw type: Class
+// 	Class[] cands;
+// 	^
+//   missing type arguments for generic class Class<T>
+//   where T is a type-variable:
+//     T extends Object declared in class Class
+// 6 warnings
 
-// Compilation finished at Mon Oct 21 00:27:10
+// Compilation finished at Mon Oct 23 00:05:00
