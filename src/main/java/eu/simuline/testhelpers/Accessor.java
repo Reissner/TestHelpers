@@ -154,7 +154,7 @@ public final class Accessor<T> {
      * @return 
      *    a comma separated sequence of the classes given. 
      */
-    private static String paramsToString(Class... paramCls) {
+    private static String paramsToString(Class<?>... paramCls) {
 	StringBuffer ret = new StringBuffer();
 	String clsString;
 	ret.append('(');
@@ -907,7 +907,7 @@ public final class Accessor<T> {
     public static Object invoke(Class<?> aClass,
 				Object target,
 				String methodName,
-				Class[] paramCls,
+				Class<?>[] paramCls,
 				Object[] parameters) 
 	throws InvocationTargetException {
 
@@ -1012,12 +1012,7 @@ public final class Accessor<T> {
 	throws InstantiationException, InvocationTargetException {
 	
 	
-	Constructor<T> toBeInvoked = 
-	    getConstructor(aClass,
-			   // **** the cast is a weakness in the jdk5 (reported)
-			   // **** in jdk6 hardly any improvement (to be rep.)
-			   (Constructor<T>[])aClass.getDeclaredConstructors(),
-			   parameters);
+	Constructor<T> toBeInvoked = getConstructor(aClass, parameters);
 	// toBeInvoked may also be the default constructor, 
 	// although this is not EXPLICITLY declared, of course. 
 
@@ -1120,7 +1115,7 @@ public final class Accessor<T> {
      *   Unwrap it using {@link Throwable#getCause}. 
      */
     public static <T> T create(Class<T> aClass,
-			       Class[] paramCls,
+			       Class<?>[] paramCls,
 			       Object ... parameters) 
 	throws NoSuchMethodException, 
 	InstantiationException, 
@@ -1247,7 +1242,7 @@ public final class Accessor<T> {
      * @throws IllegalStateException 
      *    if <code>cand</code> is neither a method nor a constructor. 
      */
-    private static boolean paramsMatch(Class[] paramTypes,
+    private static boolean paramsMatch(Class<?>[] paramTypes,
 				       Object... parameters) {
 	if (paramTypes.length != parameters.length) {
 	    return false;
@@ -1338,8 +1333,10 @@ public final class Accessor<T> {
      *    if the specified constructor or method is not unique. 
      */
     private static <T> Constructor<T> getConstructor(Class<T> aClass,
-						     Constructor<T>[] cands,
 						     Object... parameters) {
+
+	Constructor<?>[] cands = //(Constructor<T>[])
+	    aClass.getDeclaredConstructors();
 
 	// "null" means that no method or constructor has been found so far. 
 	Constructor<T> result = null;
@@ -1358,7 +1355,21 @@ public final class Accessor<T> {
 		     " from " + cands[i] + ". ");
 	    }
 	    // cands[i] is the first constructor that matches. 
-	    result = cands[i];
+
+	    try {
+		// one would just write result = (Constructor<T>)cands[i];
+		result = aClass
+		    .getDeclaredConstructor(cands[i].getParameterTypes());
+		// not assert result == cands[i]
+		assert result.equals(cands[i]); 
+		// **** the cast is a weakness in the jdk5 (reported)
+		// because cands is an array and these cannot be generified 
+		// **** in jdk6 hardly any improvement (to be rep.) 
+		// possible solution is: use a List but with other disadvantages
+	    } catch (NoSuchMethodException e) {
+		throw new IllegalStateException("****");
+	    }
+
 	} // for all cands 
 
 	if (result != null) {
@@ -1450,7 +1461,7 @@ public final class Accessor<T> {
 		("Specified null-class-name. ");
 	}
 
-	Class[] cands;
+	Class<?>[] cands;
 	Class<?> candCls = enclosingCls;
 	String candClsName;
 
