@@ -1315,14 +1315,13 @@ public final class Accessor<T> {
 
     /**
      * Returns the specified constructor 
-     * if <code>cands</code> offers exactly one possibility. 
+     * if <code>aClas</code> offers exactly one possibility 
+     * with the given parameters. 
      *
      * @param aClass 
      *    the <code>Class</code> 
      *    in which to search a <code>Constructor</code>. 
      *    For error/exception messages only. 
-     * @param cands 
-     *    an array of Constructors. 
      * @param parameters 
      *    the list of parameters. 
      * @return 
