@@ -1366,7 +1366,7 @@ public final class Accessor<T> {
 		// **** in jdk6 hardly any improvement (to be rep.) 
 		// possible solution is: use a List but with other disadvantages
 	    } catch (NoSuchMethodException e) {
-		throw new IllegalStateException("****");
+		throw new IllegalStateException("****");// NOPMD
 	    }
 
 	} // for all cands 
