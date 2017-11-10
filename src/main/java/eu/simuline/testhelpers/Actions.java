@@ -45,8 +45,8 @@ import org.javalobby.icons20x20.Delete;
  * @author <a href="mailto:ernst@">Ernst Reissner</a>
  * @version 1.0
  */
-public class Actions {
-    
+public final class Actions {
+
     /* -------------------------------------------------------------------- *
      * inner classes and enums.                                             *
      * -------------------------------------------------------------------- */
@@ -152,9 +152,9 @@ public class Actions {
 
 	@SuppressWarnings("deprecation")// because no alternative to stop. 
 	public void actionPerformed(ActionEvent event) {
-	    //setEnableForRun(false);// !isRunning
+	    //setEnableForRun(false); // !isRunning
 	    System.out.println("Break...");
-	    Actions.this.coreRunner.pleaseStop();// avoids going on after stop 
+	    Actions.this.coreRunner.pleaseStop(); // avoids going on after stop 
 	    // method stop is deprecated but there is no alternative 
 	    Actions.this.coreRunner.stop(new StoppedByUserException());
 	}
@@ -199,7 +199,7 @@ public class Actions {
 	 * ---------------------------------------------------------------- */
 
 	/**
-	 * The notifier to run the tests as in JUnitCore 
+	 * The notifier to run the tests as in JUnitCore. 
 	 */
 	private final RunNotifier notifier;
 
@@ -328,7 +328,7 @@ public class Actions {
 
     private CoreRunner coreRunner;
 
-    private final GUIRunListener listener;
+    private final ExtRunListener listener;
 
  
     /**
@@ -369,11 +369,11 @@ public class Actions {
 	this.breakAction = new BreakAction();
 
 	this.guiRunner  = new GUIRunner(this);
-	this.listener   = new GUIRunListener(this.guiRunner);
+	this.listener   = new SeqRunListener(this.guiRunner);
 
 	this.coreRunner = new CoreRunner(testClassName);
 	this.isRunning  = false;
-	this.filter     = null;// **** to be reworked 
+	this.filter     = null; // **** to be reworked 
     }
 
     /* -------------------------------------------------------------------- *
@@ -468,7 +468,7 @@ public class Actions {
     void setFilter(Description filter) {
 	assert filter != null;
 	this.filter = filter;
-   }
+    }
 
     /**
      * Updates the action-enablements 
@@ -485,7 +485,7 @@ public class Actions {
 	this. openAction.setEnabled(!this.isRunning);
 	this.startAction.setEnabled(!this.isRunning);
 	this. stopAction.setEnabled( this.isRunning);
-	this.breakAction.setEnabled( this.isRunning);//(true);
+	this.breakAction.setEnabled( this.isRunning); //(true);
     }
 
     AbstractAction getOpenAction() {
@@ -511,6 +511,4 @@ public class Actions {
     public static void main(String[] args) {
 	runFromMain();
     }
-
 }
-

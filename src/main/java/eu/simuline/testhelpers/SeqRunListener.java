@@ -5,65 +5,42 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 
-import java.util.Iterator;
 import org.junit.AssumptionViolatedException;
 
+
 /**
- * A simple RunListener which notifies of the events while running tests 
- * by text output. 
+ * Describe class <code>SeqRunListener</code> here.
  *
- * Created: Wed Jun  7 16:41:14 2006
- *
- * @author <a href="mailto:ernst@">Ernst Reissner</a>
+ * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0
  */
-public final class TextRunListener extends ExtRunListener {
+public final class SeqRunListener extends ExtRunListener {
+
+    /* -------------------------------------------------------------------- *
+     * fields.                                                              *
+     * -------------------------------------------------------------------- */
+
+    private final ExtRunListener runListener1;
+    private final ExtRunListener runListener2;
 
     /* -------------------------------------------------------------------- *
      * constructor.                                                         *
      * -------------------------------------------------------------------- */
 
-    /**
-     * Creates a new <code>TextRunListener</code> instance.
-     *
-     */
-    public TextRunListener() {
-	// is empty. 
+    private SeqRunListener(ExtRunListener runListener1, 
+			   ExtRunListener runListener2) {
+	this.runListener1 = runListener1;
+	this.runListener2 = runListener2;
     }
+
+    SeqRunListener(GUIRunner guiRunner) {
+	this(new TextRunListener(), new GUIRunListener(guiRunner));
+    }
+
 
     /* -------------------------------------------------------------------- *
      * methods.                                                             *
      * -------------------------------------------------------------------- */
-
-    /**
-     * Returns a string representation of <code>desc</code>: 
-     * For atomic tests the display name, 
-     * for suites an xml-style description. 
-     */
-    private static String desc2string(Description desc) {
-	StringBuffer buf = new StringBuffer();
-	if (desc.isSuite()) {
-	    buf.append("<Suite name=\"");
-	    buf.append(desc.getDisplayName());
-	    buf.append("\">\n");
-	    Description child;
-	    Iterator<Description> iter = desc.getChildren().iterator();
-	    assert iter.hasNext();
-	    child = iter.next();
-	    buf.append(desc2string(child));
-	    while (iter.hasNext()) {
-		child = iter.next();
-		buf.append(", \n");
-		buf.append(desc2string(child));
-	    }
-	    buf.append("\n</Suite>");
-	} else {
-	    assert desc.isTest();
-	    buf.append(desc.getDisplayName());
-	}
-	return buf.toString();
-    }
-
 
     /**
      * Called before any tests 
@@ -75,16 +52,14 @@ public final class TextRunListener extends ExtRunListener {
      */
     // api-docs inherited from class RunListener
     public void testRunStarted(Description desc) throws Exception { //NOPMD
-	System.out.println("T testRunStarted(..." + desc2string(desc));
+	this.runListener1.testRunStarted(desc);
+ 	this.runListener2.testRunStarted(desc);
     }
 
     /**
      * Called when all tests of the suite 
      * announced by {@link #testRunStarted(Description)} have finished. 
      * This may be called on an arbitrary thread. 
-     * <p>
-     * Prints a statistics on the result of the test suite 
-     * to the standard output. 
      *
      * @param result 
      *    the summary of the outcoming of the suite of tests run, 
@@ -92,18 +67,8 @@ public final class TextRunListener extends ExtRunListener {
      */
     // api-docs inherited from class RunListener
     public void testRunFinished(Result result) throws Exception { //NOPMD
-	System.out.println("T testRunFinished(..." + result);
-	System.out.println("Statistics: ");
-	System.out.println("runs:         " + result.getRunCount());
-	System.out.println("ignored:      " + result.getIgnoreCount());
-	System.out.println("failures:     " + result.getFailureCount());
-	System.out.println("time elapsed: " + result.getRunTime() + "ms");
-	// **** strange: 
-	// runs seem without ignores 
-	// failures seem all runs which did not succeed, 
-	// i.e. test could not be executed or failed. 
-	// **** only in singular tests with GUI: 
-	// ignored seem to be also failures
+	this.runListener1.testRunFinished(result);
+	this.runListener2.testRunFinished(result);
     }
 
     // api-docs inherited from class RunListener
@@ -124,8 +89,9 @@ public final class TextRunListener extends ExtRunListener {
      * @since 4.13
      */
      public void testSuiteStarted(Description desc) throws Exception { //NOPMD
-	System.out.println("S testSuiteStarted(...   " + desc);
-    }
+	 this.runListener1.testSuiteStarted(desc);
+	 this.runListener2.testSuiteStarted(desc);
+     }
 
     /**
      * Called when a test suite has finished, 
@@ -139,7 +105,8 @@ public final class TextRunListener extends ExtRunListener {
      * @since 4.13
      */
     public void testSuiteFinished(Description desc) throws Exception { //NOPMD
-	System.out.println("S testSuiteFinished(...  " + desc);
+	this.runListener1.testSuiteFinished(desc);
+	this.runListener2.testSuiteFinished(desc);
     }
 
     /**
@@ -153,8 +120,10 @@ public final class TextRunListener extends ExtRunListener {
      */
     // api-docs inherited from class RunListener
     public void testStarted(Description desc) throws Exception { //NOPMD
-	System.out.println("T testStarted(...       " + desc);
+	this.runListener1.testStarted(desc);
+	this.runListener2.testStarted(desc);
     }
+
 
     /**
      * Called when an atomic test has finished, 
@@ -169,7 +138,8 @@ public final class TextRunListener extends ExtRunListener {
      */
     // api-docs inherited from class RunListener
     public void testFinished(Description desc) throws Exception { //NOPMD
-	System.out.println("T testFinished(         " + desc);
+	this.runListener1.testFinished(desc);
+	this.runListener2.testFinished(desc);
     }
 
     /** 
@@ -197,12 +167,8 @@ public final class TextRunListener extends ExtRunListener {
      */
     // api-docs inherited from class RunListener
     public void testFailure(Failure failure) throws Exception { //NOPMD
-	// description and exception 
-	if (failure.getDescription().equals(Description.TEST_MECHANISM)) {
-	    System.out.println("FRAMEWORK testFailure(          " + failure);
-	}
-
-	System.out.println("T testFailure(          " + failure);
+	this.runListener1.testFailure(failure);
+	this.runListener2.testFailure(failure);
     }
 
     /**
@@ -226,9 +192,8 @@ public final class TextRunListener extends ExtRunListener {
      * @see #testIgnored(Description)
      */
     public void testAssumptionFailure(Failure failure) {
-	// description and exception 
-	assert failure.getException() instanceof AssumptionViolatedException;
-	System.out.println("T testAssumptionFailure(" + failure);
+	this.runListener1.testAssumptionFailure(failure);
+	this.runListener2.testAssumptionFailure(failure);
     }
 
     /**
@@ -247,7 +212,8 @@ public final class TextRunListener extends ExtRunListener {
      */
     // api-docs inherited from class RunListener
     public void testIgnored(Description desc) throws Exception { //NOPMD
-	System.out.println("T testIgnored(          " + desc);
+	this.runListener1.testIgnored(desc);
+	this.runListener2.testIgnored(desc);
     }
 
     // homemade extension 
@@ -256,8 +222,7 @@ public final class TextRunListener extends ExtRunListener {
      */
     // not clear which test has been aborted. 
     public void testRunAborted() {
-	// output text 
-	System.out.println("S testRunAborted(");
+	this.runListener1.testRunAborted();
     }
 
     // homemade extension 
@@ -266,6 +231,7 @@ public final class TextRunListener extends ExtRunListener {
      * described by <code>desc</code>. 
      */
     public void testClassStructureLoaded(final Description desc) {
-	System.out.println("S testClassStructureLoaded(" + desc);
+	this.runListener1.testClassStructureLoaded(desc);
     }
+
 }

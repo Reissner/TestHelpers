@@ -2,25 +2,24 @@ package eu.simuline.testhelpers;
 
 import java.lang.reflect.InvocationTargetException;
 
-import javax.swing.SwingUtilities;// wrong place?
+import javax.swing.SwingUtilities; // wrong place?
 
-import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.AssumptionViolatedException;
 
 /**
- * A {@link RunListener} which notifies the GUI {@link GUIRunner} 
+ * An {@link ExtRunListener} which notifies the GUI {@link GUIRunner} 
  * of the events occuring while running a testsuite 
  * and which comprises a textual run listener. 
  *
  * Created: Sat Jun  3 17:17:23 2006
  *
- * @author <a href="mailto:ernst@">Ernst Reissner</a>
+ * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0
  */
-public class GUIRunListener extends TextRunListener {
+public final class GUIRunListener extends ExtRunListener {
 
 
     /* -------------------------------------------------------------------- *
@@ -56,10 +55,9 @@ public class GUIRunListener extends TextRunListener {
      * @param desc 
      *    describes the tests to be run
      */
-    public void testRunStarted(final Description desc) throws Exception {//NOPMD
+    public void testRunStarted(final Description desc) 
+	throws Exception { //NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
-	// output text 
-	super.testRunStarted(desc);
 	
 	Runnable runnable = new Runnable() {
 		public void run() {
@@ -80,10 +78,10 @@ System.out.println("..testRunStarted");
      *    the summary of the test run, including all the tests that failed
      */
     // api-docs inherited from class RunListener
-    public void testRunFinished(final Result result) throws Exception {//NOPMD
+    public void testRunFinished(final Result result) throws Exception { //NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
 	// output text 
-	super.testRunFinished(result);
+//	super.testRunFinished(result);
 
 	Runnable runnable = new Runnable() {
 		public void run() {
@@ -112,10 +110,8 @@ System.out.println("..testRunStarted");
      * @since 4.13
      */
     // api-docs inherited from class RunListener
-    public void testSuiteStarted(Description desc) throws Exception {//NOPMD
+    public void testSuiteStarted(Description desc) throws Exception { //NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
-	// output text 
-	super.testSuiteStarted(desc);
 	// **** at the moment no actions on the GUI 
     }
 
@@ -130,10 +126,9 @@ System.out.println("..testRunStarted");
      *    the description of the test suite that just ran
      * @since 4.13
      */
-    public void testSuiteFinished(Description desc) throws Exception {//NOPMD
+    public void testSuiteFinished(Description desc) throws Exception { //NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
 	// output text 
-	super.testSuiteFinished(desc);
 	// **** at the moment no actions on the GUI 
      }
 
@@ -147,10 +142,8 @@ System.out.println("..testRunStarted");
      * @see #testIgnored(Description)
      */
     // api-docs inherited from class RunListener
-    public void testStarted(final Description desc) throws Exception {//NOPMD
+    public void testStarted(final Description desc) throws Exception { //NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
-	// output text 
-	super.testStarted(desc);
 	
 
 	Runnable runnable = new Runnable() {
@@ -175,11 +168,8 @@ System.out.println("..testStarted");
      *    the description of the test that just ran
      * @see #testIgnored(Description)
      */
-    public void testFinished(final Description desc) throws Exception {//NOPMD
+    public void testFinished(final Description desc) throws Exception { //NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
-	// output text 
-	super.testFinished(desc);
-//	assert GUIRunListener.this.testCase.getDesc() == desc;
 
 	Runnable runnable = new Runnable() {
 		public void run() {
@@ -206,10 +196,8 @@ System.out.println("..testFinished");
      * @param failure 
      *    describes the test that failed and the exception that was thrown
      */
-    public void testFailure(final Failure failure) throws Exception {//NOPMD
+    public void testFailure(final Failure failure) throws Exception { //NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
-	// output text 
-	super.testFailure(failure);
 	// GUI ignores failures in the test mechanism. 
 	// **** this may be inappropriate. 
 	if (failure.getDescription().equals(Description.TEST_MECHANISM)) {
@@ -249,8 +237,6 @@ System.out.println("..testFailure");
      */
     public void testAssumptionFailure(final Failure failure) {
 	assert !SwingUtilities.isEventDispatchThread();
-	// output text 
-	super.testAssumptionFailure(failure);
 
 	Runnable runnable = new Runnable() {
 		public void run() {
@@ -281,15 +267,13 @@ System.out.println("..testAssumptionFailure");
      * for the according test. 
      * This in turn implies that neither {@link #testFailure(Failure)} 
      * nor {@link #testAssumptionFailure(Failure)} are invoked. 
-      * are invoked. 
+     * are invoked. 
      *
      * @param desc 
      *    describes the test that will not be run
      */
-    public void testIgnored(final Description desc) throws Exception {//NOPMD
+    public void testIgnored(final Description desc) throws Exception { //NOPMD
 	assert !SwingUtilities.isEventDispatchThread();
-	// output text 
-	super.testIgnored(desc);
 
 	Runnable runnable = new Runnable() {
 		public void run() {
@@ -311,8 +295,6 @@ System.out.println("...testIgnored");
     // not clear which test has been aborted. 
     public void testRunAborted() {
 	assert !SwingUtilities.isEventDispatchThread();
-	// output text 
-	System.out.println("S testRunAborted(");
 
 	Runnable runnable = new Runnable() {
 		public void run() {
@@ -335,7 +317,6 @@ System.out.println("...testIgnored");
      * described by <code>desc</code>. 
      */
     public void testClassStructureLoaded(final Description desc) {
-	System.out.println("S testClassStructureLoaded(" + desc);
 	Runnable runnable = new Runnable() {
 		public void run() {
 		    GUIRunListener.this.guiRunner
