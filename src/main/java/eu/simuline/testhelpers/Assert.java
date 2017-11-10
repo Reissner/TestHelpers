@@ -56,6 +56,10 @@ import junit.framework.AssertionFailedError;
  * It provides error messages suitable to find deviations quickly. 
  * </ul>
  *
+ * @param <E>
+ *    the element type of a {@link Collection} 
+ *    or the element to be compared by a {@link Comparator}. 
+ *
  * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  */
 public abstract class Assert<E> extends org.junit.Assert {
@@ -68,8 +72,8 @@ public abstract class Assert<E> extends org.junit.Assert {
      * Represents an ordering relation. 
      *
      * To be used as a parameter for the methods 
-     * {@link #assertIs(Assert.CmpObj,Comparable,Object)}, 
-     * {@link #assertIs(Assert.CmpObj,Object,Object,Comparator)} 
+     * {@link #assertIs(Assert.CmpObj, Comparable, Object)}, 
+     * {@link #assertIs(Assert.CmpObj, Object, Object, Comparator)} 
      * and variants thereof. 
      *
      * @see #LESS_EQ
@@ -130,7 +134,7 @@ public abstract class Assert<E> extends org.junit.Assert {
 	 *
 	 * @param message a <code>String</code> value
 	 */
-	private CmpObj(String message) {
+	CmpObj(String message) {
 	    this.message = message;
 	}
 
@@ -188,7 +192,7 @@ public abstract class Assert<E> extends org.junit.Assert {
 	    try {
 		compareTo = expected.getClass().getMethod("compareTo",
 							  Object.class);
-	    } catch(NoSuchMethodException e) {
+	    } catch (NoSuchMethodException e) {
 		throw new IllegalStateException// NOPMD
 		    (STR_OBJECT + expected + STR_DN_PROV + 
 		     "public int compareTo(Object)\" - impossible " + 
@@ -201,23 +205,22 @@ public abstract class Assert<E> extends org.junit.Assert {
 	    compareTo.setAccessible(true);
 
 	    try {
-		Integer result = (Integer)compareTo.invoke(expected, actual);
+		Integer result = (Integer) compareTo.invoke(expected, actual);
 		if (actual != null) {
 		    return isValid(result);
 		}
 		// by symmetry, expected.compareTo(actual) 
 		// should have thrown a NullPointerException. 
-		
+
 		throw new IllegalStateException
 		    ("Tried to compare <" + expected + 
 		     "> to: <" + actual + 
-		     "> which should raise a NullPointerException. ");
-		
-	    } catch(IllegalAccessException iace) {
+		     "> which should raise a NullPointerException. ");	
+	    } catch (IllegalAccessException iace) {
 		thrwAccessible(compareTo);
-	    } catch(IllegalArgumentException iage) {
+	    } catch (IllegalArgumentException iage) {
 		thrwWrongArgs(compareTo);
-	    } catch(InvocationTargetException ite) {
+	    } catch (InvocationTargetException ite) {
 		throw new IllegalArgumentException// NOPMD
 		    ("Could not test ordering because method " + compareTo + 
 		     STR_RAISED + ite.getTargetException() + ". ");
@@ -231,14 +234,14 @@ public abstract class Assert<E> extends org.junit.Assert {
      * constants.                                                           *
      * -------------------------------------------------------------------- */
 
-//    private final static String STR_METHOD = "Method ";
-    private final static String STR_OBJECT = "Object ";
-    private final static String STR_DN_PROV = " does not provide a method \"";
-    private final static String STR_RAISED = " raised ";
-//    private final static String STR_EXPECTED = "expected: <";
-    private final static String STR_BUTWAS = "> but was: <";
-    private final static String STR_ASTOP = ">. ";
-    private final static String STR_IN_ABS_VAL = " in absolute value. ";
+//    private static final String STR_METHOD = "Method ";
+    private static final String STR_OBJECT     = "Object ";
+    private static final String STR_DN_PROV  = " does not provide a method \"";
+    private static final String STR_RAISED     =  " raised ";
+//    private static final String STR_EXPECTED = "expected: <";
+    private static final String STR_BUTWAS     = "> but was: <";
+    private static final String STR_ASTOP      = ">. ";
+    private static final String STR_IN_ABS_VAL = " in absolute value. ";
 
     /* -------------------------------------------------------------------- *
      * thrower methods.                                                     *
@@ -300,9 +303,9 @@ public abstract class Assert<E> extends org.junit.Assert {
      *    <li>
      *    invoking <code>expected.norm(actual)</code> raises an exception 
      *    </ul>
-     * @see #assertNormAbsEquals(String,Object,Object,String,double)
-     * @see #assertNormRelEquals(String,Object,Object,String,double)
-     * @see #computeNorm1(String,Object)
+     * @see #assertNormAbsEquals(String, Object, Object, String, double)
+     * @see #assertNormRelEquals(String, Object, Object, String, double)
+     * @see #computeNorm1(String, Object)
      *///<code></code>
     private static double computeNorm2(String norm, 
 				       Object expected, 
@@ -346,11 +349,11 @@ public abstract class Assert<E> extends org.junit.Assert {
 
 	try {
 	    // invoke norm method 
-	    return (Double)mNorm2.invoke(expected, actual);
-	} catch(IllegalAccessException iace) {
+	    return (Double) mNorm2.invoke(expected, actual);
+	} catch (IllegalAccessException iace) {
 	    // throws IllegalStateException but shall never occur 
 	    thrwAccessible(mNorm2);
-	} catch(InvocationTargetException ite) {
+	} catch (InvocationTargetException ite) {
 ite.getTargetException().printStackTrace();
 	    throw new IllegalArgumentException // NOPMD
 		("Could not test deviation, because method " + mNorm2 + 
@@ -421,31 +424,27 @@ ite.getTargetException().printStackTrace();
 					   Object actual, 
 					   String norm,
 					   double delta) {
-       
 	checkNullsB(norm, expected, actual);
 	double diff = computeNorm2(norm, expected, actual);
 
 	if (diff > delta) {
 	    fail(message);
 	}
-
     } // assertNormAbsEquals(...) 
 
     public static void assertNormAbsEquals(Object expected, 
 					   Object actual, 
 					   String norm,
 					   double delta) {
-       
-	assertNormAbsEquals(expectedActual(expected,actual) + ":  deviation " + 
+	assertNormAbsEquals(expectedActual(expected, actual) + 
+			    ":  deviation " + 
 			    computeNorm2(norm, expected, actual) + 
 			    " exceeds " + delta + STR_IN_ABS_VAL,
 			    expected, 
 			    actual, 
 			    norm,
 			    delta);
-
     } // assertNormAbsEquals(...) 
-
 
     /**
      * Returns the norm of <code>expected</code>
@@ -524,11 +523,11 @@ ite.getTargetException().printStackTrace();
 
 	try {
 	    // invoke norm method 
-	    return (Double)mNorm1.invoke(expected);
-	} catch(IllegalAccessException iace) {
+	    return (Double) mNorm1.invoke(expected);
+	} catch (IllegalAccessException iace) {
 	    // throws IllegalStateException but shall never occur 
 	    thrwAccessible(mNorm1);
-	} catch(InvocationTargetException ite) {
+	} catch (InvocationTargetException ite) {
 	    throw new IllegalArgumentException // NOPMD
 		("Could not test deviation, because method " + mNorm1 + 
 		 STR_RAISED + ite.getTargetException() + ". ");
@@ -547,9 +546,9 @@ ite.getTargetException().printStackTrace();
 					   Object actual, 
 					   String norm,
 					   double reldev) {
-	assertNormRelEquals(expectedActual(expected,actual) + 
+	assertNormRelEquals(expectedActual(expected, actual) + 
 			    ":  relative deviation " + 
-			    computeNorm2(norm, expected, actual)/
+			    computeNorm2(norm, expected, actual) /
 			    computeNorm1(norm, expected) + 
 			    " exceeds " + reldev + STR_IN_ABS_VAL,
 			    expected, 
@@ -570,7 +569,7 @@ ite.getTargetException().printStackTrace();
 	//Method mNorm1 = Accessor.getToBeInvoked(expected.getClass(), norm);
 	double dNorm = computeNorm1(norm, expected);
 
-	if (diff/dNorm > reldev) {
+	if (diff / dNorm > reldev) {
 	    fail(message);
 	}
     } // assertNormEquals(...) 
@@ -597,9 +596,9 @@ ite.getTargetException().printStackTrace();
      *    if <code>norm==null</code> or <code>expected==null</code>. 
      * @throws AssertionFailedError
      *    if <code>norm,expected!=null</code> but <code>actual==null</code>. 
-     * @see #assertNormAbsEquals(String,Object,Object,String,double)
-     * @see #assertNormRelEquals(String,Object,Object,String,double)
-     * @see #checkNulls(String,Object,Object)
+     * @see #assertNormAbsEquals(String, Object, Object, String, double)
+     * @see #assertNormRelEquals(String, Object, Object, String, double)
+     * @see #checkNulls(String, Object, Object)
      */
     private static void checkNullsB(String norm, 
 				    Object expected, 
@@ -613,12 +612,12 @@ ite.getTargetException().printStackTrace();
  
 	if (expected == null) {
 	    throw new IllegalArgumentException
-		(expectedActual(expected,actual) + "; " +
+		(expectedActual(expected, actual) + "; " +
 		 "could not prove whether deviation exceeds some threshold. ");
 	}
 
 	if (actual == null) {
-	    fail(expectedActual(expected,actual) + "; " +
+	    fail(expectedActual(expected, actual) + "; " +
 		 "could not prove whether deviation exceeds some threshold. ");
 	}
    }
@@ -665,23 +664,23 @@ ite.getTargetException().printStackTrace();
 	// Here, equals contains the equals method of object expected. 
 
 	// this is necessary 
-	// despite equals(Object,double) is supposed to be public, 
+	// despite equals(Object, double) is supposed to be public, 
 	// because the including class 
 	// may not be accessible from within this Accessor. 
 	equals.setAccessible(true);
 
 	try {
-	    Boolean result = (Boolean)equals.invoke(expected, actual);
+	    Boolean result = (Boolean) equals.invoke(expected, actual);
 	    // for actual == null, result is Boolean.FALSE. 
 
 	    if (!Boolean.TRUE.equals(result)) {
-		fail(expectedActual(expected,actual) + ". ");
+		fail(expectedActual(expected, actual) + ". ");
 	    }
 	} catch (IllegalAccessException iace) {
 	    thrwAccessible(equals);
 	} catch (IllegalArgumentException iage) {
 	    thrwWrongArgs(equals);
-	} catch(InvocationTargetException ite) {
+	} catch (InvocationTargetException ite) {
 	    throw new IllegalArgumentException// NOPMD
 		("Could not test equality because method " + equals + 
 		 STR_RAISED + ite.getTargetException() + ". ");
@@ -693,8 +692,8 @@ ite.getTargetException().printStackTrace();
 				    Object actual) {
 
 	try {
-	    assertEquals(expected,actual);
-	} catch(AssertionFailedError e) {
+	    assertEquals(expected, actual);
+	} catch (AssertionFailedError e) {
 	    fail(message);
 	}
     }
@@ -750,7 +749,7 @@ ite.getTargetException().printStackTrace();
 	}
 	
 	assertTrue("Expected <" + actual + 
-		   "> to be a subset of <"+expected + STR_ASTOP,
+		   "> to be a subset of <" + expected + STR_ASTOP,
 		   expected.containsAll(actual));
     }
 
@@ -785,25 +784,25 @@ ite.getTargetException().printStackTrace();
      * @throws AssertionFailedError
      *    if the value of <code>expected.compareTo(actual)</code> 
      *    is not as specified by <code>cmpObj</code>. 
-     * @see #assertIs(CmpObj,Comparable,Object)
+     * @see #assertIs(CmpObj, Comparable, Object)
      */
     public static <E> void assertIs(CmpObj cmpObj,
 				    String message,
 				    Comparable<E> expected,
 				    E actual) {
-	if (!(cmpObj.invokeCompareTo(expected,actual))) {
+	if (!(cmpObj.invokeCompareTo(expected, actual))) {
 	    fail(message);
 	}
     }
 
     /**
-     * Fails if <code>cmp.compare(expected,actual)</code> 
+     * Fails if <code>cmp.compare(expected, actual)</code> 
      * is not as expected 
      * and raises an exception if this expression cannot be evaluated. 
      *
      * @param message
      *    the error message displayed if the test fails regularly, 
-     *    i.e. if <code>cmp.compare(expected,actual)</code> can be evaluated 
+     *    i.e. if <code>cmp.compare(expected, actual)</code> can be evaluated 
      *    without throwing an exception. 
      * @param cmpObj 
      *    The action that decides whether the relation is satisfied. 
@@ -812,19 +811,19 @@ ite.getTargetException().printStackTrace();
      * @param actual 
      *    another <code>Object</code>. 
      * @throws IllegalArgumentException
-     *    if invoking <code>cmp.compare(expected,actual)</code> 
+     *    if invoking <code>cmp.compare(expected, actual)</code> 
      *    raises an exception. 
      * @throws AssertionFailedError
-     *    if the value of <code>cmp.compare(expected,actual)</code> 
+     *    if the value of <code>cmp.compare(expected, actual)</code> 
      *    is not as specified by <code>cmpObj</code>. 
-     * @see #assertIs(CmpObj,Object,Object,Comparator)
+     * @see #assertIs(CmpObj, Object, Object, Comparator)
      */
    public static <E> void assertIs(CmpObj cmpObj,
 				   String message,
 				   E expected,
 				   E actual,
 				   Comparator<E> cmp) {
-	if (!(cmpObj.isValid(invokeCompare(expected,actual,cmp)))) {
+	if (!(cmpObj.isValid(invokeCompare(expected, actual, cmp)))) {
 	    fail(message);
 	}
     }
@@ -852,7 +851,7 @@ ite.getTargetException().printStackTrace();
      * @throws AssertionFailedError
      *    if the value of <code>expected.compareTo(actual)</code> 
      *    is not as specified by <code>cmpObj</code>. 
-     * @see #assertIs(CmpObj,String,Comparable,Object)
+     * @see #assertIs(CmpObj, String, Comparable, Object)
      */
     public static <E> void assertIs(CmpObj cmpObj,
 				    Comparable<E> expected,
@@ -862,11 +861,11 @@ ite.getTargetException().printStackTrace();
 		 "expected: <" + expected + 
 		 "> to be" + cmpObj.message + 
 		 ": <" + actual + STR_ASTOP,
-		  expected,actual);
+		  expected, actual);
     }
 
     /**
-     * Fails if <code>cmp.compare(expected,actual)</code> 
+     * Fails if <code>cmp.compare(expected, actual)</code> 
      * is not as expected 
      * and raises an exception if this expression cannot be evaluated. 
      *
@@ -877,12 +876,12 @@ ite.getTargetException().printStackTrace();
      * @param actual 
      *    another <code>Object</code>. 
      * @throws IllegalArgumentException
-     *    if invoking <code>cmp.compare(expected,actual)</code> 
+     *    if invoking <code>cmp.compare(expected, actual)</code> 
      *    raises an exception. 
      * @throws AssertionFailedError
-     *    if the value of <code>cmp.compare(expected,actual)</code> 
+     *    if the value of <code>cmp.compare(expected, actual)</code> 
      *    is not as specified by <code>cmpObj</code>. 
-     * @see #assertIs(CmpObj,String,Object,Object,Comparator)
+     * @see #assertIs(CmpObj, String, Object, Object, Comparator)
      */
     public static <E> void assertIs(CmpObj cmpObj,
 				    E expected,
@@ -894,12 +893,12 @@ ite.getTargetException().printStackTrace();
 		 "> to be" + cmpObj.message + 
 		 ": <" + actual + 
 		 "> with respect to the comparator <" + cmp + STR_ASTOP,
-		  expected,actual,cmp);
+		  expected, actual, cmp);
     }
 
 
     /**
-     * Returns <code>cmp.compare(expected,actual)</code> if possible. 
+     * Returns <code>cmp.compare(expected, actual)</code> if possible. 
      *
      * @param obj1 
      *    an <code>Object</code>. 
@@ -910,13 +909,13 @@ ite.getTargetException().printStackTrace();
      *   <code>obj1</code> with <code>obj2</code>. 
      * @return 
      *    the <code>int</code> value which results in invoking 
-     *    <code>cmp.compare(expected,actual)</code>. 
+     *    <code>cmp.compare(expected, actual)</code>. 
      * @throws IllegalArgumentException
      *    <ul>
      *    <li>
      *    for <code>cmp == null</code>, 
      *    <li>
-     *    if invoking <code>cmp.compare(expected,actual)</code> 
+     *    if invoking <code>cmp.compare(expected, actual)</code> 
      *    raises an exception. 
      *    </ul>
      */
@@ -936,25 +935,25 @@ ite.getTargetException().printStackTrace();
 	    compare = cmp.getClass().getMethod("compare",
 					       Object.class,
 					       Object.class);
-	} catch(NoSuchMethodException e) {
+	} catch (NoSuchMethodException e) {
 	    throw new IllegalStateException // NOPMD
 		("Comparator " + cmp + STR_DN_PROV + 
 		 "public int compare(Object, Object)\" - impossible. ");
 	}
 	// this is necessary 
-	// despite compare(Object,Object) is supposed to be public, 
+	// despite compare(Object, Object) is supposed to be public, 
 	// because the including Comparator 
 	// may not be accessible from within this Accessor. 
 	compare.setAccessible(true);
 
 
 	try {
-	    return (Integer)compare.invoke(cmp, obj1, obj2);
-	} catch(IllegalAccessException iace) {
+	    return (Integer) compare.invoke(cmp, obj1, obj2);
+	} catch (IllegalAccessException iace) {
 	    thrwAccessible(compare);
-	} catch(IllegalArgumentException iage) {
+	} catch (IllegalArgumentException iage) {
 	    thrwWrongArgs(compare);
-	} catch(InvocationTargetException ite) {
+	} catch (InvocationTargetException ite) {
 	    throw new IllegalArgumentException// NOPMD
 		("Could not test ordering because method " + compare + 
 		 STR_RAISED + ite.getTargetException() + ". ");
@@ -997,7 +996,7 @@ ite.getTargetException().printStackTrace();
 
     /**
      * Is a deep version of method 
-     * <code>junit.framework.Assert.assertEquals(Object,Object)</code> 
+     * <code>junit.framework.Assert.assertEquals(Object, Object)</code> 
      * for arrays: checks 
      * <ul>
      * <li>
@@ -1029,8 +1028,8 @@ ite.getTargetException().printStackTrace();
 
 
 	try {
-	    assertArraysEquals(expected,actual);
-	} catch(AssertionFailedError e) {
+	    assertArraysEquals(expected, actual);
+	} catch (AssertionFailedError e) {
 	    fail(message);
 	}
     }
@@ -1039,16 +1038,16 @@ ite.getTargetException().printStackTrace();
 					  Object actual) {
 
 	// Exclude the case that either "expected" or "actual" is null. 
-	if (checkNulls(expectedActual(expected,actual) + ". ",
+	if (checkNulls(expectedActual(expected, actual) + ". ",
 		       expected,
 		       actual)) {
 	    return;
 	}
 	// Here, neither "expected" nor "actual" is null. 
 
-	checkArraysSameClass(expected,actual);
+	checkArraysSameClass(expected, actual);
 	// Here, both are arrays or neither of them. 
-	assertRecArraysEquals(expected,actual,new int[0]);
+	assertRecArraysEquals(expected, actual, new int[0]);
     }
 
     /**
@@ -1080,7 +1079,7 @@ ite.getTargetException().printStackTrace();
 
     /**
      * Is a deep version of method 
-     * <code>junit.framework.Assert.assertEquals(Object,Object)</code> 
+     * <code>junit.framework.Assert.assertEquals(Object, Object)</code> 
      * for arrays: 
      * checks recursively whether the lengths coincide 
      * and if the entries do so. 
@@ -1106,7 +1105,7 @@ ite.getTargetException().printStackTrace();
 
 	if (Array.getLength(expected) != Array.getLength(actual)) {
 
-	    fail(failLengthMessage(expected,actual,indices));
+	    fail(failLengthMessage(expected, actual, indices));
 	    //fail("expected length: <" + Array.getLength(expected) + 
 	    //	 STR_BUTWAS +       Array.getLength(actual) + STR_ASTOP);
 	}
@@ -1120,15 +1119,15 @@ ite.getTargetException().printStackTrace();
 
 	    // This works even for primitive types. 
 	    // Instead their wrappers are returned. 
-	    expectedEntry = Array.get(expected,i);
-	    actualEntry   = Array.get(actual,  i);
+	    expectedEntry = Array.get(expected, i);
+	    actualEntry   = Array.get(actual,   i);
 
-	    int[] newInd = new int[indices.length+1];
-	    System.arraycopy(indices,0,newInd,0,indices.length);
-	    newInd[newInd.length-1] = i;
+	    int[] newInd = new int[indices.length + 1];
+	    System.arraycopy(indices, 0, newInd, 0, indices.length);
+	    newInd[newInd.length - 1] = i;
 
-	    if (checkNulls(failMessage(expectedEntry,actualEntry,newInd),
-			   expectedEntry,actualEntry)) {
+	    if (checkNulls(failMessage(expectedEntry, actualEntry, newInd),
+			   expectedEntry, actualEntry)) {
 		return;
 	    }
 	    // Here, neither "expectedEntry" nor "actualEntry" is null. 
@@ -1144,8 +1143,8 @@ ite.getTargetException().printStackTrace();
 		// Here, neither of the objects are arrays 
 		// (but their types coincide). 
 
-		assertEquals(failMessage(expectedEntry,actualEntry,newInd),
-			     expectedEntry,actualEntry);
+		assertEquals(failMessage(expectedEntry, actualEntry, newInd),
+			     expectedEntry, actualEntry);
 	    }
 	}
     }
@@ -1173,10 +1172,10 @@ ite.getTargetException().printStackTrace();
 	// Determine indices of entry 
 	if (indices.length > 0) {
 	    message.append("In entry [");
-	    for (int j = 0; j < indices.length-1; j++) {
+	    for (int j = 0; j < indices.length - 1; j++) {
 		message.append("" + indices[j] + ", ");
 	    }
-	    message.append("" + indices[indices.length-1] + "] expected ");
+	    message.append("" + indices[indices.length - 1] + "] expected ");
 	} else {
 	    message.append("Expected ");
 	}
@@ -1187,7 +1186,7 @@ ite.getTargetException().printStackTrace();
     private static String failLengthMessage(Object expectedEntry, 
 					    Object actualEntry, 
 					    int[] indices) {
-	StringBuffer message = new StringBuffer(55);
+	StringBuffer message = new StringBuffer();
 	// Determine indices of entry
 	message.append(failInd(indices));
 	
@@ -1233,14 +1232,14 @@ ite.getTargetException().printStackTrace();
 					   double delta) {
 
 	// Determine indices of entry
-	StringBuffer message = new StringBuffer(45);
+	StringBuffer message = new StringBuffer();
 	if (indices.length > 0) {
 	    message.append("In entry [");
-	    for (int j = 0; j < indices.length-1; j++) {
+	    for (int j = 0; j < indices.length - 1; j++) {
 		message.append(indices[j]);
 		message.append(", ");
 	    }
-	    message.append(indices[indices.length-1]);// NOPMD
+	    message.append(indices[indices.length - 1]); // NOPMD
 	    message.append("] expected <");
 	} else {
 	    message.append("Expected <");
@@ -1260,14 +1259,14 @@ ite.getTargetException().printStackTrace();
 					    int actualLen, 
 					    int[] indices) {
 	// Determine indices of entry
-	StringBuffer message = new StringBuffer(45);
+	StringBuffer message = new StringBuffer();
 	if (indices.length > 0) {
 	    message.append("In entry [");
-	    for (int j = 0; j < indices.length-1; j++) {
+	    for (int j = 0; j < indices.length - 1; j++) {
 		message.append(indices[j]);
 		message.append(", ");
 	    }
-	    message.append(indices[indices.length-1]);// NOPMD
+	    message.append(indices[indices.length - 1]); // NOPMD
 	    message.append("] expected lengths <");
 	} else {
 	    message.append("Expected lengths <");
@@ -1284,7 +1283,7 @@ ite.getTargetException().printStackTrace();
 
     /**
      * Is a deep version of method 
-     * <code>junit.framework.Assert.assertEquals(Object,Object)</code> 
+     * <code>junit.framework.Assert.assertEquals(Object, Object)</code> 
      * for arrays: checks 
      * <ul>
      * <li>
@@ -1322,7 +1321,7 @@ ite.getTargetException().printStackTrace();
 
     /**
      * Is a deep version of method 
-     * <code>junit.framework.Assert.assertEquals(Object,Object)</code> 
+     * <code>junit.framework.Assert.assertEquals(Object, Object)</code> 
      * for arrays: 
      * checks recursively whether the lengths coincide 
      * and if the entries do so. 
@@ -1372,17 +1371,18 @@ ite.getTargetException().printStackTrace();
 
 	    // This works even for primitive types. 
 	    // Instead their wrappers are returned. 
-	    expectedEntry = Array.get(expected,i);
-	    actualEntry   = Array.get(actual,  i);
+	    expectedEntry = Array.get(expected, i);
+	    actualEntry   = Array.get(actual,   i);
 
-	    int[] newInd = new int[indices.length+1];
+	    int[] newInd = new int[indices.length + 1];
 	    System.arraycopy(indices, 0, newInd, 0, indices.length);
-	    newInd[newInd.length-1] = i;
+	    newInd[newInd.length - 1] = i;
 
 	    Class<?> entryClass = expectedEntry.getClass();
 	    if (entryClass.isArray()) {
 		// Here, both of the objects are arrays with the same type. 
-		assertRecArraysEquals(expectedEntry,actualEntry,newInd,delta);
+		assertRecArraysEquals(expectedEntry, actualEntry, 
+				      newInd, delta);
 		return;
 	    }
 
@@ -1391,21 +1391,21 @@ ite.getTargetException().printStackTrace();
 	    if (entryClass.isPrimitive()) {
 		// primitive: unwrap before use. 
 		if (entryClass == Double.TYPE) {
-		    assertEquals(failMessageDelta((double)expectedEntry,
-						  (double)actualEntry,
+		    assertEquals(failMessageDelta((double) expectedEntry,
+						  (double) actualEntry,
 						  newInd,
 						  delta),
-				 (double)expectedEntry,
-				 (double)  actualEntry,
+				 (double) expectedEntry,
+				 (double)   actualEntry,
 				 delta);
 		} else if (entryClass == Float.TYPE) {
-		    assertEquals(failMessageDelta((double)expectedEntry,
-						  (double)actualEntry,
+		    assertEquals(failMessageDelta((double) expectedEntry,
+						  (double) actualEntry,
 						  newInd,
 						  delta),
-				 (float)expectedEntry,
-				 (float)  actualEntry,
-				 (float)delta);
+				 (float) expectedEntry,
+				 (float)   actualEntry,
+				 (float) delta);
 		} else {
 		    throw new IllegalArgumentException
 			("For primitive type " + entryClass + 
@@ -1456,7 +1456,7 @@ ite.getTargetException().printStackTrace();
      *    <li>
      *    if <code>reldev</code> is negative or <code>NaN</code>. 
      *    </ul>
-     * @see #assertRelEquals(String,double,double,double)
+     * @see #assertRelEquals(String, double, double, double)
      */
    public static boolean testRelEquals(double expected,
 				       double actual,
@@ -1474,7 +1474,7 @@ ite.getTargetException().printStackTrace();
 		("The relative deviation may not be <" + reldev + STR_ASTOP);
 	}
 	
-	return Math.abs((expected-actual)/expected) <= reldev;
+	return Math.abs((expected - actual) / expected) <= reldev;
     }
 
     /**
@@ -1503,14 +1503,14 @@ ite.getTargetException().printStackTrace();
      *    <li>
      *    if <code>reldev</code> is negative or <code>NaN</code>. 
      *    </ul>
-     * @see #assertRelEquals(double,double,double)
-     * @see #testRelEquals(double,double,double)
+     * @see #assertRelEquals(double, double, double)
+     * @see #testRelEquals(double, double, double)
      */
     public static void assertRelEquals(String message,
 				       double expected,
 				       double actual,
 				       double reldev) {
-	if (!testRelEquals(expected, actual,reldev)) {
+	if (!testRelEquals(expected, actual, reldev)) {
 	    fail(message);
 	}
     }
@@ -1539,23 +1539,23 @@ ite.getTargetException().printStackTrace();
      *    <li>
      *    if <code>reldev</code> is negative or <code>NaN</code>. 
      *    </ul>
-     * @see #assertRelEquals(String,double,double,double)
+     * @see #assertRelEquals(String, double, double, double)
      */
     public static void assertRelEquals(double expected,
 				       double actual,
 				       double reldev) {
-	assertRelEquals(expectedActual(expected,actual) + 
+	assertRelEquals(expectedActual(expected, actual) + 
 			"; relative deviation <" + 
-			((expected-actual)/expected) + 
+			((expected - actual) / expected) + 
 			"> exceeds <" + reldev + "> in absolute value. ",
-			expected,actual,reldev);
+			expected, actual, reldev);
     }
 
     /**
      * For <code>expected&lt;= separateAbsRel</code> behaves like 
      * {@link junit.framework.Assert#assertEquals(String,double,double,double)} 
      * ignoring <code>reldev</code>, whereas otherwise behaves like 
-     * {@link #assertEquals(String,double,double,double)} 
+     * {@link #assertEquals(String, double, double, double)} 
      * ignoring <code>absdev</code>. 
      *
      * @param message 
@@ -1588,12 +1588,12 @@ ite.getTargetException().printStackTrace();
 					  double reldev) {
 	if (separateAbsRel < 0) {
 	    throw new IllegalArgumentException
-		("Found negative separator " + separateAbsRel +". ");
+		("Found negative separator " + separateAbsRel + ". ");
 	}
 	if (Math.abs(expected) <= separateAbsRel) {
-	    assertEquals   (message,expected,actual,absdev);
+	    assertEquals   (message, expected, actual, absdev);
 	} else {
-	    assertRelEquals(message,expected,actual,reldev);
+	    assertRelEquals(message, expected, actual, reldev);
 	}
     }
 
@@ -1601,7 +1601,7 @@ ite.getTargetException().printStackTrace();
      * For <code>expected&lt;= separateAbsRel</code> behaves like 
      * {@link junit.framework.Assert#assertEquals(String,double,double,double)} 
      * ignoring <code>reldev</code>, whereas otherwise behaves like 
-     * {@link #assertEquals(String,double,double,double)} 
+     * {@link #assertEquals(String, double, double, double)} 
      * ignoring <code>absdev</code>. 
      *
      * @param expected 
@@ -1631,12 +1631,12 @@ ite.getTargetException().printStackTrace();
 					  double reldev) {
 	if (separateAbsRel < 0) {
 	    throw new IllegalArgumentException
-		("Found negative separator " + separateAbsRel +". ");
+		("Found negative separator " + separateAbsRel + ". ");
 	}
 	if (Math.abs(expected) <= separateAbsRel) {
-	    assertEquals   (expected,actual,absdev);
+	    assertEquals   (expected, actual, absdev);
 	} else {
-	    assertRelEquals(expected,actual,reldev);
+	    assertRelEquals(expected, actual, reldev);
 	}
     }
 
@@ -1666,7 +1666,7 @@ ite.getTargetException().printStackTrace();
      *    <li>
      *    if <code>absdev</code> is negative or <code>NaN</code>. 
      *    </ul>
-     * @see #assertAbsEquals(String,double,double,double)
+     * @see #assertAbsEquals(String, double, double, double)
      */
    public static boolean testAbsEquals(double expected,
 				       double actual,
@@ -1687,7 +1687,7 @@ ite.getTargetException().printStackTrace();
 	}
 
 	
-	return Math.abs(expected-actual) <= absdev;
+	return Math.abs(expected - actual) <= absdev;
     }
 
    /**
@@ -1714,14 +1714,14 @@ ite.getTargetException().printStackTrace();
      *    <li>
      *    if <code>absdev</code> is negative or <code>NaN</code>. 
      *    </ul>
-     * @see #assertAbsEquals(double,double,double)
-     * @see #testAbsEquals(double,double,double)
+     * @see #assertAbsEquals(double, double, double)
+     * @see #testAbsEquals(double, double, double)
      */
     public static void assertAbsEquals(String message,
 				       double expected,
 				       double actual,
 				       double absdev) {
-	if (!testAbsEquals(expected, actual,absdev)) {
+	if (!testAbsEquals(expected, actual, absdev)) {
 	    fail(message);
 	}
     }
@@ -1748,27 +1748,26 @@ ite.getTargetException().printStackTrace();
      *    <li>
      *    if <code>absdev</code> is negative or <code>NaN</code>. 
      *    </ul>
-     * @see #assertAbsEquals(String,double,double,double)
+     * @see #assertAbsEquals(String, double, double, double)
      */
     public static void assertAbsEquals(double expected,
 				       double actual,
 				       double absdev) {
-	assertAbsEquals(expectedActual(expected,actual) + 
+	assertAbsEquals(expectedActual(expected, actual) + 
 			"; absolute deviation <" + 
-			((expected-actual)) + 
+			((expected - actual)) + 
 			"> exceeds <" + absdev + "> in absolute value. ",
-			expected,actual,absdev);
+			expected, actual, absdev);
     }
 
-
     /**
-     * Special case of <code>assertEquals(Object,Object)</code> 
+     * Special case of <code>assertEquals(Object, Object)</code> 
      * which provides an error message specifying the common prefix 
      * of <code>expected</code> with <code>actual</code>. 
      * This is suitable for keeping long strings under control. 
      * If one of the arguments is <code>null</code>, 
      * this method behaves like 
-     * {@link junit.framework.Assert#assertEquals(Object,Object)}. 
+     * {@link junit.framework.Assert#assertEquals(Object, Object)}. 
      *
      * @param expected 
      *    the <code>String</code> expected. 
@@ -1776,18 +1775,19 @@ ite.getTargetException().printStackTrace();
      * @param actual 
      *    a <code>String</code> value
      */
-    public static void assertStringEquals(String expected,String actual) {
+    public static void assertStringEquals(String expected, String actual) {
 	if (expected == null || actual == null) {
-	    assertEquals(expected,actual);
+	    assertEquals(expected, actual);
 	}
 	// Here, neither expected nor actual is null. 
 
-	int minLen = Math.min(expected.length(),actual.length());
+	int minLen = Math.min(expected.length(), actual.length());
 	for (int i = 0; i < minLen; i++) {
 	    if (expected.charAt(i) != actual.charAt(i)) {
 		throw new AssertionFailedError
-		    (expectedActual(expected,actual) + ". " + 
-		     "Common prefix is <" + expected.substring(0,i) + STR_ASTOP);
+		    (expectedActual(expected, actual) + ". " + 
+		     "Common prefix is <" + 
+		     expected.substring(0, i) + STR_ASTOP);
 	    }
 	} // end of for ()
 
@@ -1814,7 +1814,8 @@ ite.getTargetException().printStackTrace();
     // }
 }
 
-// Assert.java:63: warning: [deprecation] Assert in junit.framework has been deprecated
+// Assert.java:63: warning: [deprecation] 
+//      Assert in junit.framework has been deprecated
 // public abstract class Assert<E> extends junit.framework.Assert {
 //                                                        ^
 // 1 warning

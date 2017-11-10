@@ -3,9 +3,9 @@ package eu.simuline.testhelpers;
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunNotifier;//; for javadoc only 
+import org.junit.runner.notification.RunNotifier; //; for javadoc only 
 
-import junit.framework.AssertionFailedError;// NOPMD
+import junit.framework.AssertionFailedError; // NOPMD
 
 import java.util.List;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ import java.util.ArrayList;
  *
  * Created: Wed Jun 12 16:41:14 2006
  *
- * @author <a href="mailto:ernst@">Ernst Reissner</a>
+ * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0
  */
 class TestCase {
@@ -109,12 +109,19 @@ class TestCase {
      */
     private Failure failure;
 
+    // must be negative and different 
+    private static final long TIME_SUITE = -3;
+    // must be negative and different 
+    static final long TIME_SCHEDULED = -1;
+
     /**
      * If this testcase is a single testcase which has been finished, 
      * this is the span of time required to run this test. 
      * For single ignored tests, this is <code>0</code> 
      * and in the other cases, the value is negative. 
-     * If this testcase is a suite, the result is <code>-3</code>. 
+     * If this testcase is a suite, the result is {@link #TIME_SUITE}; 
+     * otherwise if scheduled it is {@link #TIME_SCHEDULED}, 
+     * both negative. 
      *
      * @see Quality#setTime(long)
      */
@@ -177,7 +184,7 @@ class TestCase {
 	    this.idxTest = -1;
 	    this.qual    = null;
 	    this.failure = null;
-	    this.time    = -3;
+	    this.time    = TIME_SUITE;
 	}
     }
 

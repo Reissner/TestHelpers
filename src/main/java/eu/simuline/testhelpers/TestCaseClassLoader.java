@@ -5,12 +5,12 @@
   modify it under the terms of the GNU General Public License
   as published by the Free Software Foundation; either version 2
   of the License, or (at your option) any later version.
-  
+ 
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the 
   Free Software Foundation, Inc., 
@@ -43,7 +43,7 @@ import java.net.URL;
  * <p>
  * The list of excluded package paths 
  * is either hardcoded in {@link #defaultExclusions}, 
- * specified as property with key {@link #PROP_KEY_noClsReload}. 
+ * specified as property with key {@link #PROP_KEY_NO_CLS_RELOAD}. 
  * in a properties file {@link #EXCLUDED_FILE} 
  * that is located in the same place as the TestCaseClassLoader class.
  * <p>
@@ -54,8 +54,11 @@ import java.net.URL;
  * <li>
  * service providers must be excluded from reloading. 
  * </ul>
+ *
+ * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
+ * @version 1.0
  */
-public class TestCaseClassLoader extends ClassLoader {
+public final class TestCaseClassLoader extends ClassLoader {
 
     /* -------------------------------------------------------------------- *
      * class constants.                                                     *
@@ -67,7 +70,7 @@ public class TestCaseClassLoader extends ClassLoader {
      * to be excluded from reloading. 
      * Each is read into {@link #excluded}. 
      */
-    private final static String PROP_KEY_noClsReload = "noClsReload";
+    private static final String PROP_KEY_NO_CLS_RELOAD = "noClsReload";
 
     /**
      * Name of excluded properties file. 
@@ -77,20 +80,27 @@ public class TestCaseClassLoader extends ClassLoader {
      */
     static final String EXCLUDED_FILE = "noClsReload.properties";
 
+    /**
+     * The initial length of a stream to read class files from. 
+     */
+    private static final int LEN_CLS_STREAM = 1000;
+
     /* -------------------------------------------------------------------- *
      * fields.                                                              *
      * -------------------------------------------------------------------- */
 
-    /** scanned class path */
+    /**
+     * The scanned class path. 
+     */
     private JavaPath jPath;
 
     /**
-     * excluded paths 
+     * Holds the excluded paths. 
      * This is initialized by {@link #readExcludedPackages} 
      * and used by {@link #isExcluded}. 
      */
     private List<String> excluded;
-	 
+
     /** 
      * Default excluded paths. 
      * @see #isExcluded
@@ -138,7 +148,7 @@ public class TestCaseClassLoader extends ClassLoader {
 
     public InputStream getResourceAsStream(String name) {
 	return ClassLoader.getSystemResourceAsStream(name);
-    } 
+    }
 
     /**
      * Returns whether the name with the given name 
@@ -182,12 +192,12 @@ public class TestCaseClassLoader extends ClassLoader {
 	    try {
 		cls = findSystemClass(name);
 		return cls;
-	    } catch (ClassNotFoundException e) {// NOPMD 
+	    } catch (ClassNotFoundException e) { // NOPMD 
 System.out.println("keep searching **** although excluded. ");
 		// keep searching **** although excluded. 
 	    }
 	}
-	byte[] data= lookupClassData(name);
+	byte[] data = lookupClassData(name);
 	if (data == null) {
 	    throw new ClassNotFoundException();
 	}
@@ -207,8 +217,9 @@ System.out.println("keep searching **** although excluded. ");
 		throw new ClassNotFoundException();
 	    }
 
-	    ByteArrayOutputStream out = new ByteArrayOutputStream(1000);
-	    byte[] data = new byte[1000];
+	    ByteArrayOutputStream out = 
+		new ByteArrayOutputStream(LEN_CLS_STREAM);
+	    byte[] data = new byte[LEN_CLS_STREAM];
 	    int numRead;
 	    while ((numRead = stream.read(data)) != -1) {
 		out.write(data, 0, numRead);
@@ -217,19 +228,19 @@ System.out.println("keep searching **** although excluded. ");
 	    out.close();
 	    return out.toByteArray();
 	} catch (IOException e) {
-	    throw new ClassNotFoundException();// NOPMD
+	    throw new ClassNotFoundException(); // NOPMD
 	}
     }
 
     /**
      * Initializes {@link #excluded} using {@link #defaultExclusions}, 
-     * {@link #PROP_KEY_noClsReload} and {@link #EXCLUDED_FILE}. 
+     * {@link #PROP_KEY_NO_CLS_RELOAD} and {@link #EXCLUDED_FILE}. 
      * <ol>
      * <li>
      * First the entries of {@link #defaultExclusions} 
      * are added to {@link #excluded}. 
      * <li>
-     * Then {@link #PROP_KEY_noClsReload} is interpreted 
+     * Then {@link #PROP_KEY_NO_CLS_RELOAD} is interpreted 
      * as a ":"-seprated list of entries 
      * each of which is added to {@link #excluded}. 
      * <li>
@@ -244,13 +255,13 @@ System.out.println("keep searching **** although excluded. ");
      */
     @SuppressWarnings("PMD.NPathComplexity")
     private void readExcludedPackages() {		
-	this.excluded = new ArrayList<String>(10);
+	this.excluded = new ArrayList<String>();
 	for (int i = 0; i < this.defaultExclusions.length; i++) {
 	    this.excluded.add(defaultExclusions[i]);
 	}
 	Properties prop;
 
-	String excludesPathProp = System.getProperty(PROP_KEY_noClsReload);
+	String excludesPathProp = System.getProperty(PROP_KEY_NO_CLS_RELOAD);
 	if (excludesPathProp != null) {
 	    String[] excludesProp = excludesPathProp.split(":");
 	    for (int i = 0; i < excludesProp.length; i++) {
@@ -259,7 +270,7 @@ System.out.println("keep searching **** although excluded. ");
 	}
 
 	InputStream inStream = getClass().getResourceAsStream(EXCLUDED_FILE);
-	System.out.println("URL"+getClass().getResource(EXCLUDED_FILE));
+	System.out.println("URL" + getClass().getResource(EXCLUDED_FILE));
 	if (inStream == null) {
 	    return;
 	}
@@ -272,21 +283,21 @@ System.out.println("keep searching **** although excluded. ");
 	} finally {
 	    try {
 		inStream.close();
-	    } catch (IOException e) {// NOPMD 
+	    } catch (IOException e) { // NOPMD 
 		// already closed *****?
 	    }
 	}
 	
 	for (Enumeration<?> e = prop.propertyNames(); 
-	     e.hasMoreElements(); ) {
-	    String key = (String)e.nextElement();
+	     e.hasMoreElements();) {
+	    String key = (String) e.nextElement();
 	    if (key.startsWith("excluded.")) {
 		String path = prop.getProperty(key);
 		path = path.trim();
 		if (path.endsWith("*")) {
-		    path = path.substring(0, path.length()-1);
+		    path = path.substring(0, path.length() - 1);
 		}
-		
+
 		if (path.length() > 0) {
 		    this.excluded.add(path);
 		}
@@ -294,4 +305,3 @@ System.out.println("keep searching **** although excluded. ");
 	} // for 
     } // readExcludedPackages() 
 }
-

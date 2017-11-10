@@ -2,14 +2,16 @@ package eu.simuline.testhelpers;
 
 import eu.simuline.util.GifResource;
 
+import eu.simuline.junit.AssumptionFailure;
+
 import junit.framework.AssertionFailedError;
 
 import java.awt.Color;
 
 import javax.swing.ImageIcon;
 
-import org.junit.runner.notification.RunListener;// for javadoc only 
-import org.junit.runner.notification.Failure;// for javadoc only 
+import org.junit.runner.notification.RunListener; // for javadoc only 
+import org.junit.runner.notification.Failure; // for javadoc only 
 
 import org.junit.AssumptionViolatedException;
 
@@ -25,29 +27,31 @@ import org.junit.AssumptionViolatedException;
  * notified by a {@link RunListener} as depicted below. 
 
  * <pre>
- *                                     |{@link RunListener#testRunStarted(Description)}
- *                                     |
- *                          {@link #Scheduled}
- *                                    /|
- *                                   / |
+ *                              |{@link RunListener#testRunStarted(Description)}
+ *                              |
+ *                   {@link #Scheduled}
+ *                             /|
+ *                            / |
  * {@link RunListener
- *#testIgnored(Description)}        /    |{@link RunListener#testStarted(Description)}
- *                                 /   |
- *                                /    |
- *                 {@link #Ignored}    |
- *                                     |
- *                            {@link #Started}
- *                                    /|\
- * {@link RunListener#testFinished(Description)}/ | \{@link RunListener#testAssumptionFailure(Failure)}
- *                                  /  |  \
- *                                 /   |   \ 
- *        ________________________/    |    \_________
- *       /                             |              \ 
- *      / {@link RunListener#testFailure(Failure)}|               \ 
- *     /                              /\                \
- *    /                              /  \                \ 
- *   /                              /    \                \
- * {@link #Success}   {@link #Failure} {@link #Error} {@link #Invalidated}. 
+ *#testIgnored(Description)}/   |{@link RunListener#testStarted(Description)}
+ *                         /    |
+ *                        /     |
+ *          {@link #Ignored}    |
+ *                              |
+ *                    {@link #Started}
+ *                             /|\
+ * {@link RunListener
+ *#testFinished(Description)}/  |{@link RunListener
+ *                                        #testAssumptionFailure(Failure)}
+ *                         /    |    \
+ *                        /     |     \ 
+ *        _______________/      |      \__________
+ *       /                      |                 \ 
+ *      / {@link RunListener#testFailure(Failure)} \ 
+ *     /                        /\                  \
+ *    /                        /  \                  \ 
+ *   /                        /    \                  \
+ * {@link #Success} {@link #Failure} {@link #Error} {@link #Invalidated}. 
  * </pre>
  *
  * Accordingly, 
@@ -112,7 +116,7 @@ enum Quality {
 	    return "Scheduled";
 	}
 	long setTime(long time) {
-	    return -1;
+	    return TestCase.TIME_SCHEDULED;
 	}
     },
 
@@ -180,7 +184,7 @@ enum Quality {
      */
     Invalidated(1) {
 	ImageIcon getIcon() {
-	    return GifResource.getIcon(eu.simuline.junit.AssumptionFailure.class);
+	    return GifResource.getIcon(AssumptionFailure.class);
 	}
 	String getMessage() {
 	    return "invalidated by failed assumption";
@@ -255,7 +259,7 @@ enum Quality {
      *
      * @see #max(Quality)
      */
-    int level;
+    private int level;
 
     /* -------------------------------------------------------------------- *
      * constructors.                                                        *
@@ -292,7 +296,6 @@ enum Quality {
      * methods for phase transitions.                                       *
      * -------------------------------------------------------------------- */
 
-  
     /**
      * Returns the next phase 
      * when {@link RunListener#testRunStarted(Description)} is invoked. 
@@ -451,7 +454,7 @@ enum Quality {
     }
 
     /**
-     * Returns the difference of the current time in milliseconds 
+     * Returns the difference of the current time in milliseconds. 
      *
      * @param time
      *    some time in milliseconds. 

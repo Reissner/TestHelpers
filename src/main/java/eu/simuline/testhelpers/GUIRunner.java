@@ -135,29 +135,51 @@ class GUIRunner {
     /**
      * The (big) JUnit-logo. 
      */
-    private final static ImageIcon  logoIcon = 
+    private static final ImageIcon  LOGO_ICON = 
 	GifResource.getIcon(Logo.class);
 
     /**
      * The icon representing the hierarchy of tests: 
      * used for the tabbed pane. 
      */
-    private final static ImageIcon hierarchyIcon = 
+    private static final ImageIcon HIERARCHY_ICON = 
 	GifResource.getIcon(Hierarchy.class);
 
     /**
      * The small JUnit-logo on top left of this frame. 
      * **** still this is not displayed properly ****. 
      */
-    private final static ImageIcon smallLogoIcon = 
+    private static final ImageIcon SMALL_LOGO_ICON = 
 	GifResource.getIcon(SmallLogo.class);
-
 
     /**
      * Represents the horizontal space used for the boundary. 
      */
-    private final static Component horizBoundary = 
+    private static final Component HORIZ_BOUNDARY = 
 	Box.createHorizontalStrut(10);
+
+    /**
+     * Represents double of the horizontal space used for the boundary. 
+     */
+    private static final Component HORIZ_BOUNDARY2 = 
+	Box.createHorizontalStrut(20);
+
+    /**
+     * Represents the vertical space used for the boundary. 
+     */
+    private static final Component VERTI_BOUNDARY = 
+	Box.createVerticalStrut(10);
+
+    /**
+     * The horizontal size of the frame. 
+     */
+    private static final int HORIZ_FRAME = 800;
+
+    /**
+     * The vertical size of the frame. 
+     */
+    private static final int VERTI_FRAME = 800;
+
 
 
     /* -------------------------------------------------------------------- *
@@ -200,7 +222,7 @@ class GUIRunner {
 	/**
 	 * Creates a new <code>TestProgressBar</code> instance. 
 	 */
-	public TestProgressBar() {
+	TestProgressBar() {
 	    super(new DefaultBoundedRangeModel());
 	    this.model.setValueIsAdjusting(true);
 	    this.qual = null;
@@ -228,7 +250,7 @@ class GUIRunner {
 	    setMinimum(0);
 	    setMaximum(desc.testCount());
 	    setValue(0);
-	    this.qual = Quality.Scheduled;// color OK 
+	    this.qual = Quality.Scheduled; // color OK 
 	    //this.model.setExtent(0);/// **** how much is visible: 
 	    //   minimum <= value <= value+extent <= maximum 
 	}
@@ -250,7 +272,7 @@ class GUIRunner {
 	 *    those which are {@link Quality#Scheduled}. 
 	 */
 	void startTestRun(TestCase testCase) {
-	    this.qual = Quality.Scheduled;// color OK 
+	    this.qual = Quality.Scheduled; // color OK 
 	    setValue(0);
 	    detValQualRec(testCase);
 	    setForeground(this.qual.getColor());
@@ -325,7 +347,7 @@ class GUIRunner {
 	 * We display essentially the icon 
 	 * attached to {@link TestCase#getQuality}. 
 	 */
-	public TestTreeCellRenderer() {
+	TestTreeCellRenderer() {
 	    // is empty. 
 	}
 
@@ -347,15 +369,14 @@ class GUIRunner {
 						      int row, 
 						      boolean hasFocus) {
 
-	    DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
-	    TestCase userObj = (TestCase)node.getUserObject();
+	    DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+	    TestCase userObj = (TestCase) node.getUserObject();
 	    assert userObj != null;
 	    if (userObj.getQuality() != null) {
 		// node is a leaf 
 		setLeafIcon(userObj.getQuality().getIcon());
 	    }
 
-	   
 	    return super.getTreeCellRendererComponent(tree, 
 						      value, 
 						      sel, 
@@ -463,7 +484,7 @@ class GUIRunner {
 
 	/**
 	 * Decides how to update the current path: 
-	 * For the first path, just inkoke ***** 
+	 * For the first path, just inkoke ***** . 
 	 */
 	private TreePathUpdater treePathUpdater;
 
@@ -481,7 +502,7 @@ class GUIRunner {
 	// and so aftter next update iterator points to index-th entry 
 	TreePathIterator(JTree tree, int index) {
 	    this.treeModel = tree.getModel();
-	    this.currPath = null;// formally only 
+	    this.currPath = null; // formally only 
 	    this.treePathUpdater = TreePathUpdater.First;
 	    for (int i = 0; i < index; i++) {
 		updatePathI();
@@ -511,7 +532,7 @@ class GUIRunner {
 	 * Prolongues path as long as possible in each step with 0th child. 
 	 */
 	static TreePath prolonguePath(TreePath path) {
-	    TreeNode lastNode = (TreeNode)path.getLastPathComponent();
+	    TreeNode lastNode = (TreeNode) path.getLastPathComponent();
 	    while (!lastNode.isLeaf()) {
 		// one has to add the 0th child of lastNode. 
 		lastNode = lastNode.getChildAt(0);
@@ -539,16 +560,16 @@ class GUIRunner {
 	    TreeNode lastNode = (TreeNode)
 		this.currPath.getLastPathComponent();
 	    TreePath prefix = this.currPath.getParentPath();
-	    TreeNode lastButOneNode = (TreeNode)prefix.getLastPathComponent();
+	    TreeNode lastButOneNode = (TreeNode) prefix.getLastPathComponent();
 	    int index = lastButOneNode.getIndex(lastNode);
 
-	    while (index == lastButOneNode.getChildCount()-1) {
+	    while (index == lastButOneNode.getChildCount() - 1) {
 		this.currPath = prefix;
 		lastNode = lastButOneNode;
 		// if currPath is the root, prefix is null 
 		prefix = this.currPath.getParentPath();
 		assert prefix != null : "tried to ";
-		lastButOneNode = (TreeNode)prefix.getLastPathComponent();
+		lastButOneNode = (TreeNode) prefix.getLastPathComponent();
 		index = lastButOneNode.getIndex(lastNode);
 	    }
 	    return index;
@@ -561,8 +582,8 @@ class GUIRunner {
 	TreePath incPath() {
 	    int index = shortenPath();
 	    TreePath prefix = this.currPath.getParentPath();
-	    TreeNode lastButOneNode = (TreeNode)prefix.getLastPathComponent();
-	    TreeNode lastNode = lastButOneNode.getChildAt(index+1);
+	    TreeNode lastButOneNode = (TreeNode) prefix.getLastPathComponent();
+	    TreeNode lastNode = lastButOneNode.getChildAt(index + 1);
 	    this.currPath = prefix.pathByAddingChild(lastNode);
 	    this.currPath = prolonguePath(this.currPath);
 	    return this.currPath;
@@ -676,7 +697,7 @@ class GUIRunner {
 	    this.hierarchyTree.addTreeSelectionListener(this);
 	    this.hierarchyTree.setRootVisible(true);
 
-	    TreeNode root = (TreeNode)this.hierarchyTree.getModel().getRoot();
+	    TreeNode root = (TreeNode) this.hierarchyTree.getModel().getRoot();
 	    this.hierarchyTree.setModel(new DefaultTreeModel(root));
 
 	    assert actions != null;
@@ -695,7 +716,7 @@ class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	/**
-	 * Converts the (tree of) testcases given by <code>testCase</code> 
+	 * Converts the (tree of) testcases given by <code>testCase</code>. 
 	 * **** 
 	 */
 	private static 
@@ -716,7 +737,7 @@ class GUIRunner {
 	TestCase getRoot() {
 	    DefaultMutableTreeNode root = (DefaultMutableTreeNode)
 		this.hierarchyTree.getModel().getRoot();
-	    return (TestCase)root.getUserObject();
+	    return (TestCase) root.getUserObject();
 	}
 
 	/**
@@ -773,7 +794,7 @@ class GUIRunner {
 	 * The description is taken from {@link #singleSelectedNode}. 
 	 */
 	private void setFilter() {
-	    TestCase testCase = (TestCase)this.singleSelectedNode
+	    TestCase testCase = (TestCase) this.singleSelectedNode
 		.getUserObject();
 	    this.actions.setFilter(testCase.getDesc());
 	}
@@ -802,7 +823,7 @@ class GUIRunner {
 //assert desc == testCase.getDesc();
 	    testCase.setScheduledRec();
 
-	    testCase = (TestCase)this.singleSelectedNode.getFirstLeaf()
+	    testCase = (TestCase) this.singleSelectedNode.getFirstLeaf()
 		.getUserObject();
 	    this.currPathIter = new TreePathIterator
 		(this.hierarchyTree, testCase.getIdx());
@@ -839,18 +860,18 @@ class GUIRunner {
 	    Object[] pathArr = treePath.getPath();
 	    TestCase testCase;
 	    DefaultMutableTreeNode node;
-	    for (int idx = pathArr.length-1; idx >= 0; idx--) {
-		node = (DefaultMutableTreeNode)pathArr[idx];
+	    for (int idx = pathArr.length - 1; idx >= 0; idx--) {
+		node = (DefaultMutableTreeNode) pathArr[idx];
 		if (selPath.contains(node)) {
 		    break;
 		}
 
-		testCase = (TestCase)node.getUserObject();
+		testCase = (TestCase) node.getUserObject();
 
 		if (testCase.fullSuccess()) {
-		    Object[] pathArrNew = new Object[idx+1];//0,...,idx 
-		    System.arraycopy(pathArr, 0, 
-				     pathArrNew, 0 , 
+		    Object[] pathArrNew = new Object[idx + 1]; // 0,...,idx 
+		    System.arraycopy(pathArr, 0,
+				     pathArrNew, 0,
 				     pathArrNew.length);
 		    treePath = new TreePath(pathArrNew);
 		    assert treePath.getLastPathComponent() == pathArr[idx];
@@ -889,9 +910,9 @@ class GUIRunner {
 
 	    DefaultMutableTreeNode lastNode = (DefaultMutableTreeNode)
 		this.currPathIter.getPath().getLastPathComponent();
-	    TestCase result = (TestCase)lastNode.getUserObject();
+	    TestCase result = (TestCase) lastNode.getUserObject();
 	    result.setQualStartedIgnored(qual);
-	    ((DefaultTreeModel)this.hierarchyTree.getModel())
+	    ((DefaultTreeModel) this.hierarchyTree.getModel())
 	    	.nodeChanged(lastNode);
 	    return result;
 	}
@@ -911,10 +932,10 @@ class GUIRunner {
 	 */
 	void noteReportResult(TestCase testCase) {
 	    collapseAlongPath();
-  
+
 	    MutableTreeNode lastNode = (MutableTreeNode)
 		this.currPathIter.getPath().getLastPathComponent();
-	    ((DefaultTreeModel)this.hierarchyTree.getModel())
+	    ((DefaultTreeModel) this.hierarchyTree.getModel())
 	    	.nodeChanged(lastNode);
 
 	    // If testCase is selected and testCase.hasFailed(), 
@@ -940,9 +961,9 @@ class GUIRunner {
 	    assert numSel == 1;
 	    DefaultMutableTreeNode selNode = (DefaultMutableTreeNode)
 		this.treeSelection.getSelectionPath().getLastPathComponent();
-	    TestCase selTestCase = (TestCase)selNode.getUserObject();
+	    TestCase selTestCase = (TestCase) selNode.getUserObject();
 
-	    return selTestCase == testCase;// NOPMD
+	    return selTestCase == testCase; // NOPMD
 	}
 
 	/* ---------------------------------------------------------------- *
@@ -954,7 +975,7 @@ class GUIRunner {
 	    // **** note: for index==0 one update is required and so index+1
 	    // abuse of TreePathIterator to obtain the right selection path 
 	    TreePathIterator currPathIter = 
-		new TreePathIterator(this.hierarchyTree, index+1);
+		new TreePathIterator(this.hierarchyTree, index + 1);
 	    this.treeSelection.addSelectionPath(currPathIter.getPath());
 	    //**** still a problem with update 
 	    // what follows does not solve the problem. 
@@ -1276,6 +1297,10 @@ class GUIRunner {
     static class TestListCellRenderer 
 	implements ListCellRenderer<TestCase>, Serializable {
 
+	/**
+	 * A special kind of label which fires only change in the text 
+	 * and which allows to set details: selection and focus. 
+	 */
 	static class XLabel extends JLabel {
 
 	    private static final long serialVersionUID = -2479143000061671589L;
@@ -1400,7 +1425,7 @@ class GUIRunner {
 					      Object oldValue, 
 					      Object newValue) {
 		// Strings get interned...
-		if (propertyName=="text") {// NOPMD
+		if (propertyName == "text") { // NOPMD
 		    super.firePropertyChange(propertyName, oldValue, newValue);
 		}
 	    }
@@ -1496,13 +1521,15 @@ class GUIRunner {
 
 	private static final long serialVersionUID = -2479143000061671589L;
 
-	private final static String BORDER_DESC = "List.focusCellHighlightBorder";
+	private static final String BORDER_DESC = 
+	    "List.focusCellHighlightBorder";
 
-	protected final static Border NO_FOCUS_BORDER = new EmptyBorder(1,1,1,1);
+	protected static final Border NO_FOCUS_BORDER = 
+	    new EmptyBorder(1, 1, 1, 1);
 
-	/* -------------------------------------------------------------------- *
-	 * constructor.                                                         *
-	 * -------------------------------------------------------------------- */
+	/* ------------------------------------------------------------------ *
+	 * constructor.                                                       *
+	 * ------------------------------------------------------------------ */
 
 	/**
 	 * Constructs a special renderer object 
@@ -1513,9 +1540,9 @@ class GUIRunner {
 	    super();
 	}
 
-	/* -------------------------------------------------------------------- *
-	 * methods.                                                             *
-	 * -------------------------------------------------------------------- */
+	/* ------------------------------------------------------------------ *
+	 * methods.                                                           *
+	 * ------------------------------------------------------------------ */
 
 	// **** hack ****
 	private String thrwToString(Throwable thrw) {
@@ -1531,11 +1558,12 @@ class GUIRunner {
 		: thrw           .toString();
 	}
 
-	public Component getListCellRendererComponent(JList<? extends TestCase> list,
-						      TestCase testCase,
-						      int index,
-						      boolean isSelected,
-						      boolean cellHasFocus) {
+	public Component getListCellRendererComponent
+	    (JList<? extends TestCase> list,
+	     TestCase testCase,
+	     int index,
+	     boolean isSelected,
+	     boolean cellHasFocus) {
 
 	    Box failureEntry = Box.createHorizontalBox();
 
@@ -1545,8 +1573,8 @@ class GUIRunner {
 	    XLabel textLabel = new XLabel(testCase.hasFailed() 
 					? thrwToString(testCase.getThrown()) 
 					: testCase.getQuality().getMessage());
-	    iconLabel.setDetails(list,isSelected,cellHasFocus);
-	    iconLabel.setDetails(list,isSelected,cellHasFocus);
+	    iconLabel.setDetails(list, isSelected, cellHasFocus);
+	    iconLabel.setDetails(list, isSelected, cellHasFocus);
 	    failureEntry.add(iconLabel);
 	    failureEntry.add(textLabel);
 
@@ -1756,7 +1784,7 @@ class GUIRunner {
 		// nothing is selected in the list
 		assert selIndex == -1;
 
-		selIndex = this.failureListMod.size()-1;
+		selIndex = this.failureListMod.size() - 1;
 		assert this.failureListMod.get(selIndex) == testCase;
 		this.failureSelection.setSelectionInterval(selIndex, selIndex);
 		// Here, testCase is in the list and is selected. 
@@ -1773,7 +1801,7 @@ class GUIRunner {
 	    for (int idx = 0; idx < this.failureListMod.getSize(); idx++) {
 		// **** this.failureListMod.get(idx) == testCase should do 
 		if (this.failureListMod.get(idx).getIdx() == index) {
-		    this.failureSelection.setSelectionInterval(idx,idx);
+		    this.failureSelection.setSelectionInterval(idx, idx);
 		    return;
 		}
 	    }
@@ -1974,7 +2002,7 @@ class GUIRunner {
 	    }
 
 	    StackTraceElement location = this.thrw.getStackTrace()[selIndex];
-	    System.out.println("location: "+location);
+	    System.out.println("location: " + location);
 	    JavaPath jPath = new JavaPath(System.getProperty("sourcepath"));
 	    File toBeLoaded = jPath.getFile(location.getClassName(),
 					    JavaPath.ClsSrc.Source);
@@ -2000,6 +2028,10 @@ class GUIRunner {
 	}
     } // class StackTraceLister 
 
+    /**
+     * A listener to the switching of a tab in the foreground; 
+     * the other in the background. 
+     */
     static class TabChangeListener implements ChangeListener {
 
 	/* ---------------------------------------------------------------- *
@@ -2013,12 +2045,12 @@ class GUIRunner {
 	 * as seen from {@link GUIRunner#setCenter(Actions)}. 
 	 * It must be the one initially in the foreground. 
 	 */
-	private final static int SEL_IND1 = 0;
+	private static final int SEL_IND1 = 0;
 
 	/**
 	 * Registered with the unselected Selector. 
 	 */
-	private final static Selector EMPTY_SELECTOR = 
+	private static final Selector EMPTY_SELECTOR = 
 	    new Selector() {
 		public void setSelection(int index) {
 		    // is empty. 
@@ -2076,8 +2108,8 @@ class GUIRunner {
 	 */
 	private void setSelUnSel(int index) {
 	    assert index == 0 || index == 1;
-	    Selector    sel = this.selectors[  index];
-	    Selector notSel = this.selectors[1-index];
+	    Selector    sel = this.selectors[    index];
+	    Selector notSel = this.selectors[1 - index];
 	    sel   .registerSelector(notSel);
 	    notSel.registerSelector(EMPTY_SELECTOR);
 	}
@@ -2265,10 +2297,10 @@ class GUIRunner {
      * Loading is done 
      * by invoking {@link #testClassStructureLoaded(Description)}. 
      */
-    public GUIRunner(Actions actions) {
+    GUIRunner(Actions actions) {
 	assert SwingUtilities.isEventDispatchThread();
 	this.frame = new JFrame("JUnit GUI");
-	this.frame.setIconImage(smallLogoIcon.getImage());
+	this.frame.setIconImage(SMALL_LOGO_ICON.getImage());
 	this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 	this.classChooser = new ClassChooser();
@@ -2279,7 +2311,7 @@ class GUIRunner {
 	this.statusBar = new JLabel("status bar");
 
 	Container content = this.frame.getContentPane();
-	content.setLayout(new BoxLayout(content,BoxLayout.Y_AXIS));
+	content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 	//content.setLayout(new BorderLayout());
 
 
@@ -2300,21 +2332,21 @@ class GUIRunner {
 	Box progLogo = Box.createHorizontalBox();
 	this.progress = new TestProgressBar();
 	progLogo.add(this.progress);
-	progLogo.add(Box.createHorizontalStrut(20));
-	progLogo.add(new JLabel(logoIcon));
-	progLogo.add(horizBoundary);
+	progLogo.add(HORIZ_BOUNDARY2);
+	progLogo.add(new JLabel(LOGO_ICON));
+	progLogo.add(HORIZ_BOUNDARY);
 	this.frame.add(progLogo);
 
 	// add separator and line with runs statistics 
  	this.frame.add(this.statisticsTestState.getBox());
  	this.frame.add(new JSeparator());
-	this.frame.add(Box.createVerticalStrut(10));
+	this.frame.add(VERTI_BOUNDARY);
 
 	this.frame.add(Box.createVerticalGlue());
 
 	// add results-line 
 	Box results = Box.createHorizontalBox();
-	results.add(horizBoundary);
+	results.add(HORIZ_BOUNDARY);
 	results.add(new JLabel("Results:"));
 	results.add(Box.createGlue());
 	this.frame.add(results);
@@ -2324,25 +2356,25 @@ class GUIRunner {
 
 	// add split pane and Run2-button 
 	Box resRun2 = Box.createHorizontalBox();
-	resRun2.add(horizBoundary);
+	resRun2.add(HORIZ_BOUNDARY);
 	resRun2.add(this.splitPane);
 	resRun2.add(Box.createGlue());
 	resRun2.add(new JButton("Run2"));
-	resRun2.add(horizBoundary);
+	resRun2.add(HORIZ_BOUNDARY);
 	this.frame.add(resRun2);
 //this.frame.add(this.splitPane);
 
 	// add status bar and Exit-button 
 	Box statExit = Box.createHorizontalBox();
-	statExit.add(horizBoundary);
+	statExit.add(HORIZ_BOUNDARY);
 	statExit.add(this.statusBar);
 	statExit.add(Box.createGlue());
 	statExit.add(new JButton("Exit"));
-	statExit.add(horizBoundary);
+	statExit.add(HORIZ_BOUNDARY);
 
  	this.frame.add(statExit);
 
-	this.frame.setSize(800,800);
+	this.frame.setSize(HORIZ_FRAME, VERTI_FRAME);
 	//this.frame.pack();
 	this.frame.setVisible(true);
     }
@@ -2380,7 +2412,7 @@ class GUIRunner {
 
 
 	tabbedPane.addTab("Test Hierarchy",
-			  hierarchyIcon,
+			  HIERARCHY_ICON,
 			  new JScrollPane(this.testHierarchy.getTree()));
 	tabbedPane.addTab("Failures",
 			  Quality.Error.getIcon(),
@@ -2505,12 +2537,12 @@ class GUIRunner {
  //	assert SwingUtilities.isEventDispatchThread();
 	// **** strange way to obtain the classname ***** 
 	setStatus("testRunStarted(");
-	this.testHierarchy.getActions().setEnableForRun(true);//running 
+	this.testHierarchy.getActions().setEnableForRun(true); //running 
 
 	TestCase root = this.testHierarchy.getRoot();
 
 	this.testHierarchy      .startTestRun(desc);
-	this.testCaseLister     .startTestRun();// purely formally 
+	this.testCaseLister     .startTestRun(); // purely formally 
 	this.progress           .startTestRun(root);
 	this.statisticsTestState.startTestRun(root);
     }
@@ -2524,7 +2556,7 @@ class GUIRunner {
     void testRunFinished(long runTime) {
 	setStatus("testRunFinished(required: " + 
 		 runTime + "ms. ");
-	this.testHierarchy.getActions().setEnableForRun(false);//!running
+	this.testHierarchy.getActions().setEnableForRun(false); //!running
     }
 
     /**
@@ -2532,7 +2564,7 @@ class GUIRunner {
      */
     void testRunAborted() {
 	setStatus("testRunAborted(");
-	this.testHierarchy.getActions().setEnableForRun(false);//!running
+	this.testHierarchy.getActions().setEnableForRun(false); //!running
     }
 
 } // NOPMD coupling is not that high!

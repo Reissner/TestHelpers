@@ -7,6 +7,9 @@ import java.io.File;
 
 /**
  * Runs a bunch of tests using {@link Actions#runTstCls(String)}. 
+ *
+ * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
+ * @version 1.0
  */
 public abstract class JUnitSingleTester {
 
@@ -18,8 +21,8 @@ public abstract class JUnitSingleTester {
      * @param args
      *    two arges together consituting the path to the classes. 
      */
-    public static void main(String[] args) {//throws ClassNotFoundException {
-	File baseDir = new File(args[0]+args[1]);
+    public static void main(String[] args) { //throws ClassNotFoundException {
+	File baseDir = new File(args[0] + args[1]);
 	String dirName = baseDir.getAbsolutePath();
 	Finder finder = Finder.path(baseDir)
 //	    .name(".*arithmetics.*")
@@ -36,16 +39,17 @@ public abstract class JUnitSingleTester {
 	while (finder.hasNext()) {
 	    clsFile = finder.next();
 	    clsName = clsFile.getAbsolutePath();
-System.out.println("clsName"+clsName);
+System.out.println("clsName" + clsName);
 
 	    assert clsName.startsWith(dirName);
 	    clsName = clsName.substring(args[0].length());
-	    clsName = clsName.substring(0, clsName.length()-".class".length());
-System.out.println("clsName"+clsName);
+	    clsName = clsName.substring(0,
+					clsName.length() - ".class".length());
+System.out.println("clsName" + clsName);
 
 	    clsName = clsName.replace(System.getProperty("file.separator")
-				      .charAt(0),'.');
-	    System.out.println("clsName: "+clsName);
+				      .charAt(0), '.');
+	    System.out.println("clsName: " + clsName);
 	    Actions.runTstCls(clsName);
 	} // while 
 

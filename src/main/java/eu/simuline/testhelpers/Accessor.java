@@ -98,6 +98,9 @@ import java.lang.reflect.InvocationTargetException;
  * to avoid ambiguities, one has to specify the types of the parameters 
  * and use {@link #create(Class,Class[],Object[])} instead. 
  *
+ * @param <T>
+ *    parameter representing the class to be accessed. 
+ *
  * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0
  */
@@ -111,7 +114,7 @@ public final class Accessor<T> {
      * The separator between a class and its enclosing class 
      * for inner classes. 
      */
-    private final static String INNER_SEPARATOR = "$";
+    private static final String INNER_SEPARATOR = "$";
 
     /**
      * String denoting an unspecified class. 
@@ -119,12 +122,12 @@ public final class Accessor<T> {
      *
      * @see #paramsToString
      */
-    private final static String UNSPECIFIED_CLASS = "<unspecified class>";
+    private static final String UNSPECIFIED_CLASS = "<unspecified class>";
 
     // several string literals occurring more than once. 
-    private final static String STR_DNE = " does not exist. ";
-    private final static String STR_IN_CLS = "' in class '";
-    private final static String STR_SPEC_NULL_CLS = "Specified null-class. ";
+    private static final String STR_DNE = " does not exist. ";
+    private static final String STR_IN_CLS = "' in class '";
+    private static final String STR_SPEC_NULL_CLS = "Specified null-class. ";
 
     /* -------------------------------------------------------------------- *
      * private constructor.                                                 *
@@ -230,7 +233,7 @@ public final class Accessor<T> {
 
 	try {
 	    return method.invoke(target, parameters);
-	} catch(IllegalAccessException ie) {
+	} catch (IllegalAccessException ie) {
 	    throw new IllegalStateException// NOPMD
 		("Method should be accessible; still is not. "); 
 	}
@@ -285,7 +288,7 @@ public final class Accessor<T> {
      * @throws IllegalArgumentException
      *    if the target is <code>null</code> 
      *    or if the specified field is static. 
-     * @see #setField(Object,String,Object)
+     * @see #setField(Object, String, Object)
      */
     public static Object getField(Object target,
 				  String fieldName) 
@@ -296,7 +299,7 @@ public final class Accessor<T> {
 		("Specified null-target. ");
 	}
 
-	return getField(target.getClass(),target,fieldName);
+	return getField(target.getClass(), target, fieldName);
     }
 
     /**
@@ -322,13 +325,13 @@ public final class Accessor<T> {
      * @throws IllegalArgumentException
      *    if the class-parameter is <code>null</code> 
      *    or if the specified field is not static. 
-     * @see #setField(Class,String,Object)
+     * @see #setField(Class, String, Object)
      */
     public static Object getField(Class<?> aClass,
 				  String fieldName) 
 	throws NoSuchFieldException {
 
-	return getField(aClass,null,fieldName);
+	return getField(aClass, null, fieldName);
     }
 
     /**
@@ -406,8 +409,8 @@ public final class Accessor<T> {
     /**
      * Returns the value of the specified static field 
      * or member field resp. its wrapper. 
-     * Use {@link #getField(Class,String)} or 
-     * {@link #getField(Object,String)} if possible. 
+     * Use {@link #getField(Class, String)} or 
+     * {@link #getField(Object, String)} if possible. 
      *
      * @param aClass 
      *    Some class object. 
@@ -442,14 +445,14 @@ public final class Accessor<T> {
      *    if the target is not <code>null</code> 
      *    whereas the specified field is static. 
      *    </ul>
-     * @see #setField(Class,Object,String,Object)
+     * @see #setField(Class, Object, String, Object)
      */
     public static Object getField(Class<?> aClass,
 				  Object target,
 				  String fieldName) 
 	throws NoSuchFieldException {
 
-	Field aField = getFieldObj(aClass,fieldName,target == null);
+	Field aField = getFieldObj(aClass, fieldName, target == null);
 
 	try {
 	    return aField.get(target);
@@ -481,8 +484,8 @@ public final class Accessor<T> {
      *    the type of <code>value</code> must be a supertype; 
      *    otherwise it must be the corresponding wrapper. 
      *    E.g. the field declared by <code>int intField;</code> 
-     *    is set by <code>setField(target,"intField",new Integer(5))</code> 
-     *    instead of <code>setField(target,"intField",5)</code>. 
+     *    is set by <code>setField(target, "intField", new Integer(5))</code> 
+     *    instead of <code>setField(target, "intField", 5)</code>. 
      * @throws NoSuchFieldException
      *    if the specified class 
      *    does not contain a field with the given name. 
@@ -490,7 +493,7 @@ public final class Accessor<T> {
      *    if the target is <code>null</code> 
      *    or if the specified field is static 
      *    or if the specified field is declared <code>final</code>. 
-     * @see #getField(Object,String)
+     * @see #getField(Object, String)
      */
     public static void setField(Object target,
 				String fieldName,
@@ -501,7 +504,7 @@ public final class Accessor<T> {
 	    throw new IllegalArgumentException
 		("Specified null-target. ");
 	}
-	setField(target.getClass(),target,fieldName,value);
+	setField(target.getClass(), target, fieldName, value);
     }
 
     /**
@@ -523,8 +526,8 @@ public final class Accessor<T> {
      *    the type of <code>value</code> must be a supertype; 
      *    otherwise it must be the corresponding wrapper. 
      *    E.g. the field declared by <code>static int intField;</code> 
-     *    is set by <code>setField(aClass,"intField",new Integer(5))</code> 
-     *    instead of <code>setField(aClass,"intField",5)</code>. 
+     *    is set by <code>setField(aClass, "intField", new Integer(5))</code> 
+     *    instead of <code>setField(aClass, "intField", 5)</code>. 
      * @throws NoSuchFieldException
      *    if the specified class 
      *    does not contain a field with the given name. 
@@ -532,14 +535,14 @@ public final class Accessor<T> {
      *    if <code>aClass == null</code> 
      *    or if the specified field is not static 
      *    or if the specified field is declared <code>final</code>. 
-     * @see #getField(Class,String)
+     * @see #getField(Class, String)
      */
     public static void setField(Class<?> aClass,
 				String fieldName,
 				Object value) 
 	throws NoSuchFieldException {
 
-	setField(aClass,null,fieldName,value);
+	setField(aClass, null, fieldName, value);
     }
 
     /**
@@ -580,7 +583,7 @@ public final class Accessor<T> {
      *    if the specified field is primitive 
      *    but a <code>null</code>-value is tried to be assigned. 
      *    </ul>
-     * @see #getField(Class,Object,String)
+     * @see #getField(Class, Object, String)
      */
     public static void setField(Class<?> aClass,
 				Object target,
@@ -588,7 +591,7 @@ public final class Accessor<T> {
 				Object value) 
 	throws NoSuchFieldException {
 
-	Field aField = getFieldObj(aClass,fieldName,target == null);
+	Field aField = getFieldObj(aClass, fieldName, target == null);
 
 	if (aField.getType().isPrimitive() && value == null) {
 	    throw new IllegalArgumentException
@@ -598,9 +601,9 @@ public final class Accessor<T> {
 		 "' although its type '" + aField.getType() + 
 		 "' is primitive. ");
 	}
-	
+
 	try {
-	    aField.set(target,value);
+	    aField.set(target, value);
 	} catch (IllegalAccessException e) {
 	    if (aClass == null) {
 		aClass = target.getClass();
@@ -667,14 +670,14 @@ public final class Accessor<T> {
      * @throws InvocationTargetException 
      *   to wrap an exception thrown by the method invoked. 
      *   Unwrap it using {@link Throwable#getCause}. 
-     * @see #invoke(Class,Object,String,Object...)
+     * @see #invoke(Class, Object, String, Object...)
      */
     public static Object invokeStatic(Class<?> aClass,
 				      String methodName,
 				      Object... parameters) 
 	throws InvocationTargetException {
 
-	return invoke(aClass,null,methodName,parameters);
+	return invoke(aClass, null, methodName, parameters);
     }
 
     /**
@@ -717,14 +720,14 @@ public final class Accessor<T> {
      * @throws InvocationTargetException 
      *   to wrap an exception thrown by the method invoked. 
      *   Unwrap it using {@link Throwable#getCause}. 
-     * @see #invoke(Class,Object,String,Object...)
+     * @see #invoke(Class, Object, String, Object...)
      */
     public static Object invoke(Object target,
 				String methodName,
 				Object... parameters) 
 	throws InvocationTargetException {
 
-	return invoke(target.getClass(),target,methodName,parameters);
+	return invoke(target.getClass(), target, methodName, parameters);
     }
 
     /**
@@ -737,9 +740,9 @@ public final class Accessor<T> {
      * methods <code>exa(int)</code> and <code>exa(Integer)</code> 
      * are present: 
      * both are invoked with 
-     * <code>invoke(cls,target,"exa",new Integer(0))}</code>. 
+     * <code>invoke(cls, target, "exa", new Integer(0))}</code>. 
      * In this case 
-     * use {@link #invoke(Class,Object,String,Class[],Object[])} instead. 
+     * use {@link #invoke(Class, Object, String, Class[], Object[])} instead. 
      * 
      * @param aClass 
      *    The class of the method to be invoked. 
@@ -816,9 +819,9 @@ public final class Accessor<T> {
 				    methodName,
 				    cands,
 				    parameters);
-	    
+
 	    if (toBeInvoked != null) {
-		return invoke(toBeInvoked,target,parameters);
+		return invoke(toBeInvoked, target, parameters);
 	    }
 	    // prepare search in superclass. 
 	    candClass = candClass.getSuperclass();
@@ -828,7 +831,7 @@ public final class Accessor<T> {
 	throw new IllegalArgumentException
 	    ("Method " + aClass.getName() + "." + methodName + 
 	     paramsToString(getParamCls(parameters)) + STR_DNE);
-    }	
+    }
 
     /**
      * If more than one method with the same parameter types 
@@ -869,8 +872,8 @@ public final class Accessor<T> {
      *           (java.lang.Void.TYPE) 
      *    are available. 
      *    For hidden inner classes, e.g. <code>private</code> ones, 
-     *    {@link #getInnerClass(Class,String[])} and 
-     *    {@link #getInnerClass(Class,String)} 
+     *    {@link #getInnerClass(Class, String[])} and 
+     *    {@link #getInnerClass(Class, String)} 
      *    may be used. 
      *    If an object <code>i</code> of a desired class is present 
      *    and if the class of is <code>i</code> not primitive, 
@@ -902,7 +905,7 @@ public final class Accessor<T> {
      * @throws InvocationTargetException 
      *   to wrap an exception thrown by the method invoked. 
      *   Unwrap it using {@link Throwable#getCause}. 
-     * @see #invoke(Class,Object,String,Class[],Object[])
+     * @see #invoke(Class, Object, String, Class[], Object[])
      */
     public static Object invoke(Class<?> aClass,
 				Object target,
@@ -914,9 +917,9 @@ public final class Accessor<T> {
 	if (aClass == null) {
 	    throw new IllegalArgumentException(STR_SPEC_NULL_CLS);
 	}
-	Method toBeInvoked = getToBeInvoked(aClass,methodName,paramCls);
+	Method toBeInvoked = getToBeInvoked(aClass, methodName, paramCls);
 	if (toBeInvoked != null) {
-	    return invoke(toBeInvoked,target,parameters);
+	    return invoke(toBeInvoked, target, parameters);
 	}
 	// Here, the desired method is not found. 
 
@@ -963,7 +966,7 @@ public final class Accessor<T> {
 		return null;
 	    }
 	    toBeInvoked.setAccessible(true);
-	    return toBeInvoked;// NOPMD 
+	    return toBeInvoked; // NOPMD 
 	}
 	// Here, the desired method is not found. 
 
@@ -1022,7 +1025,7 @@ public final class Accessor<T> {
 		 paramsToString(getParamCls(parameters)) + 
 		 STR_DNE);
 	}
-	return create(toBeInvoked,parameters);
+	return create(toBeInvoked, parameters);
     }
 
     /*
@@ -1082,8 +1085,8 @@ public final class Accessor<T> {
      *           (java.lang.Void.TYPE) 
      *    are available. 
      *    For hidden inner classes, e.g. <code>private</code> ones, 
-     *    {@link #getInnerClass(Class,String[])} and 
-     *    {@link #getInnerClass(Class,String)} 
+     *    {@link #getInnerClass(Class, String[])} and 
+     *    {@link #getInnerClass(Class, String)} 
      *    may be used. 
      *    If an object <code>i</code> of a desired class is present 
      *    and if the class of is <code>i</code> not primitive, 
@@ -1130,7 +1133,7 @@ public final class Accessor<T> {
 		 paramsToString(paramCls) + STR_DNE);
 	}
 	toBeInvoked.setAccessible(true);
-	return create(toBeInvoked,parameters);
+	return create(toBeInvoked, parameters);
     }
 
     /**
@@ -1152,7 +1155,7 @@ public final class Accessor<T> {
 
 	try {
 	    return toBeInvoked.newInstance(parameters);
-	} catch(IllegalAccessException ie) {
+	} catch (IllegalAccessException ie) {
 	    throw new IllegalStateException// NOPMD
 		("Constructor should be accessible; still is not. "); 
 	}
@@ -1203,7 +1206,7 @@ public final class Accessor<T> {
 
 	// Here, paramTypes contains the parameter types of cand. 
 
-	return paramsMatch(cand.getParameterTypes(),parameters);
+	return paramsMatch(cand.getParameterTypes(), parameters);
     }
 
     /**
@@ -1223,7 +1226,7 @@ public final class Accessor<T> {
      */
     private static <T> boolean constructorMatches(Constructor<T> cand,
 						  Object... parameters) {
-	return paramsMatch(cand.getParameterTypes(),parameters);
+	return paramsMatch(cand.getParameterTypes(), parameters);
     }
 
     /**
@@ -1251,7 +1254,7 @@ public final class Accessor<T> {
 
 	for (int j = 0; j < parameters.length; j++) {
 	    if (!BasicTypesCompatibilityChecker
-		.areCompatible(paramTypes[j],parameters[j])) {
+		.areCompatible(paramTypes[j], parameters[j])) {
 		return false;
 	    }
 	}
@@ -1291,7 +1294,7 @@ public final class Accessor<T> {
 	Method result = null;
 
 	for (int i = 0; i < cands.length; i++) {
-	    if (!methodMatches(cands[i],methodName,parameters)) {
+	    if (!methodMatches(cands[i], methodName, parameters)) {
 		continue;
 	    }
 
@@ -1341,7 +1344,7 @@ public final class Accessor<T> {
 	Constructor<T> result = null;
 
 	for (int i = 0; i < cands.length; i++) {
-	    if (!constructorMatches(cands[i],parameters)) {
+	    if (!constructorMatches(cands[i], parameters)) {
 		continue;
 	    }
 
@@ -1366,7 +1369,7 @@ public final class Accessor<T> {
 		// **** in jdk6 hardly any improvement (to be rep.) 
 		// possible solution is: use a List but with other disadvantages
 	    } catch (NoSuchMethodException e) {
-		throw new IllegalStateException("****");// NOPMD
+		throw new IllegalStateException("****"); // NOPMD
 	    }
 
 	} // for all cands 
@@ -1401,22 +1404,22 @@ public final class Accessor<T> {
      *    In this case, <tt>shortName</tt> itself has the form 
      *    <tt>cls1$...$clsN</tt>. 
      *    The the corresponding short path is 
-     *    <code>new String[] {cls1,...,clsN}</code>. 
+     *    <code>new String[] {cls1, ..., clsN}</code>. 
      *    For paths with length <code>1</code> 
-     *    one may use {@link #getInnerClass(Class,String)} instead. 
+     *    one may use {@link #getInnerClass(Class, String)} instead. 
      * @return 
      *    the <code>Class</code> object represented by the parameters. 
      * @throws IllegalArgumentException
      *    if either of the parameters is <code>null</code>. 
      * @throws IllegalArgumentException
      *    if the specified class does not exist. 
-     * @see #getInnerClass(Class,String)
+     * @see #getInnerClass(Class, String)
      */
     public static Class<?> getInnerClass(Class<?> enclosingCls,
 					 String[] pathToInner) {
 	Class<?> result = enclosingCls;
 	for (int i = 0; i < pathToInner.length; i++) {
-	    result = getInnerClass(result,pathToInner[i]);
+	    result = getInnerClass(result, pathToInner[i]);
 	}
 	return result;
     }
@@ -1440,14 +1443,14 @@ public final class Accessor<T> {
      *    In this case, <tt>shortName</tt> itself has the form 
      *    <tt>cls1$...$clsN</tt>. 
      *    <em>CAUTION</em> 
-     *    In this case apply method {@link #getInnerClass(Class,String[])} 
+     *    In this case apply method {@link #getInnerClass(Class, String[])} 
      *    instead. 
      * @return 
      *    the <code>Class</code> object represented by the parameters. 
      * @throws IllegalArgumentException
      *    if either of the parameters is <code>null</code> or 
      *    if the specified class does not exist. 
-     * @see #getInnerClass(Class,String[])
+     * @see #getInnerClass(Class, String[])
      */
     public static Class<?> getInnerClass(Class<?> enclosingCls,
 					 String innerClsName) {
@@ -1468,10 +1471,10 @@ public final class Accessor<T> {
 	    // look for the specified inner class in candClass. 
 
 	    cands = candCls.getDeclaredClasses();
-	    candClsName = candCls.getName()+INNER_SEPARATOR;
+	    candClsName = candCls.getName() + INNER_SEPARATOR;
 
 	    for (int i = 0; i < cands.length; i++) {
-		if (cands[i].getName().equals(candClsName+innerClsName)) {
+		if (cands[i].getName().equals(candClsName + innerClsName)) {
 		    return cands[i];
 		}
 	    }
