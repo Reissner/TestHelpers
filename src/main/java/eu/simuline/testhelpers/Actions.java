@@ -42,7 +42,7 @@ import org.javalobby.icons20x20.Delete;
  * 
  * Created: Tue Jun 13 02:53:06 2006
  *
- * @author <a href="mailto:ernst@">Ernst Reissner</a>
+ * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0
  */
 public final class Actions {

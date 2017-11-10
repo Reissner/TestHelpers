@@ -14,7 +14,7 @@ import org.junit.AssumptionViolatedException;
  *
  * Created: Wed Jun  7 16:41:14 2006
  *
- * @author <a href="mailto:ernst@">Ernst Reissner</a>
+ * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0
  */
 public final class TextRunListener extends ExtRunListener {

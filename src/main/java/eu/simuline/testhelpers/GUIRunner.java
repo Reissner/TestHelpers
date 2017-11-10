@@ -121,7 +121,7 @@ import java.util.Collection;
  *
  * Created: Sat Jun  3 18:29:52 2006
  *
- * @author <a href="mailto:ernst@">Ernst Reissner</a>
+ * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0
  */
 @SuppressWarnings("PMD.ExcessiveClassLength")
