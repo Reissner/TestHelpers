@@ -361,7 +361,8 @@ public final class Actions {
      * @param testClassName
      *    the name of the test class. 
      */
-   public Actions(String testClassName) {
+    @SuppressWarnings("checkstyle:nowhitespaceafter")
+    public Actions(String testClassName) {
 
 	this. openAction = new  OpenAction();
 	this.startAction = new StartAction();
@@ -479,6 +480,7 @@ public final class Actions {
      * @param isRunning
      *    whether a test is running. 
      */
+    @SuppressWarnings("checkstyle:nowhitespaceafter")
     void setEnableForRun(boolean isRunning) {	
 	assert this.isRunning ^ isRunning;
 	this.isRunning = isRunning;

@@ -21,6 +21,7 @@ public abstract class JUnitSingleTester {
      * @param args
      *    two arges together consituting the path to the classes. 
      */
+    @SuppressWarnings("checkstyle:nowhitespacebefore")
     public static void main(String[] args) { //throws ClassNotFoundException {
 	File baseDir = new File(args[0] + args[1]);
 	String dirName = baseDir.getAbsolutePath();
