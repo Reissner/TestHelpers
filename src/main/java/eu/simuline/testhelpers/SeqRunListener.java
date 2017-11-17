@@ -232,6 +232,7 @@ public final class SeqRunListener extends ExtRunListener {
      */
     public void testClassStructureLoaded(final Description desc) {
 	this.runListener1.testClassStructureLoaded(desc);
+	this.runListener2.testClassStructureLoaded(desc);
     }
 
 }
