@@ -5,7 +5,18 @@ import org.junit.runner.notification.RunListener;
 import org.junit.runner.Description;
 
 /**
- * Describe class <code>ExtRunListener</code> here.
+ * Extension of {@link RunListener}, version junit 4.12. 
+ * adds methods 
+ * <ul>
+ * <li>
+ * {@link #testSuiteStarted(Description)} and 
+ * {@link #testSuiteFinished(Description)} 
+ * which is added to {@link RunListener}, version junit 4.13 
+ * which is not yet available. 
+ * <li>
+ * {@link #testRunAborted()} and {@link #testClassStructureLoaded(Description)} 
+ * needed in conjunction with our user interfaces. 
+ * </ul>
  *
  * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0

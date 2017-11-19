@@ -19,10 +19,19 @@ public abstract class JUnitSingleTester {
      * The package separator is the file separator. 
      *
      * @param args
-     *    two arges together consituting the path to the classes. 
+     *    two arguments together consituting the path to the classes: 
+     *    The 0th one the path to the java classes, 
+     *    the 1st one the package to be run 
+     *    with file separator as package separator. 
      */
     @SuppressWarnings("checkstyle:nowhitespacebefore")
     public static void main(String[] args) { //throws ClassNotFoundException {
+	if (args.length != 2) {
+	    throw new IllegalArgumentException
+		("Expected exactly two araguments but found " + 
+		 args.length + ". ");
+	}
+
 	File baseDir = new File(args[0] + args[1]);
 	String dirName = baseDir.getAbsolutePath();
 	Finder finder = Finder.path(baseDir)

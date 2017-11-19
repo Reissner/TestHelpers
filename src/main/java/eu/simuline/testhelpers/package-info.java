@@ -7,14 +7,15 @@
  * ({@link Accessor} and {@link Assert}))
  * <li>
  * defining user interfaces for test-software: 
- * A single class is run with a GUI using {@link Actions#runTestCls(String)} 
+ * A single class is run with a GUI using 
+ * {@link Actions#runTestCls(final String)} 
  * or {@link Actions#runFromMain()}. 
  * Both use a GUI implemented by {@link GUIRunner}. 
  * More general, {@link Actions} defines the actions 
  * of a user of the test software. 
  * To run a single test class or a package of testclasses 
  * (also all simuline-classes <code>eu.simuline</code>) 
- * using {@link Actions#runTestCls(String)} 
+ * using {@link Actions#runTestCls(final String)} 
  * is implemented in {@link JUnitSingleTester}. 
  * <li>
  * The other classes are auxiliary classes for the user interface: 
