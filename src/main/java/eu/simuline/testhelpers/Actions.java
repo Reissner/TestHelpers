@@ -164,7 +164,7 @@ public final class Actions {
     /**
      * The action of exiting the tester application. 
      */
-    class ExitAction extends AbstractAction {
+    static class ExitAction extends AbstractAction {
 
 	private static final long serialVersionUID = -589L;
 
@@ -178,7 +178,13 @@ public final class Actions {
 					    ActionEvent.CTRL_MASK));
 	}
 
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings
+	(value="DM_EXIT", 
+	 justification="To ensure safe exit " + 
+	 "not reached by throwing exception. "+ 
+	 "Also Actions is not invoked by other code. ")
 	public void actionPerformed(ActionEvent event) {
+	    //throw new RuntimeException("Exit by user action. ");
 	    System.exit(0);
 	}
     } // class ExitAction 

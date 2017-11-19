@@ -174,7 +174,10 @@ class TestCase {
 	    this.qual = Quality.Scheduled;
 	    this.failure = null;
 	    assert this.qual.hasFailure() == (this.failure != null);
-	    this.time = this.qual.setTime(this.time);
+	    // For Quality.Scheduled, the result of setTime 
+	    // is always TIME_SCHEDULED
+	    // this.time = this.qual.setTime(this.time);
+	    this.time = TIME_SCHEDULED;
 	} else {
 	    this.children = new ArrayList<TestCase>();
 	    for (Description descChild : desc.getChildren()) {

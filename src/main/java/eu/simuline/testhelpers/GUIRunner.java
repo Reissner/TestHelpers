@@ -1425,9 +1425,9 @@ class GUIRunner {
 					      Object oldValue, 
 					      Object newValue) {
 		// Strings get interned...
-		if (propertyName == "text") { // NOPMD
-		    super.firePropertyChange(propertyName, oldValue, newValue);
-		}
+		// if (propertyName == "text") { // NOPMD
+		//     super.firePropertyChange(propertyName, oldValue, newValue);
+		// }
 	    }
 
 	    /**

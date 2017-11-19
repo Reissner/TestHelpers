@@ -176,6 +176,9 @@ public abstract class Assert<E> extends org.junit.Assert {
 	 *    for <code>actual == null</code> without throwing an exception 
 	 *    as specified for {@link java.lang.Comparable#compareTo}. 
 	 */
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings
+	(value="NP_LOAD_OF_KNOWN_NULL_VALUE", 
+	 justification="expected is null and acutal is null are both ok. ")
 	private boolean invokeCompareTo(Comparable<?> expected,
 					Object actual) {
 
@@ -486,7 +489,7 @@ ite.getTargetException().printStackTrace();
      *///<code></code>
     private static double computeNorm1(String norm, 
 				       Object expected) {
-	Object[] actuals = new Object[0];
+	//Object[] actuals = new Object[0];
 	//checkNullsB(norm, expected); checked by computeNorm2 already
 	//assert expected != null && norm != null;
 
@@ -600,6 +603,9 @@ ite.getTargetException().printStackTrace();
      * @see #assertNormRelEquals(String, Object, Object, String, double)
      * @see #checkNulls(String, Object, Object)
      */
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings
+	(value="NP_LOAD_OF_KNOWN_NULL_VALUE", 
+	 justification="expected is null and acutal is null are both ok. ")
     private static void checkNullsB(String norm, 
 				    Object expected, 
 				    Object actual) {
@@ -641,6 +647,9 @@ ite.getTargetException().printStackTrace();
      * @throws AssertionFailedError
      *    for <code>!expected.equals(actual)</code>. 
      */
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings
+	(value="NP_LOAD_OF_KNOWN_NULL_VALUE", 
+	 justification="expected is null is ok. ")
     public static void assertEquals(Object expected,
 				    Object actual) {
 
