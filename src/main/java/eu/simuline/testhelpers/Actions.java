@@ -179,9 +179,9 @@ public final class Actions {
 	}
 
 	@edu.umd.cs.findbugs.annotations.SuppressWarnings
-	(value="DM_EXIT", 
-	 justification="To ensure safe exit " + 
-	 "not reached by throwing exception. "+ 
+	(value = "DM_EXIT", 
+	 justification = "To ensure safe exit " + 
+	 "not reached by throwing exception. " + 
 	 "Also Actions is not invoked by other code. ")
 	public void actionPerformed(ActionEvent event) {
 	    //throw new RuntimeException("Exit by user action. ");

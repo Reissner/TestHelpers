@@ -177,8 +177,8 @@ public abstract class Assert<E> extends org.junit.Assert {
 	 *    as specified for {@link java.lang.Comparable#compareTo}. 
 	 */
 	@edu.umd.cs.findbugs.annotations.SuppressWarnings
-	(value="NP_LOAD_OF_KNOWN_NULL_VALUE", 
-	 justification="expected is null and acutal is null are both ok. ")
+	(value = "NP_LOAD_OF_KNOWN_NULL_VALUE", 
+	 justification = "expected is null and acutal is null are both ok. ")
 	private boolean invokeCompareTo(Comparable<?> expected,
 					Object actual) {
 
@@ -604,8 +604,8 @@ ite.getTargetException().printStackTrace();
      * @see #checkNulls(String, Object, Object)
      */
     @edu.umd.cs.findbugs.annotations.SuppressWarnings
-	(value="NP_LOAD_OF_KNOWN_NULL_VALUE", 
-	 justification="expected is null and acutal is null are both ok. ")
+	(value = "NP_LOAD_OF_KNOWN_NULL_VALUE", 
+	 justification = "expected is null and acutal is null are both ok. ")
     private static void checkNullsB(String norm, 
 				    Object expected, 
 				    Object actual) {
@@ -648,8 +648,8 @@ ite.getTargetException().printStackTrace();
      *    for <code>!expected.equals(actual)</code>. 
      */
     @edu.umd.cs.findbugs.annotations.SuppressWarnings
-	(value="NP_LOAD_OF_KNOWN_NULL_VALUE", 
-	 justification="expected is null is ok. ")
+	(value = "NP_LOAD_OF_KNOWN_NULL_VALUE", 
+	 justification = "expected is null is ok. ")
     public static void assertEquals(Object expected,
 				    Object actual) {
 
