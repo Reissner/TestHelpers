@@ -180,6 +180,23 @@ class GUIRunner {
      */
     private static final int VERTI_FRAME = 800;
 
+    /**
+     * The name of the system property 
+     * the value of which points to the directory 
+     * which is opened by the file chooser. 
+     * This is the directory containing the test classes. 
+     */
+    private static final String CHOOSE_CLASSPATH = "chooseClasspath";
+
+    /**
+     * The name of the system property 
+     * the value of which is the source path. 
+     * This comprises the product sources (in maven called main sources) 
+     * and the test sources. 
+     * This is used to edit sources at places throwing an exception. 
+     */
+    private static final String SOURCEPATH = "sourcepath";
+
 
 
     /* -------------------------------------------------------------------- *
@@ -2003,7 +2020,7 @@ class GUIRunner {
 
 	    StackTraceElement location = this.thrw.getStackTrace()[selIndex];
 	    System.out.println("location: " + location);
-	    JavaPath jPath = new JavaPath(System.getProperty("sourcepath"));
+	    JavaPath jPath = new JavaPath(System.getProperty(SOURCEPATH));
 	    File toBeLoaded = jPath.getFile(location.getClassName(),
 					    JavaPath.ClsSrc.Source);
 	    if (toBeLoaded == null) {
@@ -2154,7 +2171,7 @@ class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	ClassChooser() {
-	    String classpath = System.getProperty("chooseClasspath");
+	    String classpath = System.getProperty(CHOOSE_CLASSPATH);
 	    this.clsPath = new JavaPath(classpath);
 	    this.clsFileChooser = new JFileChooser(classpath);
 	    this.clsFileChooser.setMultiSelectionEnabled(false);
