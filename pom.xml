@@ -58,7 +58,7 @@
     <!-- to keep dependencies up to date: 
 	 mvn versions:display-plugin-updates
 	 mvn versions:display-dependency-updates -->
-    <versionMvn>3.5.0</versionMvn>
+    <versionMvn>3.6.0</versionMvn>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <versionPmd>5.8.1</versionPmd><!-- with mvn plugin 3.8 -->
     <versionPmdMvnPlugin>3.8</versionPmdMvnPlugin><!-- works with pmd 5.8.1 -->
@@ -72,6 +72,8 @@
   <repositories>
     <repository>
       <id>localRepository</id>
+      <!-- TBD: rename: RepositoryTarget into RepositoryPublic
+      and RepositoryLocal into RepositoryPrivate -->
       <url>file:///home/ernst/Software/RepositoryLocal/maven2/</url>
       <!--url>ftp://www.simuline.eu/public_ftp/RepositoryTarget</url-->
     </repository>
@@ -82,15 +84,13 @@
   In the long run it shall be something in maven central -->
   <distributionManagement>
     <site>
-      <id>fileSite</id>
-      <!--url>file:///home/ernst/Software/RepositoryLocal/Site</url-->
+      <id>publicSiteAtSimuline</id>
       <url>ftp://www.simuline.eu/public_html/TestHelpers</url>
     </site>
 
     <repository>
-      <id>fileRepository</id>
-      <!--url>file:///home/ernst/Software/RepositoryLocal/maven2/</url-->
-      <!--url>ftp://www.simuline.eu/public_ftp/RepositoryTarget</url-->
+      <id>publicRepoAtSimuline</id>
+      <name>repo at simuline</name>
       <url>ftp://www.simuline.eu/public_html/RepositoryMaven</url>
     </repository>
   </distributionManagement>
@@ -114,12 +114,12 @@
       <!-- remove to make javadoc run import org.junit -->
     </dependency>
 
-    <dependency>
+    <!--dependency>
       <groupId>net.sourceforge.cobertura</groupId>
       <artifactId>cobertura</artifactId>
-      <version>2.1.1</version><!-- 2.1.1   1.9.4.1 -->
+      <version>2.1.1</version>
       <scope>test</scope>
-    </dependency>
+    </dependency-->
 
     <!-- this one is outdated and replaced by 
 	 com.google.code.findbugs/annotations 
@@ -146,11 +146,11 @@
 	  <version>2.17</version>
 
 	  <dependencies>
-	    <dependency>
+	    <!--dependency>
 	      <groupId>com.puppycrawl.tools</groupId>
 	      <artifactId>checkstyle</artifactId>
 	      <version>8.4</version>
-	    </dependency>
+	    </dependency-->
 	  </dependencies>
 
 	  <configuration>
@@ -199,7 +199,7 @@
 	<version>${versionPmdMvnPlugin}</version><!-- works with pmd 5.8.1 -->
 
         <dependencies>
-          <dependency>
+          <!--dependency>
             <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-core</artifactId>
             <version>${versionPmd}</version>
@@ -208,7 +208,7 @@
             <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-java</artifactId>
             <version>${versionPmd}</version>
-          </dependency>
+          </dependency-->
         </dependencies>
 
         <configuration>
@@ -242,7 +242,7 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M1</version>
+        <version>3.0.0-M2</version>
         <executions>
           <execution>
             <id>enforce-versions</id>
@@ -253,7 +253,7 @@
               <rules>
                  <!--version>${versionMvn}</version-->
                 <requireMavenVersion>
-                  <version>3.5.0</version>
+                  <version>3.6</version>
                  </requireMavenVersion>
                 <!--requireJavaVersion>
                   <version>1.8</version>
@@ -303,10 +303,10 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.7.0</version>
+        <version>3.8.0</version>
         <configuration>
-	  <source>1.8</source>
-          <target>1.8</target>
+	  <source>11</source>
+          <target>11</target>
 	</configuration>
       </plugin>
 
@@ -325,7 +325,7 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
-	<version>3.0.0-M1</version>
+	<version>3.1.0</version>
 	<executions>
 	  <execution>
 	    <id>attach-javadocs</id>
@@ -347,7 +347,8 @@
 	  <breakiterator>true</breakiterator>
 
 	  <links>
-	    <link>file:///usr/share/javadoc/java-1.8.0-openjdk/api/</link>
+	    <!-- TBD: link shall be generic -->
+	    <!--link>file:///usr/share/javadoc/java-1.8.0-openjdk/api/</link-->
 	    <link>http://junit.sourceforge.net/javadoc</link>
 	  </links>
 	      <show>private</show>
@@ -478,7 +479,7 @@
       <plugin>
  	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>${versionTestPlugins}</version>
+        <version>3.0.0-M3</version>
 	<configuration>
 	  <!-- to show failed tests only -->
 	  <showSuccess>false</showSuccess>
@@ -600,7 +601,7 @@
 
       <!-- determines code coverage of tests 
 	   **** ignores and excludes are .... ignored **** -->
-      <plugin>
+      <!--plugin>
 	<groupId>org.codehaus.mojo</groupId>
         <artifactId>cobertura-maven-plugin</artifactId>
         <version>2.7</version>
@@ -620,6 +621,12 @@
 	    <format>html</format>
 	  </formats>
 	</configuration>
+	</plugin-->
+
+      <plugin>
+	<groupId>org.jacoco</groupId>
+	<artifactId>jacoco-maven-plugin</artifactId>
+	<version>0.8.3</version>
       </plugin>
 
       <!-- javadoc plugin -->
