@@ -252,13 +252,6 @@ class TestCase {
     /**
      * Returns the index of this testcase as described in {@link #idxTest}. 
      *
-     * @return
-     *    <ul>
-     *    <li><code>-1</code>
-     *    if this is a test suite according to {@link #isTest()}. 
-     *    <li> a number <code>0...n-1</code>
-     *    if this is one of <code>n</code> singular tests. 
-     *    </ul>
      * @return 
      *    {@link #idxTest}
      */
@@ -269,12 +262,6 @@ class TestCase {
     /**
      * Returns the phase of this testcase as described in {@link #qual}. 
      *
-     * @return
-     *    <ul>
-     *    <li><code>null</code>
-     *    if this is a test suite according to {@link #isTest()}. 
-     *    <li> a non-<code>null</code> value otherwise. 
-     *    </ul>
      * @return 
      *    {@link #qual}
      */

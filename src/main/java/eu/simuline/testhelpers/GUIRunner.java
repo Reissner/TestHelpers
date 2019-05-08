@@ -1098,7 +1098,7 @@ class GUIRunner {
 	 * ---------------------------------------------------------------- */
 
 	/**
-	 * Maps the quality with level <code>> 0</code> 
+	 * Maps the quality with level <code>&gt; 0</code> 
 	 * to the according labels. 
 	 */
 	private final Map<Quality, JLabel>  qual2label;

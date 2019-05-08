@@ -6,7 +6,7 @@ import eu.simuline.util.Finder;
 import java.io.File;
 
 /**
- * Runs a bunch of tests using {@link Actions#runTstCls(String)}. 
+ * Runs a bunch of tests using {@link Actions#runTestClass(String)}. 
  *
  * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0
@@ -60,7 +60,7 @@ System.out.println("clsName" + clsName);
 	    clsName = clsName.replace(System.getProperty("file.separator")
 				      .charAt(0), '.');
 	    System.out.println("clsName: " + clsName);
-	    Actions.runTstCls(clsName);
+	    Actions.runTestClass(clsName);
 	} // while 
 
     }

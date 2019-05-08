@@ -20,7 +20,7 @@ import java.lang.reflect.InvocationTargetException;
  * the class object is given by 
  * <ul>
  * <li>
- * <code>&lt;classname>.class</code> for all types even the primitive ones 
+ * <code>&lt;classname&gt;.class</code> for all types even the primitive ones 
  * and also for arrays 
  * (<code>int.class</code> and <code>int[].class</code> are valid) 
  * but not for hidden inner classes, e.g. <code>private</code> ones, 
@@ -308,7 +308,7 @@ public final class Accessor<T> {
      * @param aClass 
      *    the class for which a static field is to be accessed. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> to determine the class-object. 
+     *    <code>&lt;classname&gt;.class</code> to determine the class-object. 
      * @param fieldName 
      *     the name of the field. 
      * @return 
@@ -342,7 +342,7 @@ public final class Accessor<T> {
      * @param aClass 
      *    a <code>Class</code> object. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to determine the class-object. 
      * @param fieldName 
      *    the name of a field to look for in the specified class 
@@ -517,7 +517,7 @@ public final class Accessor<T> {
      * @param aClass 
      *    the class for which a static field is to be accessed. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to determine the class-object. 
      * @param fieldName 
      *     the name of the field. 
@@ -633,7 +633,7 @@ public final class Accessor<T> {
      *    The method is looked up recursively 
      *    in the superclasses of <code>aClass</code>. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to determine the class-object. 
      * @param methodName 
      *    the short name of a static method. 
@@ -749,7 +749,7 @@ public final class Accessor<T> {
      *    The method is looked up recursively 
      *    in the superclasses of <code>aClass</code>. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to determine the class-object. 
      * @param target 
      *    the target to which the specified method is to be applied. 
@@ -846,7 +846,7 @@ public final class Accessor<T> {
      *    The method is looked up recursively 
      *    in the superclasses of <code>aClass</code>. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to determine the class-object. 
      * @param target 
      *    the target to which the specified method is to be applied. 
@@ -858,7 +858,7 @@ public final class Accessor<T> {
      * @param paramCls 
      *    the types specifying the parameter list of the desired method. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to denote a class, even a primitive one. 
      *    For primitive types, the alternatives 
      *            java.lang.Boolean.TYPE 
@@ -936,7 +936,7 @@ public final class Accessor<T> {
      * @param aClass 
      *    the <code>Class</code> to start searching the method. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to determine the class-object. 
      * @param methodName 
      *    the name of the method to be returned. 
@@ -987,7 +987,7 @@ public final class Accessor<T> {
      * @param aClass 
      *    the class of the instance to be created. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to determine the class-object. 
      * @param parameters 
      *    the list of parameters of the specified constructor. 
@@ -1035,7 +1035,7 @@ public final class Accessor<T> {
      * @param aClass 
      *    a <code>Class</code> object. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to determine the class-object. 
      * @return 
      *    an <code>Object</code> created by the default constructor 
@@ -1066,12 +1066,12 @@ public final class Accessor<T> {
      * @param aClass 
      *    the class of the instance to be created 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to determine the class-object. 
      * @param paramCls 
      *    the types specifying the parameter list of the desired method. 
      *    Typically one will use the expression 
-     *    <code>&lt;classname>.class</code> 
+     *    <code>&lt;classname&gt;.class</code> 
      *    to denote a class, even a primitive one. 
      *    For primitive types, the alternatives 
      *            java.lang.Boolean.TYPE 

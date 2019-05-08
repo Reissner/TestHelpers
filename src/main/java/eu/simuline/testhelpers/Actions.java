@@ -35,7 +35,7 @@ import org.javalobby.icons20x20.Delete;
  * ****
  * The fundamental methods are {@link #runFromMain()} 
  * which runs the test class from its main method 
- * and {@link #runTstCls(String)} which runs a testclass with the given name. 
+ * and {@link #runTestClass(String)} which runs a testclass with the given name. 
  *
  * @see GUIRunner
  * @see GUIRunListener
@@ -155,8 +155,9 @@ public final class Actions {
 	    //setEnableForRun(false); // !isRunning
 	    System.out.println("Break...");
 	    Actions.this.coreRunner.pleaseStop(); // avoids going on after stop 
-	    // method stop is deprecated but there is no alternative 
-	    Actions.this.coreRunner.stop(new StoppedByUserException());
+	    // method stop is deprecated but there is no alternative
+	    // TBD: rework: shall throw exception. original argument: deprecated?
+	    Actions.this.coreRunner.stop();//new StoppedByUserException()
 	}
     } // class BreakAction 
 
@@ -438,7 +439,7 @@ public final class Actions {
      * @see JUnitSingleTester
      * @see #runFromMain()
      */
-    static void runTstCls(final String testClassName) {
+    static void runTestClass(final String testClassName) {
 	Runnable guiCreator = new Runnable() {
 		public void run() {
 		    // parameter null is nowhere used. 
@@ -455,11 +456,11 @@ public final class Actions {
      * The fundamental method to start tests with the underlying JUnit-GUI. 
      * The test class is supposed to define a method <code>main</code> 
      * with body <code>Actions.runFromMain();</code>. 
-     * Essentially invokes {@link #runTstCls(String)} 
+     * Essentially invokes {@link #runTestClass(String)} 
      * with the proper test class name. 
      */
     public static void runFromMain() {
-	runTstCls(new Throwable().getStackTrace()[1].getClassName());
+	runTestClass(new Throwable().getStackTrace()[1].getClassName());
     }
 
     GUIRunner getRunner() {
