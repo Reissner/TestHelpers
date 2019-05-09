@@ -85,6 +85,7 @@
   <distributionManagement>
     <site>
       <id>publicSiteAtSimuline</id>
+      <name>TestHelpers site at simuline</name>
       <url>ftp://www.simuline.eu/public_html/TestHelpers</url>
     </site>
 
@@ -314,7 +315,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.6</version>
+        <version>3.7.1</version>
         <configuration>
           <locales>en</locales>
         </configuration>
