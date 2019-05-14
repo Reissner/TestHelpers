@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <!-- coordinates for model and artifact -->
   <modelVersion>4.0.0</modelVersion>
@@ -8,8 +10,8 @@
   <!-- The Basics -->
   <groupId>eu.simuline</groupId>
   <artifactId>TestHelpers</artifactId>
-  <packaging>jar</packaging>
   <version>1.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
 
   <!-- information for generating a site -->
   <name>TestHelpers</name>
@@ -27,7 +29,7 @@
   <inceptionYear>2012</inceptionYear>
   <licenses>
     <license>
-      <name>License, Version Apache 2</name>
+      <name>The Apache Software License, Version 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
       <distribution>repo</distribution>
       <comments>A business-friendly OSS license</comments>
@@ -75,7 +77,6 @@
       <!-- TBD: rename: RepositoryTarget into RepositoryPublic
       and RepositoryLocal into RepositoryPrivate -->
       <url>file:///home/ernst/Software/RepositoryLocal/maven2/</url>
-      <!--url>ftp://www.simuline.eu/public_ftp/RepositoryTarget</url-->
     </repository>
   </repositories>
 
@@ -136,7 +137,6 @@
   <!-- Build Settings -->
   <build>
 
-
     <pluginManagement>
       <plugins>
 	<!-- all plugins used for build and for reporting -->
@@ -176,22 +176,15 @@
 	  </configuration>
 	</plugin>
 
-	<!-- findbugs plugin -->
-	<plugin>
+	<!-- findbugs plugin TBD: replace -->
+	<!--plugin>
 	  <groupId>org.codehaus.mojo</groupId>
 	  <artifactId>findbugs-maven-plugin</artifactId>
 	  <version>3.0.5</version>
 	  <configuration>
 	    <xmlOutput>true</xmlOutput>
-	    <!--onlyAnalyze>
-	      eu.simuline.relana.expressions.*, 
-	      eu.simuline.relana.model.*, 
-	      eu.simuline.relana.sys.*, 
-	    </onlyAnalyze-->
-	    <!-- Optional directory to put findbugs xdoc xml report -->
-	    <!--xmlOutputDirectory>target/site</xmlOutputDirectory-->
 	  </configuration>
-	</plugin>
+	</plugin-->
 
       <!-- pmd plugin **** reporting or build? -->
       <plugin>
@@ -257,7 +250,7 @@
                   <version>3.6</version>
                  </requireMavenVersion>
                 <!--requireJavaVersion>
-                  <version>1.8</version>
+                  <version>11</version>
                 </requireJavaVersion-->
               </rules>
 	      <!--alwaysFail>true</alwaysFail-->
@@ -349,7 +342,6 @@
 
 	  <links>
 	    <!-- TBD: link shall be generic -->
-	    <!--link>file:///usr/share/javadoc/java-1.8.0-openjdk/api/</link-->
 	    <link>http://junit.sourceforge.net/javadoc</link>
 	  </links>
 	      <show>private</show>
@@ -446,7 +438,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.9</version>
+        <version>3.0.0</version>
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
         </configuration>
@@ -456,17 +448,18 @@
 	    <reports>
 	      <report>index</report>
 	      <report>summary</report>
-	      <report>license</report>
-	      <report>project-team</report>
+	      <report>licenses</report>
+	      <report>team</report>
 
-	      <report>cim</report>
+	      <report>ci-management</report>
 	      <!--report>dependencies</report-->
 	      <report>dependency-convergence</report>
 	      <report>dependency-info</report>
 	      <report>dependency-management</report>
 	      <report>distribution-management</report>
-	      <report>issue-tracking</report>
-	      <report>mailing-list</report>
+	      <report>help</report>
+	      <report>issue-management</report>
+	      <report>mailing-lists</report>
 	      <report>modules</report>
 	      <report>plugin-management</report>
 	      <report>plugins</report>
@@ -552,7 +545,7 @@
       </plugin>
 
       <!-- findbugs -->
-      <plugin>
+      <!--plugin>
  	<groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
 	<configuration>
@@ -564,10 +557,8 @@
 	    eu.simuline.testhelpers.*, 
 	    eu.simuline.util.*, 
 	  </onlyAnalyze>
-	  <!-- Optional directory to put findbugs xdoc xml report -->
-	  <!--xmlOutputDirectory>target/site</xmlOutputDirectory-->
         </configuration>
-      </plugin>
+      </plugin-->
 
       <!-- pmd plugin **** reporting or build? -->
       <plugin>
@@ -655,7 +646,6 @@
 	  <!-- does not work with current plugin version: bug already filed 
 	  -->
 	  <links>
-	    <link>file:///usr/share/javadoc/java-1.8.0-openjdk/api/</link>
 	    <link>http://www.antlr.org/api/JavaTool/</link>
 	    <link>http://www.antlr.org/api/Java/</link>
 	    <link>http://www.stringtemplate.org/api/</link>
