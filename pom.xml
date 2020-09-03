@@ -16,8 +16,8 @@
   <!-- information for generating a site -->
   <name>TestHelpers</name>
   <description>
-    A collection of elementary classes which prooved useful 
-    for tests of software made at simuline (www.simulin.eu). 
+    A collection of elementary classes which proved useful 
+    for tests of software made at simuline (www.simuline.eu). 
 
     In fact, the functionality is quite inhomogeneous 
     all in one package eu.simuline.testhelpers. 
@@ -62,12 +62,14 @@
 	 mvn versions:display-dependency-updates -->
     <versionMvn>3.6.0</versionMvn>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <versionPmd>5.8.1</versionPmd><!-- with mvn plugin 3.8 -->
-    <versionPmdMvnPlugin>3.8</versionPmdMvnPlugin><!-- works with pmd 5.8.1 -->
+    <versionPmd>6.14.0</versionPmd>
 
     <maven.pmd.rulesetfiles>
       ${basedir}/../config/myPmdRuleset.xml
     </maven.pmd.rulesetfiles>
+    <versionJUnit>4.12</versionJUnit>
+    <!-- tied to junit 4.12, not needed -->
+    <!--versionHamcrestCore>1.3</versionHamcrestCore-->
   </properties>
 
   <!-- source repositories: at the moment not needed. -->
@@ -111,7 +113,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>${versionJUnit}</version>
       <!--scope>test</scope--> 
       <!-- remove to make javadoc run import org.junit -->
     </dependency>
@@ -190,10 +192,10 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-pmd-plugin</artifactId>
-	<version>${versionPmdMvnPlugin}</version><!-- works with pmd 5.8.1 -->
+	<version>3.12.0</version>
 
         <dependencies>
-          <!--dependency>
+          <dependency>
             <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-core</artifactId>
             <version>${versionPmd}</version>
@@ -202,7 +204,7 @@
             <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-java</artifactId>
             <version>${versionPmd}</version>
-          </dependency-->
+          </dependency>
         </dependencies>
 
         <configuration>
@@ -247,7 +249,7 @@
               <rules>
                  <!--version>${versionMvn}</version-->
                 <requireMavenVersion>
-                  <version>3.6</version>
+                  <version>${versionMvn}</version>
                  </requireMavenVersion>
                 <!--requireJavaVersion>
                   <version>11</version>
