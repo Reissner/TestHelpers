@@ -72,10 +72,12 @@ public final class Actions {
 	    String clsName = Actions.this.guiRunner.openClassChooser();
 
 	    if (clsName == null) {
-		// open action was not successful  
+		// open action was not successful
+		System.out.println("Warning: no class choosen");
 		return;
 	    }
 	    assert clsName != null;
+	    System.out.println("Info: class `" + clsName + "' choosen");
 	    Actions.this.coreRunner = new CoreRunner(clsName);
 
 	    // clears list of failed testcases
@@ -461,6 +463,9 @@ public final class Actions {
      */
     public static void runFromMain() {
 	runTestClass(new Throwable().getStackTrace()[1].getClassName());
+	// TBD: use instead
+	// Thread.currentThread().getStackTrace()[1].getClassName()
+	// avoiding creating a throwable which is nowhere used. 
     }
 
     GUIRunner getRunner() {
