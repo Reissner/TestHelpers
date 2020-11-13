@@ -2212,10 +2212,14 @@ class GUIRunner {
 	String getChosenClass() {
 	    if (this.clsFileChooser.showOpenDialog(GUIRunner.this.frame) != 
 		JFileChooser.APPROVE_OPTION) {
+		//
+		System.out.println("selection not approved.");
 		return null;
 	    }
 	    File clsFile = this.clsFileChooser.getSelectedFile();
 	    if (!clsFile.exists()) {
+		System.out.println("Approved file '" + clsFile
+				   + "' does not exist.");
 		return null;
 	    }
 	    return this.clsPath.absFile2cls(clsFile,
@@ -2294,6 +2298,7 @@ class GUIRunner {
      * constructor with its methods.                                        *
      * -------------------------------------------------------------------- */
 
+    // TBC: not used. 
     /**
      * Opens the class chooser dialog 
      * and returns the choosen class or <code>null</code> 
