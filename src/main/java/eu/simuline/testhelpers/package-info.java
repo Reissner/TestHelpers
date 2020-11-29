@@ -3,8 +3,12 @@
  * Essentially, these are one of the following: 
  * <ul>
  * <li>
+ * Creating random double numbers ({@link DTestHelper})
+ * </li>
+ * <li>
  * Supporting additional assertions and white box tests 
  * ({@link Accessor} and {@link Assert}))
+ * </li>
  * <li>
  * defining user interfaces for test-software: 
  * A single class is run with a GUI using 
@@ -17,6 +21,7 @@
  * (also all simuline-classes <code>eu.simuline</code>) 
  * using {@link Actions#runTestClass(String)} 
  * is implemented in {@link JUnitSingleTester}. 
+ * </li>
  * <li>
  * The other classes are auxiliary classes for the user interface: 
  * to run single test classes or packages of testclasses. 
@@ -28,6 +33,7 @@
  * A special role plays {@link TestCaseClassLoader} 
  * which enables test runners to to unload classes 
  * just by dropping the loader. 
+ * </li>
  * </ul>
  *
  * <code>x</code> ***** NOT YET COMPLETE. 
