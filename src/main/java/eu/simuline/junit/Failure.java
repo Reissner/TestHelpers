@@ -1,6 +1,6 @@
 package eu.simuline.junit;
 
-import  eu.simuline.util.GifResource;
+import  eu.simuline.util.images.GifResource;
 
 /**
  * Represents the testcase Failure icon in JUnit. 

@@ -1,6 +1,6 @@
 package eu.simuline.junit;
 
-import  eu.simuline.util.GifResource;
+import  eu.simuline.util.images.GifResource;
 
 /**
  * Represents the testsuite hierarchy icon in JUnit. (not yet used. )

@@ -1,6 +1,6 @@
 package eu.simuline.testhelpers;
 
-import eu.simuline.util.GifResource;
+import eu.simuline.util.images.GifResource;
 
 import eu.simuline.junit.AssumptionFailure;
 
