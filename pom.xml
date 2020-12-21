@@ -84,7 +84,7 @@
       <name>repo at simuline</name>
       <url>https://www.simuline.eu/RepositoryMaven</url>
     </repository>
-   </repositories>
+  </repositories>
 
 
   <!-- target repository. This will change. 
@@ -151,6 +151,24 @@
 
   <!-- Build Settings -->
   <build>
+
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+         <artifactId>wagon-ftp</artifactId>
+         <version>3.3.2</version>
+      </extension>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+         <artifactId>wagon-file</artifactId>
+         <version>3.3.2</version>
+      </extension>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+         <artifactId>wagon-http</artifactId>
+         <version>3.3.2</version>
+      </extension>
+    </extensions>
 
     <pluginManagement>
       <plugins>
