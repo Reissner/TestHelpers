@@ -358,37 +358,42 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
-	<version>3.1.0</version>
-	<executions>
+	<version>3.3.1</version>
+	<!--executions>
 	  <execution>
 	    <id>attach-javadocs</id>
 	    <goals>
 	      <goal>jar</goal>
-	    </goals>
-	    <configuration>
-	      <sourcepath>
-		${project.basedir}/src/main/java:${project.basedir}/src/test/java
-	      </sourcepath>
+	    </goals-->
+	<configuration>
+	  <!--sourcepath>
+	    ${project.basedir}/src/main/java:${project.basedir}/src/test/java
+	  </sourcepath-->
 	  <tags>
 	    <tag>
 	      <name>To.Do</name>
-	      <!-- todo tag for all places -->
 	      <placement>a</placement>
 	      <head>what is to be done in the present code fragment. </head>
 	    </tag>
 	  </tags>
 	  <breakiterator>true</breakiterator>
 
-	  <links>
-	    <!-- TBD: link shall be generic -->
+	  <!-- TBD: link shall be generic -->
+	  <!--links>
 	    <link>http://junit.sourceforge.net/javadoc</link>
-	  </links>
-	      <show>private</show>
-<!-- -Xdoclint:reference  -->
-	      <additionalparam>-Xdoclint:html -Xdoclint:reference --allow-script-in-comments</additionalparam>
+	  </links-->
+	  <show>private</show>
+	  <additionalOptions>
+	    <additionalOption>-Xdoclint:all -Xdoclint:-missing</additionalOption>
+	    <additionalOption>--allow-script-in-comments</additionalOption>
+	  </additionalOptions>
+	  <header>
+	    &lt;script type="text/javascript" 
+	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML,https://www.simuline.eu/MathJax/config/myDefault.js"&gt; &lt;/script&gt;
+	  </header>
 	    </configuration>
-	  </execution>
-	</executions>
+	  <!--/execution>
+	</executions-->
       </plugin>
 
       <!-- Configure tag name for mvn release:prepare -->
