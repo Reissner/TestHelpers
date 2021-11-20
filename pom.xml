@@ -65,14 +65,12 @@
     <versionPmd>6.29.0</versionPmd>
     <versionPmdMvnPlugin>3.13.0</versionPmdMvnPlugin><!-- works with pmd ??? -->
 
-    <maven.pmd.rulesetfiles>
-      ${basedir}/../config/myPmdRuleset.xml
-    </maven.pmd.rulesetfiles>
     <versionJUnit>4.12</versionJUnit>
     <!-- tied to junit 4.12, not needed -->
     <!--versionHamcrestCore>1.3</versionHamcrestCore-->
   </properties>
 
+  <!-- source repositories. -->
   <repositories>
     <!-- TBD: source repositories: at the moment not needed. -->
     <!--repository>
@@ -183,14 +181,19 @@
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-checkstyle-plugin</artifactId>
-	  <version>2.17</version>
+	  <version>3.1.1</version>
 
 	  <dependencies>
-	    <!--dependency>
+	    <dependency>
 	      <groupId>com.puppycrawl.tools</groupId>
 	      <artifactId>checkstyle</artifactId>
-	      <version>8.4</version>
-	    </dependency-->
+	      <version>8.15</version><!-- TBD: make 8.30, 9.1 work -->
+	    </dependency>
+            <dependency>
+	      <groupId>eu.simuline</groupId>
+	      <artifactId>qMngmnt</artifactId>
+	      <version>0.0.1-SNAPSHOT</version>
+            </dependency>
 	  </dependencies>
 
 	  <configuration>
@@ -209,11 +212,15 @@
 		   a rule category or a java package name of rule class. -->
 	    </violationIgnore>
 	    <configLocation>
-	      ${basedir}/../config/myChkStyleRuleset.xml
+	      <!-- refers to the dependency qMngmnt -->
+	      eu/simuline/qMngmnt/checkstyle/myChkStyleRuleset.xml
+	      <!-- eu/simuline/qMngmnt/checkstyle/google_checks.xml -->
+	      <!-- eu/simuline/qMngmnt/checkstyle/sun_checks.xml -->
 	    </configLocation>
 	    <encoding>UTF-8</encoding>
 	  </configuration>
 	</plugin>
+
 
 	<!-- findbugs plugin TBD: replace -->
 	<!--plugin>
@@ -242,6 +249,11 @@
             <artifactId>pmd-java</artifactId>
             <version>${versionPmd}</version>
           </dependency>
+          <dependency>
+	    <groupId>eu.simuline</groupId>
+	    <artifactId>qMngmnt</artifactId>
+	    <version>0.0.1-SNAPSHOT</version>
+          </dependency>
         </dependencies>
 
         <configuration>
@@ -249,12 +261,13 @@
           <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
           <minimumTokens>100</minimumTokens><!-- for cpd -->
           <rulesets>
-	    <ruleset>${maven.pmd.rulesetfiles}</ruleset>
-          </rulesets>
+	    <!-- refers to the dependency qMngmnt -->
+	    <ruleset>eu/simuline/qMngmnt/pmd/myPmdRuleset.xml</ruleset>
+ 	    <!--ruleset>${maven.pmd.rulesetfiles}</ruleset-->
+           </rulesets>
 	  <skipEmptyReport>false</skipEmptyReport>
         </configuration>
       </plugin>
-
 
  
       </plugins>
@@ -388,8 +401,10 @@
 	    <additionalOption>--allow-script-in-comments</additionalOption>
 	  </additionalOptions>
 	  <header>
-	    &lt;script type="text/javascript" 
-	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML,https://www.simuline.eu/MathJax/config/myDefault.js"&gt; &lt;/script&gt;
+	    <![CDATA[
+	    <script type="text/javascript" 
+	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML,https://www.simuline.eu/MathJax/config/myDefault.js"> </script>
+	    ]]>
 	  </header>
 	    </configuration>
 	  <!--/execution>
@@ -543,28 +558,7 @@
         </configuration>
       </plugin>
 
-      <plugin>
- 	<groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <!--version>2.17</version>
-
-	<dependencies>
-	  <dependency>
-	    <groupId>com.puppycrawl.tools</groupId>
-	    <artifactId>checkstyle</artifactId>
-	    <version>8.4</version>
-	  </dependency>
-	</dependencies>
-
-	<configuration>
-	  <configLocation>
-	    ${basedir}/config/myChkStyleRuleset.xml
-	  </configLocation>
-         <encoding>UTF-8</encoding>
-	  <excludes>**/parser/**</excludes>
-	</configuration-->
-      </plugin>
-
+ 
       <!-- findbugs -->
       <!--plugin>
  	<groupId>org.codehaus.mojo</groupId>
