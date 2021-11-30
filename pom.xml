@@ -75,7 +75,7 @@
     <!-- TBD: source repositories: at the moment not needed. -->
     <!--repository>
       <id>privateRepositoryAtLocal</id>
-      <url>file:///home/ernst/Software/RepositoryPrivate/maven2/</url>
+      <url>file:///home/ernst/Artifacts/RepositoryPrivate/maven2/</url>
     </repository-->
    <repository>
       <id>publicRepoAtSimuline</id>
