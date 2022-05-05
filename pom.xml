@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <!-- coordinates for model and artifact -->
   <modelVersion>4.0.0</modelVersion>
@@ -10,7 +8,7 @@
   <!-- The Basics -->
   <groupId>eu.simuline</groupId>
   <artifactId>TestHelpers</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1</version>
   <packaging>jar</packaging>
 
   <!-- information for generating a site -->
@@ -78,6 +76,7 @@
       scm:git:https://github.com/Reissner/TestHelpers.git
     </developerConnection> <!-- the default -->
     <url>https://github.com/Reissner/TestHelpers</url><!-- publicly browseable -->
+    <tag>TestHelpers-1.1</tag>
   </scm>
 
 
@@ -465,8 +464,7 @@
 	  </additionalOptions>
 	  <header>
 	    <![CDATA[
-	    <script type="text/javascript" 
-	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML,https://www.simuline.eu/MathJax/config/myDefault.js"> </script>
+	    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML,https://www.simuline.eu/MathJax/config/myDefault.js"> </script>
 	    ]]>
 	  </header>
 	    </configuration>
