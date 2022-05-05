@@ -34,8 +34,8 @@ import org.javalobby.icons20x20.Delete;
  * and the access point to run the gui started from the class to be tested. 
  * ****
  * The fundamental methods are {@link #runFromMain()} 
- * which runs the test class from its main method 
- * and {@link #runTestClass(String)} which runs a testclass with the given name. 
+ * which runs the test class from its main method and 
+ * {@link #runTestClass(String)} which runs a testclass with the given name. 
  *
  * @see GUIRunner
  * @see GUIRunListener
@@ -158,8 +158,9 @@ public final class Actions {
 	    System.out.println("Break...");
 	    Actions.this.coreRunner.pleaseStop(); // avoids going on after stop 
 	    // method stop is deprecated but there is no alternative
-	    // TBD: rework: shall throw exception. original argument: deprecated?
-	    Actions.this.coreRunner.stop();//new StoppedByUserException()
+	    // TBD: rework: shall throw exception. 
+			// original argument: deprecated?
+	    Actions.this.coreRunner.stop(); //new StoppedByUserException()
 	}
     } // class BreakAction 
 

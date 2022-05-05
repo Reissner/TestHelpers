@@ -1,7 +1,7 @@
 
 package eu.simuline.testhelpers;
 
-import eu.simuline.testhelpers.Actions;
+//import eu.simuline.testhelpers.Actions;
 //import eu.simuline.testhelpers.Accessor;
 //import static eu.simuline.testhelpers.Assert;
 
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 // import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.Before;
+//import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -75,18 +75,33 @@ public class AccessorTest {
 	private int aPrimitiveField = 3;
 	private static int aStaticPrimitiveField = 4;
 	private final static int aFinalField = -1;
+
+	// This is only to avoid a warning because of unused field aFinalField. 
+	public static int getFinalFieldDummy() {
+		return aFinalField;
+	}
 	static {
 	    System.out.println("ForTests:static");
 	}
 
 	private int privateMethod(int i) {
-	    return aPrimitiveField*i;
-	}
+		return aPrimitiveField*i;
+  }
+	// This is only to avoid a warning because of unused field aFinalField. 
+  public int privateMethodP(int i) {
+	  return privateMethod(i);
+  }
+
 	protected int protectedMethod(int i) {
 	    return aPrimitiveField*i*10;
 	}
 	private static int privateStaticMethod(int i) {
 	    return aStaticPrimitiveField*i;
+	}
+
+	// This is only to avoid a warning because of unused field aFinalField.
+	public int privateStaticMethodP(int i) {
+		return privateStaticMethod(i);
 	}
 
     }
@@ -101,13 +116,21 @@ public class AccessorTest {
 	private int privateMethod(int i) {
 	    return aPrimitiveField*i;
 	}
+	// This is only to avoid a warning because of unused field aFinalField. 
+  public int privateMethodP(int i) {
+	  return privateMethod(i);
+  }
 	protected int protectedMethod(int i) {
 	    return aPrimitiveField*i*10;
 	}
 	private static int privateStaticMethod(int i) {
 	    return aStaticPrimitiveField*i;
 	}
-    }
+ 	// This is only to avoid a warning because of unused field aFinalField.
+	 public int privateStaticMethodP(int i) {
+		return privateStaticMethod(i);
+	}
+   }
 
     /**
      * Initializes this class and all its inner classes

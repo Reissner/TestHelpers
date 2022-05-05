@@ -1119,7 +1119,7 @@ public final class Accessor<T> {
      */
     public static <T> T create(Class<T> aClass,
 			       Class<?>[] paramCls,
-			       Object ... parameters) 
+			       Object... parameters) 
 	throws NoSuchMethodException, 
 	InstantiationException, 
 	InvocationTargetException {
