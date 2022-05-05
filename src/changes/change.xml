@@ -14,6 +14,27 @@
     <author email="reissner@simuline.eu">Ernst Reissner</author>
   </properties>
   <body>
-    <!-- TBD: restore the icons for open, run, stop, break and exit. -->
-  </body>
+<!-- TBD: restore the icons for open, run, stop, break and exit. -->
+<!-- release plan:
+  - eliminate GUI as it is no longer needed
+  - make mvn site-deploy functional
+  - eliminate warnings, in particular PMD
+-->
+
+<release version="1.1" date="2021-01-01" 
+          description="First release with new process">
+  <action dev="reissner" type="update">
+        Quality improvements.
+  </action>
+</release>
+
+
+<release version="1.0" date="2020-01-01" 
+          description="First release, extracted from general repo">
+  <action dev="reissner" type="add">
+        Added to this project what was extracted from general source tree. 
+  </action>
+</release>
+
+</body>
 </document>
