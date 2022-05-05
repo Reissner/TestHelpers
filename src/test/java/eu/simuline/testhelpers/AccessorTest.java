@@ -185,7 +185,7 @@ public class AccessorTest {
 	// static field without specifying a class 
 	//
 	try {
-	     Accessor.getField((Class)null,"aStaticPrimitiveField");
+	     Accessor.getField((Class<?>)null,"aStaticPrimitiveField");
 	} catch (IllegalArgumentException e) {
 	    assertEquals("Specified null-class. ",e.getMessage());
 	} // end of try-catch
@@ -333,7 +333,7 @@ public class AccessorTest {
 	// static field without specifying a class 
 	//
 	try {
-	     Accessor.setField((Class)null,
+	     Accessor.setField((Class<?>)null,
 			       "aStaticPrimitiveField",
 			       Integer.valueOf(-1));
 	} catch (IllegalArgumentException e) {
@@ -492,19 +492,19 @@ public class AccessorTest {
     } // testSetField 
 
     public void testCreate() throws Exception {
-	ForTests ft;
+	//ForTests ft;
 
 	// testcase 1
 	//
 	// default constructor 
 	//
-	ft = Accessor.create(ForTests.class);
+	Accessor.create(ForTests.class);
 
 	// testcase 2
 	//
 	// default constructor 
 	//
-	ft = Accessor.create(ForTests.class,
+	Accessor.create(ForTests.class,
 			     new Class[] {},
 			     new Object[] {});
     } // testCreate 
