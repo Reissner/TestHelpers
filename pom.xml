@@ -212,14 +212,13 @@
 	    <dependency>
 	      <groupId>com.puppycrawl.tools</groupId>
 	      <artifactId>checkstyle</artifactId>
-        <!-- 8.15 has security issue ans seemingly line lengths are wrong -->
-	      <version>10.1</version><!--  TBD: make 8.30, 9.1, 10.1 work -->
+	      <version>10.1</version>
 	    </dependency>
 	    
             <dependency>
 	      <groupId>eu.simuline</groupId>
 	      <artifactId>qMngmnt</artifactId>
-	      <version>0.0.2-SNAPSHOT</version>
+	      <version>0.0.2</version>
             </dependency>
 	    
 	  </dependencies>
@@ -280,7 +279,7 @@
           <dependency>
 	    <groupId>eu.simuline</groupId>
 	    <artifactId>qMngmnt</artifactId>
-	    <version>0.0.2-SNAPSHOT</version>
+	    <version>0.0.2</version>
           </dependency>
         </dependencies>
 
