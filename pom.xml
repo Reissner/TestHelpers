@@ -338,7 +338,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-help-plugin</artifactId>
-        <version>2.2</version>
+        <version>3.2.0</version>
       </plugin>
       
 
@@ -356,83 +356,73 @@
       </plugin>
 
 
-     <!-- plugin to keep versions up to date -->
-     <!--plugin>
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>versions-maven-plugin</artifactId>
-      <version>2.5</version>
-    </plugin-->
-
-
-      <!-- configuration for clean plugin -->
-    <plugin>
-      <artifactId>maven-clean-plugin</artifactId>
-      <version>3.0.0</version>
-      <configuration>
-        <verbose>true</verbose>
-      </configuration>
-    </plugin>
+        <!-- configuration for clean plugin -->
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <verbose>true</verbose>
+        </configuration>
+      </plugin>
 
       <!-- This plugin will set properties values 
-	   using dependency information -->
+        using dependency information -->
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-dependency-plugin</artifactId>
-	<version>3.0.2</version>
-	<executions>
-	  <execution>
-	    <?m2e execute onConfiguration,onIncremental?>
-           <id>props</id>
- 	    <goals>
-	      <goal>properties</goal>
-	    </goals>
-	  </execution>
-	  <execution>
-	    <?m2e execute onConfiguration,onIncremental?>
-	    <goals>
-	      <!--goal>list</goal--><!-- TBD: clarify what is needed -->
-	      <goal>build-classpath</goal>
-	    </goals>
-	    <configuration><!-- TBD: maybe move to execution list, build-classpath -->
-	      <outputFile>${project.build.directory}/classpath.txt</outputFile>
-	    </configuration>
-	  </execution>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.2</version>
+        <executions>
+          <execution>
+            <?m2e execute onConfiguration,onIncremental?>
+            <id>props</id>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+          </execution>
+          <execution>
+            <?m2e execute onConfiguration,onIncremental?>
+            <goals>
+              <!--goal>list</goal-->          <!-- TBD: clarify what is needed -->
+              <goal>build-classpath</goal>
+            </goals>
+            <configuration>          <!-- TBD: maybe move to execution list, build-classpath -->
+              <outputFile>${project.build.directory}/classpath.txt</outputFile>
+            </configuration>
+          </execution>
 
-	</executions>
+        </executions>
       </plugin>
 
 
       <!-- compiler plugin: Use Java 6 -->
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.8.1</version>
         <configuration>
-	  <source>11</source>
+          <source>11</source>
           <target>11</target>
-	</configuration>
+        </configuration>
       </plugin>
 
-
-
       <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.0</version>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-install-plugin</artifactId>
-        <version>2.5.2</version>
-            </plugin>
-      
-            <plugin>
+        <version>3.0.0-M1</version>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.8.2</version>
-            </plugin>
-      
+        <version>3.0.0-M1</version>
+      </plugin>
+
  
             <!-- javadoc plugin -->
       <!-- synchronize with reporting -->
@@ -502,7 +492,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>2.2.1</version>
+        <version>3.2.1</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -695,7 +685,7 @@
       <plugin>
 	<groupId>org.jacoco</groupId>
 	<artifactId>jacoco-maven-plugin</artifactId>
-	<version>0.8.3</version>
+	<version>0.8.8</version>
       </plugin>
 
       <!-- javadoc plugin -->
