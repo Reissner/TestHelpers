@@ -357,11 +357,11 @@
 
 
      <!-- plugin to keep versions up to date -->
-     <plugin>
+     <!--plugin>
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>versions-maven-plugin</artifactId>
       <version>2.5</version>
-    </plugin>
+    </plugin-->
 
 
       <!-- configuration for clean plugin -->
@@ -414,15 +414,80 @@
       </plugin>
 
 
+
       <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.2.0</version>
       </plugin>
 
-
-     <!-- configuration for site -->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <version>2.5.2</version>
+            </plugin>
+      
+            <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.8.2</version>
+            </plugin>
+      
+ 
+            <!-- javadoc plugin -->
+      <!-- synchronize with reporting -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.3.1</version>
+        <!--executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals-->
+        <configuration>
+          <!--sourcepath>
+            ${project.basedir}/src/main/java:${project.basedir}/src/test/java
+          </sourcepath-->
+          <tags>
+            <tag>
+              <name>To.Do</name>
+              <placement>a</placement>
+              <head>what is to be done in the present code fragment. </head>
+            </tag>
+          </tags>
+          <breakiterator>true</breakiterator>
+      
+          <!-- TBD: link shall be generic -->
+          <!--links>
+            <link>http://junit.sourceforge.net/javadoc</link>
+          </links-->
+          <show>private</show>
+          <additionalOptions>
+            <additionalOption>-Xdoclint:all -Xdoclint:-missing</additionalOption>
+            <additionalOption>--allow-script-in-comments</additionalOption>
+          </additionalOptions>
+          <header>
+            <![CDATA[
+            <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML,https://www.simuline.eu/MathJax/config/myDefault.js"> </script>
+            ]]>
+          </header>
+            </configuration>
+          <!--/execution>
+        </executions-->
+            </plugin>
+
+            
+ 
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>3.0.0-M5</version>
+    </plugin>
+
+       <!-- configuration for site -->
+       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>3.9.1</version>
@@ -430,58 +495,8 @@
           <locales>en</locales>
         </configuration>
       </plugin>
-
-      <!-- javadoc plugin -->
-      <!-- synchronize with reporting -->
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-javadoc-plugin</artifactId>
-	<version>3.3.1</version>
-	<!--executions>
-	  <execution>
-	    <id>attach-javadocs</id>
-	    <goals>
-	      <goal>jar</goal>
-	    </goals-->
-	<configuration>
-	  <!--sourcepath>
-	    ${project.basedir}/src/main/java:${project.basedir}/src/test/java
-	  </sourcepath-->
-	  <tags>
-	    <tag>
-	      <name>To.Do</name>
-	      <placement>a</placement>
-	      <head>what is to be done in the present code fragment. </head>
-	    </tag>
-	  </tags>
-	  <breakiterator>true</breakiterator>
-
-	  <!-- TBD: link shall be generic -->
-	  <!--links>
-	    <link>http://junit.sourceforge.net/javadoc</link>
-	  </links-->
-	  <show>private</show>
-	  <additionalOptions>
-	    <additionalOption>-Xdoclint:all -Xdoclint:-missing</additionalOption>
-	    <additionalOption>--allow-script-in-comments</additionalOption>
-	  </additionalOptions>
-	  <header>
-	    <![CDATA[
-	    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML,https://www.simuline.eu/MathJax/config/myDefault.js"> </script>
-	    ]]>
-	  </header>
-	    </configuration>
-	  <!--/execution>
-	</executions-->
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M5</version>
-      </plugin>
-
-
+  
+  
 
       <!-- Deploy sources.jar files -->
       <plugin>
@@ -499,18 +514,7 @@
         </executions>
       </plugin>
 
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-install-plugin</artifactId>
-	<version>2.5.2</version>
-      </plugin>
-
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-deploy-plugin</artifactId>
-	<version>2.8.2</version>
-      </plugin>
-
+ 
 
      </plugins>
 
