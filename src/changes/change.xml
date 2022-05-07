@@ -19,6 +19,9 @@
   - eliminate GUI as it is no longer needed
   - make mvn site-deploy functional
   - eliminate warnings, in particular PMD
+  - in eu.simuline.testhelpers.DTestHelper.createPower2() try with return value int instead of double. 
+    This unveils weaknesses in L2R, concerning testcases 
+    but also concerning overflow of correction and tolerance. 
 -->
 
 <release version="1.1" date="2021-01-01" 

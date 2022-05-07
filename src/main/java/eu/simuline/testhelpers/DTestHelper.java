@@ -158,8 +158,10 @@ public abstract class DTestHelper {
 
 	private static final int RANGE_POW2 = 50;
 
-	private static int createPower2() {
-		return (int) Math.pow(2.0, 2 * RANGE_POW2 * Math.random() - RANGE_POW2);
+	private static double createPower2() {
+		return Math.pow(2.0, 2 * RANGE_POW2 * Math.random() - RANGE_POW2);
+		// TBD: try also with cast to int. 
+		// This unveils overflow of tolerance 
 	}
 
 	public static List<Double> createMultArgsD(boolean signed,
