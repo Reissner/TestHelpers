@@ -8,7 +8,7 @@
   <!-- The Basics -->
   <groupId>eu.simuline</groupId>
   <artifactId>TestHelpers</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <!-- information for generating a site -->
@@ -118,8 +118,9 @@
 	 mvn versions:display-dependency-updates -->
     <versionMvn>3.6.3</versionMvn>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <versionPmd>6.29.0</versionPmd>
-    <versionPmdMvnPlugin>3.13.0</versionPmdMvnPlugin><!-- works with pmd ??? -->
+    <versionPmd>6.14.0</versionPmd>
+    <versionPmdMvnPlugin>3.16.0</versionPmdMvnPlugin>
+ 
 
     <versionJUnit>4.12</versionJUnit>
     <!-- tied to junit 4.12, not needed -->
@@ -204,7 +205,7 @@
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-checkstyle-plugin</artifactId>
-	  <version>3.1.1</version>
+	  <version>3.1.2</version>
 
 	  <dependencies>
 
@@ -213,11 +214,10 @@
 	      <artifactId>checkstyle</artifactId>
 	      <version>10.1</version>
 	    </dependency>
-	    
             <dependency>
 	      <groupId>eu.simuline</groupId>
 	      <artifactId>qMngmnt</artifactId>
-	      <version>0.0.2</version>
+	      <version>0.0.3</version>
             </dependency>
 	    
 	  </dependencies>
@@ -278,20 +278,23 @@
           <dependency>
 	    <groupId>eu.simuline</groupId>
 	    <artifactId>qMngmnt</artifactId>
-	    <version>0.0.2</version>
+	    <version>0.0.3</version>
           </dependency>
         </dependencies>
 
         <configuration>
-          <linkXref>true</linkXref><!-- default -->
           <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
+          <format>html</format>
+          <skip>false</skip>
+          <skipEmptyReport>false</skipEmptyReport>
+          <includeTests>false</includeTests>
+          <!--linkXref>true</linkXref--><!-- default -->
           <minimumTokens>100</minimumTokens><!-- for cpd -->
           <rulesets>
 	    <!-- refers to the dependency qMngmnt -->
 	    <ruleset>eu/simuline/qMngmnt/pmd/myPmdRuleset.xml</ruleset>
  	    <!--ruleset>${maven.pmd.rulesetfiles}</ruleset-->
            </rulesets>
-	  <skipEmptyReport>false</skipEmptyReport>
         </configuration>
       </plugin>
 
@@ -422,7 +425,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.7.1</version>
+        <version>3.9.1</version>
         <configuration>
           <locales>en</locales>
         </configuration>
@@ -524,7 +527,7 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-jxr-plugin</artifactId>
-	<version>2.5</version>
+	<version>3.1.1</version>
       </plugin>
 
 
@@ -533,7 +536,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.2.2</version>
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
         </configuration>
@@ -552,23 +555,46 @@
 	      <report>dependency-info</report>
 	      <report>dependency-management</report>
 	      <report>distribution-management</report>
-	      <report>help</report>
+	      <!--report>help</report-->
 	      <report>issue-management</report>
 	      <report>mailing-lists</report>
 	      <report>modules</report>
 	      <report>plugin-management</report>
 	      <report>plugins</report>
-	      <report>scm</report>
+	      <!--report>scm</report-->
 	    </reports>
 	  </reportSet>
 	</reportSets>
       </plugin>
 
+
+        <!-- offers also command line analysis:
+      mvn versions:display-plugin-updates
+      mvn versions:display-dependency-updates
+      mvn versions:display-property-updates
+      -->
+  <plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>versions-maven-plugin</artifactId>
+    <!-- TBD: uniform version -->
+    <version>2.9.0</version>
+    <reportSets>
+      <reportSet>
+        <reports>
+          <report>dependency-updates-report</report>
+          <report>plugin-updates-report</report>
+          <report>property-updates-report</report>
+        </reports>
+      </reportSet>
+    </reportSets>
+  </plugin>
+
+
       <!-- Creates surefire test reports -->
       <plugin>
  	<groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>3.0.0-M3</version>
+        <version>3.0.0-M5</version>
 	<configuration>
 	  <!-- to show failed tests only -->
 	  <showSuccess>false</showSuccess>
@@ -576,32 +602,17 @@
       </plugin>
 
        <!-- pmd plugin **** reporting or build? -->
-      <plugin>
+      <!--plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-pmd-plugin</artifactId>
-	<version>${versionPmdMvnPlugin}</version><!-- works with pmd 5.8.1 -->
-        <!--dependencies>
-          <dependency>
-            <groupId>net.sourceforge.pmd</groupId>
-            <artifactId>pmd-core</artifactId>
-            <version>${versionPmd}</version>
-          </dependency>
-          <dependency>
-            <groupId>net.sourceforge.pmd</groupId>
-            <artifactId>pmd-java</artifactId>
-            <version>${versionPmd}</version>
-          </dependency>
-        </dependencies-->
+	<version>${versionPmdMvnPlugin}</version>
        <configuration>
           <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
-	  <!--  in addition to "none", "csv", "xml", "txt" 
-	       or the full class name of the PMD renderer to use. -->
-          <minimumTokens>100</minimumTokens><!-- for cpd -->
+          <minimumTokens>100</minimumTokens>
 	  <format>xml</format>
 
 	  <skip>false</skip>
 	  <skipEmptyReport>false</skipEmptyReport>
-	  <!--suppressMarker>NOPMD</suppressMarker-->
 	  <includeTests>false</includeTests>
           <rulesets>
 	    <ruleset>${maven.pmd.rulesetfiles}</ruleset>
@@ -615,7 +626,7 @@
           </excludes>
 	  <outputDirectory>${project.basedir}/target/site/</outputDirectory>
         </configuration>
-      </plugin>
+      </plugin-->
 
  
       <!-- findbugs -->
@@ -635,35 +646,23 @@
       </plugin-->
 
       <!-- pmd plugin **** reporting or build? -->
-      <plugin>
+      <!--plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-pmd-plugin</artifactId>
-        <version>${versionPmdMvnPlugin}</version><!-- works with pmd 5.8.1 -->
-        <!--dependencies>
-          <dependency>
-            <groupId>net.sourceforge.pmd</groupId>
-            <artifactId>pmd-core</artifactId>
-            <version>${versionPmd}</version>
-          </dependency>
-          <dependency>
-            <groupId>net.sourceforge.pmd</groupId>
-            <artifactId>pmd-java</artifactId>
-            <version>${versionPmd}</version>
-          </dependency>
-        </dependencies-->
+        <version>${versionPmdMvnPlugin}</version>
+        
 
         <configuration>
-	  <format>xml</format><!--  in addition to "none", "csv", "xml", "txt" or the full class name of the PMD renderer to use. -->
+	  <format>xml</format>
 	  <skip>false</skip>
 	  <skipEmptyReport>false</skipEmptyReport>
-	  <!--suppressMarker>NOPMD</suppressMarker-->
 	  <includeTests>false</includeTests>
           <rulesets>
 	    <ruleset>${maven.pmd.rulesetfiles}</ruleset>
           </rulesets>
 	  <outputDirectory>${project.basedir}/target/site/</outputDirectory>
         </configuration>
-      </plugin>
+      </plugin-->
 
       <!-- determines code coverage of tests 
 	   **** ignores and excludes are .... ignored **** -->
