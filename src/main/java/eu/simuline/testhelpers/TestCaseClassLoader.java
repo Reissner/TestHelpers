@@ -1,22 +1,22 @@
 /*
-  Copyright (C) Simuline Inc, Ernst Rei3ner
-
-  This program is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public License
-  as published by the Free Software Foundation; either version 2
-  of the License, or (at your option) any later version.
- 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the 
-  Free Software Foundation, Inc., 
-  51 Franklin Street, Fifth Floor, 
-  Boston, MA  02110-1301, USA.
-*/
+ * Copyright (C) Simuline Inc, Ernst Rei3ner
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the
+ * Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
+ */
 
 package eu.simuline.testhelpers;
 
@@ -60,8 +60,9 @@ import java.net.URL;
  */
 public final class TestCaseClassLoader extends ClassLoader {
 
-    /* -------------------------------------------------------------------- *
-     * class constants.                                                     *
+    /*
+     * -------------------------------------------------------------------- *
+     * class constants. *
      * -------------------------------------------------------------------- */
 
     /**
@@ -85,8 +86,9 @@ public final class TestCaseClassLoader extends ClassLoader {
      */
     private static final int LEN_CLS_STREAM = 1000;
 
-    /* -------------------------------------------------------------------- *
-     * fields.                                                              *
+    /*
+     * -------------------------------------------------------------------- *
+     * fields. *
      * -------------------------------------------------------------------- */
 
     /**
@@ -105,17 +107,12 @@ public final class TestCaseClassLoader extends ClassLoader {
      * Default excluded paths. 
      * @see #isExcluded
      */
-    private final String[] defaultExclusions = {
-	"junit.",
-	"org.",
-	"java.",
-	"javax.",
-	"com.",
-	"sun."
-    };
+    private final String[] defaultExclusions =
+            {"junit.", "org.", "java.", "javax.", "com.", "sun."};
 
-    /* -------------------------------------------------------------------- *
-     * constructor.                                                         *
+    /*
+     * -------------------------------------------------------------------- *
+     * constructor. *
      * -------------------------------------------------------------------- */
 
     /**
@@ -123,9 +120,9 @@ public final class TestCaseClassLoader extends ClassLoader {
      * It scans the class path and the excluded package paths. 
      */
     public TestCaseClassLoader() {
-	this(System.getProperty("java.class.path"));
+        this(System.getProperty("java.class.path"));
     }
-	
+
     /**
      * Constructs a TestCaseLoader. 
      * It scans the class path and the excluded package paths. 
@@ -134,20 +131,21 @@ public final class TestCaseClassLoader extends ClassLoader {
      *    the classpath. 
      */
     private TestCaseClassLoader(String classPath) {
-	this.jPath = new JavaPath(classPath);
-	readExcludedPackages();
+        this.jPath = new JavaPath(classPath);
+        readExcludedPackages();
     }
 
-    /* -------------------------------------------------------------------- *
-     * methods.                                                             *
+    /*
+     * -------------------------------------------------------------------- *
+     * methods. *
      * -------------------------------------------------------------------- */
 
     public URL getResource(String name) {
-	return ClassLoader.getSystemResource(name);
+        return ClassLoader.getSystemResource(name);
     }
 
     public InputStream getResourceAsStream(String name) {
-	return ClassLoader.getSystemResourceAsStream(name);
+        return ClassLoader.getSystemResourceAsStream(name);
     }
 
     /**
@@ -163,73 +161,72 @@ public final class TestCaseClassLoader extends ClassLoader {
      *    In this case the corresponding class is not loaded. 
      */
     private boolean isExcluded(String name) {
-	for (int i = 0; i < this.excluded.size(); i++) {
-	    if (name.startsWith(this.excluded.get(i))) {
-		return true;
-	    }
-	}
-	return false;	
+        for (int i = 0; i < this.excluded.size(); i++) {
+            if (name.startsWith(this.excluded.get(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    Class<?> defineClass(String name)
-	throws ClassNotFoundException {
-	byte[] data = lookupClassData(name);
-	return defineClass(name, data, 0, data.length);
+    Class<?> defineClass(String name) throws ClassNotFoundException {
+        byte[] data = lookupClassData(name);
+        return defineClass(name, data, 0, data.length);
     }
 
     public synchronized Class<?> loadClass(String name, boolean resolve)
-	throws ClassNotFoundException {
+            throws ClassNotFoundException {
 
-	Class<?> cls = findLoadedClass(name);
-	if (cls != null) {
-	    return cls;
-	}
-	//
-	// Delegate the loading of excluded classes to the 
-	// standard class loader.
-	//
-	if (isExcluded(name)) {
-	    try {
-		cls = findSystemClass(name);
-		return cls;
-	    } catch (ClassNotFoundException e) { // NOPMD 
-System.out.println("keep searching **** although excluded. ");
-		// keep searching **** although excluded. 
-	    }
-	}
-	byte[] data = lookupClassData(name);
-	if (data == null) {
-	    throw new ClassNotFoundException();
-	}
-	cls = defineClass(name, data, 0, data.length);
-//System.out.println("loaded: "+name);
-	if (resolve) {
-	    resolveClass(cls);
-	}
-	return cls;
+        Class<?> cls = findLoadedClass(name);
+        if (cls != null) {
+            return cls;
+        }
+        //
+        // Delegate the loading of excluded classes to the 
+        // standard class loader.
+        //
+        if (isExcluded(name)) {
+            try {
+                cls = findSystemClass(name);
+                return cls;
+            } catch (ClassNotFoundException e) { // NOPMD 
+                System.out.println("keep searching **** although excluded. ");
+                // keep searching **** although excluded. 
+            }
+        }
+        byte[] data = lookupClassData(name);
+        if (data == null) {
+            throw new ClassNotFoundException();
+        }
+        cls = defineClass(name, data, 0, data.length);
+        //System.out.println("loaded: "+name);
+        if (resolve) {
+            resolveClass(cls);
+        }
+        return cls;
     }
 
-    private byte[] lookupClassData(String className) 
-	throws ClassNotFoundException {
-	try {
-	    InputStream stream = this.jPath.getInputStream(className);
-	    if (stream == null) {
-		throw new ClassNotFoundException();
-	    }
+    private byte[] lookupClassData(String className)
+            throws ClassNotFoundException {
+        try {
+            InputStream stream = this.jPath.getInputStream(className);
+            if (stream == null) {
+                throw new ClassNotFoundException();
+            }
 
-	    ByteArrayOutputStream out = 
-		new ByteArrayOutputStream(LEN_CLS_STREAM);
-	    byte[] data = new byte[LEN_CLS_STREAM];
-	    int numRead;
-	    while ((numRead = stream.read(data)) != -1) {
-		out.write(data, 0, numRead);
-	    }
-	    stream.close();
-	    out.close();
-	    return out.toByteArray();
-	} catch (IOException e) {
-	    throw new ClassNotFoundException(); // NOPMD
-	}
+            ByteArrayOutputStream out =
+                    new ByteArrayOutputStream(LEN_CLS_STREAM);
+            byte[] data = new byte[LEN_CLS_STREAM];
+            int numRead;
+            while ((numRead = stream.read(data)) != -1) {
+                out.write(data, 0, numRead);
+            }
+            stream.close();
+            out.close();
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new ClassNotFoundException(); // NOPMD
+        }
     }
 
     /**
@@ -254,54 +251,53 @@ System.out.println("keep searching **** although excluded. ");
      * </ol>
      */
     @SuppressWarnings("PMD.NPathComplexity")
-    private void readExcludedPackages() {		
-	this.excluded = new ArrayList<String>();
-	for (int i = 0; i < this.defaultExclusions.length; i++) {
-	    this.excluded.add(defaultExclusions[i]);
-	}
-	Properties prop;
+    private void readExcludedPackages() {
+        this.excluded = new ArrayList<String>();
+        for (int i = 0; i < this.defaultExclusions.length; i++) {
+            this.excluded.add(defaultExclusions[i]);
+        }
+        Properties prop;
 
-	String excludesPathProp = System.getProperty(PROP_KEY_NO_CLS_RELOAD);
-	if (excludesPathProp != null) {
-	    String[] excludesProp = excludesPathProp.split(":");
-	    for (int i = 0; i < excludesProp.length; i++) {
-		this.excluded.add(excludesProp[i]);
-	    }
-	}
+        String excludesPathProp = System.getProperty(PROP_KEY_NO_CLS_RELOAD);
+        if (excludesPathProp != null) {
+            String[] excludesProp = excludesPathProp.split(":");
+            for (int i = 0; i < excludesProp.length; i++) {
+                this.excluded.add(excludesProp[i]);
+            }
+        }
 
-	InputStream inStream = getClass().getResourceAsStream(EXCLUDED_FILE);
-	System.out.println("URL" + getClass().getResource(EXCLUDED_FILE));
-	if (inStream == null) {
-	    return;
-	}
-	//assert false;
-	prop = new Properties();
-	try {
-	    prop.load(inStream);
-	} catch (IOException e) {
-	    return;
-	} finally {
-	    try {
-		inStream.close();
-	    } catch (IOException e) { // NOPMD 
-		// already closed *****?
-	    }
-	}
-	
-	for (Enumeration<?> e = prop.propertyNames(); 
-	     e.hasMoreElements();) {
-	    String key = (String) e.nextElement();
-	    if (key.startsWith("excluded.")) {
-		String path = prop.getProperty(key);
-		path = path.trim();
-		if (path.endsWith("*")) {
-		    path = path.substring(0, path.length() - 1);
-		}
+        InputStream inStream = getClass().getResourceAsStream(EXCLUDED_FILE);
+        System.out.println("URL" + getClass().getResource(EXCLUDED_FILE));
+        if (inStream == null) {
+            return;
+        }
+        //assert false;
+        prop = new Properties();
+        try {
+            prop.load(inStream);
+        } catch (IOException e) {
+            return;
+        } finally {
+            try {
+                inStream.close();
+            } catch (IOException e) { // NOPMD 
+                // already closed *****?
+            }
+        }
 
-		if (path.length() > 0) {
-		    this.excluded.add(path);
-		}
-	    } // if 
-	} // for 
+        for (Enumeration<?> e = prop.propertyNames(); e.hasMoreElements();) {
+            String key = (String) e.nextElement();
+            if (key.startsWith("excluded.")) {
+                String path = prop.getProperty(key);
+                path = path.trim();
+                if (path.endsWith("*")) {
+                    path = path.substring(0, path.length() - 1);
+                }
+
+                if (path.length() > 0) {
+                    this.excluded.add(path);
+                }
+            } // if 
+        } // for 
     } // readExcludedPackages() 
 }
