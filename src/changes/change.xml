@@ -17,6 +17,21 @@
 <!-- TBD: restore the icons for open, run, stop, break and exit. -->
 <!-- release plan:
   - eliminate GUI as it is no longer needed
+    doubt this: maybe some time update to JavaFX even 
+  - extend parameter to allow emacsclient and vs code. 
+  - in GUI add a label showing the current version and build time. 
+  - add time consumption and memory consumption to the outputs. 
+    This shall be done for the leaves of the test tree and also accumulation for the other nodes. 
+  - added console output. 
+  - make the script part of the distribution: include it and tell how to extract 
+    using dependency plugin in the user project. 
+  - in script part include check that it is invoked in base directory. 
+    Then also many pieces of information are from different sources. 
+    Try to read off the pom to obtain less configuration work. 
+  - trigger recompile after save. 
+    vscode: "editor.codeActionsOnSave": { "source.fixAll.eslint": true }
+    emacs: after-save-hook
+  - add history and a bit of user guidance. 
   - make mvn site-deploy functional
   - eliminate warnings, in particular PMD
   - in eu.simuline.testhelpers.DTestHelper.createPower2() try with return value int instead of double. 
