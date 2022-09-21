@@ -1396,13 +1396,13 @@ public final class Accessor<T> {
      *    static or not. 
      * @param pathToInner
      *    a short path of a class enclosed by <code>enclosingCls</code>. 
-     *    If the name of the enclosing class is <tt>enclosing</tt> 
+     *    If the name of the enclosing class is <code>enclosing</code> 
      *    then the name of the inner class has the form 
-     *    <tt>enclosing$shortName</tt>. 
+     *    <code>enclosing$shortName</code>. 
      *    Here, "$" is as specified in {@link #INNER_SEPARATOR}. 
      *    This remains also true for nested inner classes. 
-     *    In this case, <tt>shortName</tt> itself has the form 
-     *    <tt>cls1$...$clsN</tt>. 
+     *    In this case, <code>shortName</code> itself has the form 
+     *    <code>cls1$...$clsN</code>. 
      *    The the corresponding short path is 
      *    <code>new String[] {cls1, ..., clsN}</code>. 
      *    For paths with length <code>1</code> 
@@ -1435,13 +1435,13 @@ public final class Accessor<T> {
      *    static or not. 
      * @param innerClsName 
      *    a short name of a class enclosed by <code>enclosingCls</code>. 
-     *    If the name of the enclosing class is <tt>enclosing</tt> 
+     *    If the name of the enclosing class is <code>enclosing</code> 
      *    then the name of the inner class has the form 
-     *    <tt>enclosing$shortName</tt>. 
+     *    <code>enclosing$shortName</code>. 
      *    Here, "$" is as specified in {@link #INNER_SEPARATOR}. 
      *    This remains also true for nested inner classes. 
-     *    In this case, <tt>shortName</tt> itself has the form 
-     *    <tt>cls1$...$clsN</tt>. 
+     *    In this case, <code>shortName</code> itself has the form 
+     *    <code>cls1$...$clsN</code>. 
      *    <em>CAUTION</em> 
      *    In this case apply method {@link #getInnerClass(Class, String[])} 
      *    instead. 
