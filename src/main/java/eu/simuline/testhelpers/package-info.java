@@ -12,14 +12,14 @@
  * <li>
  * defining user interfaces for test-software: 
  * A single class is run with a GUI using 
- * {@link Actions#runTestClass(String)} 
- * or {@link Actions#runFromMain()}. 
+ * {@link Actions#runTestClass(String, Editor)} 
+ * or {@link Actions#runFromMain(String[])}. 
  * Both use a GUI implemented by {@link GUIRunner}. 
  * More general, {@link Actions} defines the actions 
  * of a user of the test software. 
  * To run a single test class or a package of testclasses 
  * (also all simuline-classes <code>eu.simuline</code>) 
- * using {@link Actions#runTestClass(String)} 
+ * using {@link Actions#runTestClass(String, Editor)} 
  * is implemented in {@link JUnitSingleTester}. 
  * </li>
  * <li>

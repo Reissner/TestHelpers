@@ -1678,7 +1678,7 @@ class GUIRunner {
 	 * constructors.                                                    *
 	 * ---------------------------------------------------------------- */
 
-	TestCaseLister() {
+	TestCaseLister(Editor editor) {
 	    // init failureSelection 
 	    this.failureSelection = new DefaultListSelectionModel();
 	    this.failureSelection
@@ -1688,7 +1688,7 @@ class GUIRunner {
 	    // init failureListMod 
 	    this.failureListMod = new DefaultListModel<TestCase>();
 	    // init stacktrace 
-	    this.stackTraceLister = new StackTraceLister();
+	    this.stackTraceLister = new StackTraceLister(editor);
 	}
 
 
@@ -1886,7 +1886,7 @@ class GUIRunner {
      * and in the stack trace given by {@link #stacktrace}. 
      * <p>
      * This class is also a {@link ListSelectionListener} 
-     * which opens <code>emacsclient</code> 
+     * which opens an editor 
      * with the source file and the line number 
      * given by the selected stack trace element. 
      */
@@ -1921,11 +1921,12 @@ class GUIRunner {
 	 * This is either empty 
 	 * (which is mandatory for empty {@link #thrwMessager}) 
 	 * or selects a single stack element. 
-	 * If so, by selection <code>emacsclient</code> is started 
+	 * If so, by selection an editor is opened 
 	 * at the place the stack element points to. 
 	 */
 	private final ListSelectionModel stackElemSelection;
 
+	private final Editor editor;
 
 	/* ---------------------------------------------------------------- *
 	 * constructors.                                                    *
@@ -1934,8 +1935,9 @@ class GUIRunner {
 	/**
 	 * Creates a new StackTraceLister with empty throwable. 
 	 */
-	StackTraceLister() {
-	    // init thrw and its string representation. 
+	StackTraceLister(Editor editor) {
+		this.editor = editor;
+		// init thrw and its string representation. 
 	    this.thrw = null;
 	    this.thrwMessager = new JLabel("", SwingConstants.LEADING);
 
@@ -2005,7 +2007,7 @@ class GUIRunner {
 	}
 
 	/**
-	 * If an entry is selected, move with emacs to the according place. 
+	 * If an entry is selected, move with {@link #editor} to the according place. 
 	 */
 	// api-docs inherited from ListSelectionListener 
 	public void valueChanged(ListSelectionEvent lse) {
@@ -2027,19 +2029,16 @@ class GUIRunner {
 		return;
 	    }
 
-	    // move with emacs to the selected position 
+	    // move with the given editor to the selected position 
 	    try {
-		Runtime.getRuntime().exec(new String[] {
-			"emacsclient", 
-			"--no-wait", 
-			"+" + location.getLineNumber(), 
-			toBeLoaded.getPath()
-		    },
+				String[] cmdLine = this.editor.invocation(toBeLoaded.getPath(), 
+					location.getLineNumber());
+		Runtime.getRuntime().exec(cmdLine,
 		    // environment variables and working directory 
 		    // inherited from the current process 
 		    null, null);
 	    } catch (IOException ioe) {
-		System.err.println("Failed to invoke emacs. ");
+		System.err.println("Failed to invoke " + this.editor + ". ");
 		ioe.printStackTrace();
 	    }
 	}
@@ -2059,7 +2058,7 @@ class GUIRunner {
 	 * The index of the tab selected initially. 
 	 * This may be 0 or 1. 
 	 * Note that the failure list is the 0th tab for some reason 
-	 * as seen from {@link GUIRunner#setCenter(Actions)}. 
+	 * as seen from {@link GUIRunner#setCenter(Actions, Editor)}. 
 	 * It must be the one initially in the foreground. 
 	 */
 	private static final int SEL_IND1 = 0;
@@ -2294,6 +2293,7 @@ class GUIRunner {
     private final JLabel statusBar;
 
 
+
     /* -------------------------------------------------------------------- *
      * constructor with its methods.                                        *
      * -------------------------------------------------------------------- */
@@ -2319,8 +2319,9 @@ class GUIRunner {
      * Loading is done 
      * by invoking {@link #testClassStructureLoaded(Description)}. 
      */
-    GUIRunner(Actions actions) {
+    GUIRunner(Actions actions, Editor editor) {
 	assert SwingUtilities.isEventDispatchThread();
+
 	this.frame = new JFrame("JUnit GUI");
 	this.frame.setIconImage(SMALL_LOGO_ICON.getImage());
 	this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -2339,7 +2340,7 @@ class GUIRunner {
 
 	this.statisticsTestState = new StatisticsTestState();
 
-	setCenter(actions);
+	setCenter(actions, editor);
 
 	Box testClassName = Box.createHorizontalBox();
 	// add classname 
@@ -2424,10 +2425,10 @@ class GUIRunner {
 	this.frame.setJMenuBar(menubar);
     }
 
-    final void setCenter(Actions actions) {
+    final void setCenter(Actions actions, Editor editor) {
 	final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
 	// add FailureList 
-	this.testCaseLister = new TestCaseLister();
+	this.testCaseLister = new TestCaseLister(editor);
 	// add Tree as second because otherwise a problem becomes visible 
 	this.testHierarchy = new HierarchyWrapper(actions,
 						  this.testCaseLister);

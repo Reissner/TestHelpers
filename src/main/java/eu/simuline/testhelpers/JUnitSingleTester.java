@@ -6,7 +6,7 @@ import eu.simuline.util.Finder;
 import java.io.File;
 
 /**
- * Runs a bunch of tests using {@link Actions#runTestClass(String)}. 
+ * Runs a bunch of tests using {@link Actions#runTestClass(String, Editor)}. 
  *
  * @author <a href="mailto:ernst.reissner@simuline.eu">Ernst Reissner</a>
  * @version 1.0
@@ -28,7 +28,7 @@ public abstract class JUnitSingleTester {
     public static void main(String[] args) { //throws ClassNotFoundException {
 	if (args.length != 2) {
 	    throw new IllegalArgumentException
-		("Expected exactly two araguments but found " + 
+		("Expected exactly two arguments but found " + 
 		 args.length + ". ");
 	}
 
@@ -60,7 +60,7 @@ System.out.println("clsName" + clsName);
 	    clsName = clsName.replace(System.getProperty("file.separator")
 				      .charAt(0), '.');
 	    System.out.println("clsName: " + clsName);
-	    Actions.runTestClass(clsName);
+	    Actions.runTestClass(clsName, Editor.code);
 	} // while 
 
     }

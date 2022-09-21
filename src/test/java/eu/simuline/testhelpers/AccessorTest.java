@@ -135,7 +135,7 @@ public class AccessorTest {
     /**
      * Initializes this class and all its inner classes
      */
-    private void setUp() {
+    void setUp() {
 	try {
 	    Class.forName("eu.simuline.testhelpers.AccessorTest");
 	    Class.forName("eu.simuline.testhelpers.AccessorTest.Static");
@@ -628,8 +628,8 @@ public class AccessorTest {
      *
      * Uncomment either the textual UI, Swing UI, or AWT UI.
      */
-    public static void main(String args[]) {
-	Actions.runFromMain();
+    public static void main(String... args) {
+			Actions.runFromMain(args);
     }
 
 }

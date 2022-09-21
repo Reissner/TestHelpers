@@ -39,13 +39,21 @@
     but also concerning overflow of correction and tolerance. 
 -->
 
+<release version="1.2" date="2022-01-01"
+          description="">
+  <action dev="reissner" type="add">
+        parameter to specify the editor used to view and modify locations
+        in conjunction with failures.
+        Currently, vscode and emacs(client) are supported.
+  </action>
+</release>
+
 <release version="1.1" date="2021-01-01" 
-          description="First release with new process">
+          description="No idea">
   <action dev="reissner" type="update">
         Quality improvements.
   </action>
 </release>
-
 
 <release version="1.0" date="2020-01-01" 
           description="First release, extracted from general repo">
