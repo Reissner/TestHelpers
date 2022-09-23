@@ -29,6 +29,7 @@ import java.util.Enumeration;
 
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 
 import java.net.URL;
@@ -175,6 +176,8 @@ public final class TestCaseClassLoader extends ClassLoader {
         if (isExcluded(name)) {
             System.out.println("is excluded");
             try {
+                // finds using the SystemClassLoader which is the parent of this classloader 
+                // because we used the default construtor. 
                 cls = findSystemClass(name);
                 return cls;
             } catch (ClassNotFoundException e) { // NOPMD 
@@ -182,19 +185,19 @@ public final class TestCaseClassLoader extends ClassLoader {
                 // keep searching **** although excluded. 
             }
         }
-        byte[] data = lookupClassData(name);
-        if (data == null) {
-            throw new ClassNotFoundException();
-        }
-        cls = defineClass(name, data, 0, data.length);
-        //System.out.println("loaded: "+name);
+        cls = findClass(name);
         if (resolve) {
             resolveClass(cls);
         }
         return cls;
     }
 
-    private byte[] lookupClassData(String className)
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        byte[] clsData = loadClassData(name);
+        return defineClass(name, clsData, 0, clsData.length);
+    }
+
+    private byte[] loadClassData(String className)
             throws ClassNotFoundException {
         try {
             File classFile = this.jPath.getFile(className);
