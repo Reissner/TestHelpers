@@ -113,21 +113,11 @@ public final class TestCaseClassLoader extends ClassLoader {
      * -------------------------------------------------------------------- */
 
     /**
-     * Constructs a TestCaseLoader. 
+     * Constructs a TestCaseLoader with the system class loader as its parent. 
      * It scans the class path and the excluded package paths. 
      */
     public TestCaseClassLoader() {
-        this(System.getProperty("java.class.path"));
-    }
-
-    /**
-     * Constructs a TestCaseLoader. 
-     * It scans the class path and the excluded package paths. 
-     *
-     * @param classPath
-     *    the classpath. 
-     */
-    private TestCaseClassLoader(String classPath) {
+        String classPath = System.getProperty("java.class.path");
         this.jPath = new JavaPath(classPath);
         readExcludedPackages();
     }
