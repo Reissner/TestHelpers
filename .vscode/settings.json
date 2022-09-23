@@ -1,0 +1,18 @@
+{
+  "java.test.config": {
+    "name": "myTestConfig",
+    "vmArgs": [
+      "-ea",
+      "-esa",
+      "-Xverify:all",
+      "-Xmx1023m",
+      "-Denvironment=${workspaceFolder}/",
+      "-Dtarget=${workspaceFolder}/target/",
+      "-DsrcJavaDir=src/main/java/",
+      "-DsrcAntlr4Dir=src/main/antlr4/",
+      "-Deu.simuline.octave.executable=octave",
+      "-DmCompilerProps=${workspaceFolder}/src/main/resources/package/inst/compiler.props"
+    ]
+  },
+  "java.test.defaultConfig": "myTestConfig"
+}
