@@ -54,6 +54,10 @@
         in conjunction with failures.
         Currently, vscode and emacs(client) are supported.
   </action>
+  <action dev="reissner" type="fix">
+    Updated dependency to icons. 
+    Now icons show up correctly again. 
+</action>
 </release>
 
 <release version="1.1" date="2021-01-01" 
