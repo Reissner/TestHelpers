@@ -177,14 +177,14 @@ public final class TestCaseClassLoader extends ClassLoader {
                         // finds using the SystemClassLoader which is the parent of this classloader 
                         // because we used the default construtor. 
                         cls = findSystemClass(name);
-                        return cls;
                     } catch (ClassNotFoundException e) { // NOPMD 
                         System.out.println(
                                 "keep searching **** although excluded. ");
                         // keep searching **** although excluded. 
                     }
+                } else {
+                    cls = findClass(name);
                 }
-                cls = findClass(name);
             }
             if (resolve) {
                 resolveClass(cls);
