@@ -18,7 +18,6 @@
 <!-- release plan:
   - eliminate GUI as it is no longer needed
     doubt this: maybe some time update to JavaFX even 
-  - extend parameter to allow emacsclient and vs code. 
   - in GUI add a label showing the current version and build time. 
   - add time consumption and memory consumption to the outputs. 
     This shall be done for the leaves of the test tree and also accumulation for the other nodes. 
@@ -37,6 +36,15 @@
   - in eu.simuline.testhelpers.DTestHelper.createPower2() try with return value int instead of double. 
     This unveils weaknesses in L2R, concerning testcases 
     but also concerning overflow of correction and tolerance. 
+  - add a mechanism to avoid script and the pom unaligned. 
+    Either keep the script aligned e.g. creating it from the pom 
+    or avoid the script altogether.
+    A suggestion to implement would be to have a plugin. 
+    Either the plugin writes the script or it fires the GUI itself. 
+  - ClassLoader: avoid excluding classes explicitly from reload. 
+    Instead reload all classes from main and from test. 
+    The others never. Just delegate. 
+  - ClassLoader: the way this is overwritten seems to be unusual. Correct. 
 -->
 
 <release version="1.2" date="2022-01-01"
