@@ -250,8 +250,6 @@ public final class Actions {
 		public void run() {
 			Class<?> newTestClass = null;
 			try {
-				// newTestClass =
-				// 		new TestCaseClassLoaderB().loadClass(this.testClassName);
 				newTestClass =
 						new TestCaseClassLoader().loadClass(this.testClassName, true);
 			} catch (ClassNotFoundException e) {
