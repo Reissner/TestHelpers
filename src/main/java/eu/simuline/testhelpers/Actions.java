@@ -4,8 +4,6 @@ import eu.simuline.util.images.GifResource;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -28,6 +26,8 @@ import org.javalobby.icons20x20.Stop;
 import org.javalobby.icons20x20.Hammer;
 import org.javalobby.icons20x20.Delete;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents the actions of the test GUI inspired by old junit GUI. 

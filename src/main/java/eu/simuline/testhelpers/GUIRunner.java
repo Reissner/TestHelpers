@@ -2382,7 +2382,7 @@ class GUIRunner {
 	resRun2.add(HORIZ_BOUNDARY);
 	resRun2.add(this.splitPane);
 	resRun2.add(Box.createGlue());
-	resRun2.add(new JButton("Run2"));
+	resRun2.add(new JButton(actions.getStartAction()));
 	resRun2.add(HORIZ_BOUNDARY);
 	this.frame.add(resRun2);
 //this.frame.add(this.splitPane);
@@ -2392,7 +2392,7 @@ class GUIRunner {
 	statExit.add(HORIZ_BOUNDARY);
 	statExit.add(this.statusBar);
 	statExit.add(Box.createGlue());
-	statExit.add(new JButton("Exit"));
+	statExit.add(new JButton(actions.getExitAction()));
 	statExit.add(HORIZ_BOUNDARY);
 
  	this.frame.add(statExit);
