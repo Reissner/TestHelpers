@@ -1,0 +1,1 @@
+{"rule":"EN_A_VS_AN","sentence":"^\\QThen you can run that script on a test class, provided you use a unixoid operating system.\\E$"}
