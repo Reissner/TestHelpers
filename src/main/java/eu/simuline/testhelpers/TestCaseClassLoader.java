@@ -165,29 +165,27 @@ public final class TestCaseClassLoader extends ClassLoader {
                 + this.getClass().getClassLoader());
         synchronized (getClassLoadingLock(name)) {
             Class<?> cls = findLoadedClass(name);
-            if (cls != null) {
-                System.out.println("Found and loaded class: " + cls);
-                return cls;
-            }
-            System.out.println("Proper class loader for class: " + name);
-            //
-            // Delegate the loading of excluded classes to the 
-            // standard class loader.
-            //
-            if (isExcluded(name)) {
-                System.out.println("is excluded");
-                try {
-                    // finds using the SystemClassLoader which is the parent of this classloader 
-                    // because we used the default construtor. 
-                    cls = findSystemClass(name);
-                    return cls;
-                } catch (ClassNotFoundException e) { // NOPMD 
-                    System.out
-                            .println("keep searching **** although excluded. ");
-                    // keep searching **** although excluded. 
+            if (cls == null) {
+                System.out.println("loading class: " + name);
+                //
+                // Delegate the loading of excluded classes to the 
+                // standard class loader.
+                //
+                if (isExcluded(name)) {
+                    System.out.println("is excluded");
+                    try {
+                        // finds using the SystemClassLoader which is the parent of this classloader 
+                        // because we used the default construtor. 
+                        cls = findSystemClass(name);
+                        return cls;
+                    } catch (ClassNotFoundException e) { // NOPMD 
+                        System.out.println(
+                                "keep searching **** although excluded. ");
+                        // keep searching **** although excluded. 
+                    }
                 }
+                cls = findClass(name);
             }
-            cls = findClass(name);
             if (resolve) {
                 resolveClass(cls);
             }
