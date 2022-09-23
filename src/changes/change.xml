@@ -57,20 +57,24 @@
   <action dev="reissner" type="fix">
     Updated dependency to icons. 
     Now icons show up correctly again. 
-</action>
+  </action>
+  <action dev="reissner" type="fix">
+    Made buttons functional (again?). 
+  </action>
 </release>
 
-<release version="1.1" date="2021-01-01" 
+<release version="1.1" date="2022-05-07" 
           description="No idea">
   <action dev="reissner" type="update">
         Quality improvements.
   </action>
 </release>
 
-<release version="1.0" date="2020-01-01" 
+<release version="1.0" date="2007-07-21" 
           description="First release, extracted from general repo">
   <action dev="reissner" type="add">
         Added to this project what was extracted from general source tree. 
+        Date is the first trace. 
   </action>
 </release>
 
