@@ -195,23 +195,26 @@ public final class TestCaseClassLoader extends ClassLoader {
     private byte[] lookupClassData(String className)
             throws ClassNotFoundException {
         try {
-            InputStream stream = this.jPath.getInputStream(className);
-            if (stream == null) {
+            File classFile = this.jPath.getFile(className);
+            System.out.println("class file: " + classFile);
+            InputStream inStream = this.jPath.getInputStream(className);
+            if (inStream == null) {
                 throw new ClassNotFoundException();
             }
 
-            ByteArrayOutputStream out =
+            ByteArrayOutputStream outStream =
                     new ByteArrayOutputStream(LEN_CLS_STREAM);
             byte[] data = new byte[LEN_CLS_STREAM];
             int numRead;
-            while ((numRead = stream.read(data)) != -1) {
-                out.write(data, 0, numRead);
+            while ((numRead = inStream.read(data)) != -1) {
+                outStream.write(data, 0, numRead);
             }
-            stream.close();
-            out.close();
-            return out.toByteArray();
+            inStream.close();
+            outStream.close();
+            return outStream.toByteArray();
         } catch (IOException e) {
-            throw new ClassNotFoundException(); // NOPMD
+            throw new ClassNotFoundException
+            ("Class '" + className + "' not found. "); // NOPMD
         }
     }
 
@@ -253,7 +256,7 @@ public final class TestCaseClassLoader extends ClassLoader {
         }
 
         InputStream inStream = getClass().getResourceAsStream(EXCLUDED_FILE);
-        System.out.println("URL" + getClass().getResource(EXCLUDED_FILE));
+        System.out.println("URL of excluded-file: " + getClass().getResource(EXCLUDED_FILE));
         if (inStream == null) {
             return;
         }
