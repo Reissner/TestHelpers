@@ -155,23 +155,25 @@ public final class TestCaseClassLoader extends ClassLoader {
         return false;
     }
 
-    Class<?> defineClass(String name) throws ClassNotFoundException {
-        byte[] data = lookupClassData(name);
-        return defineClass(name, data, 0, data.length);
-    }
+        // TBD: clarify: Overwritten shall be findClass. Well maybe that is no good idea because, 
+        // this is more than delegation model. 
 
     public synchronized Class<?> loadClass(String name, boolean resolve)
             throws ClassNotFoundException {
+        System.out.println("classloader of classloader: " + this.getClass().getClassLoader());
 
         Class<?> cls = findLoadedClass(name);
         if (cls != null) {
+            System.out.println("Found and loaded class: "+cls);
             return cls;
         }
+        System.out.println("Proper class loader for class: "+name);
         //
         // Delegate the loading of excluded classes to the 
         // standard class loader.
         //
         if (isExcluded(name)) {
+            System.out.println("is excluded");
             try {
                 cls = findSystemClass(name);
                 return cls;
