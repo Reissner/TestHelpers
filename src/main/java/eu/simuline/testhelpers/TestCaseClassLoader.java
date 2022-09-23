@@ -156,35 +156,13 @@ public final class TestCaseClassLoader extends ClassLoader {
         return false;
     }
 
-        // TBD: clarify: Overwritten shall be findClass. Well maybe that is no good idea because, 
-        // this is more than delegation model. 
-
     public synchronized Class<?> loadClass(String name, boolean resolve)
         throws ClassNotFoundException {
-        System.out.println("classloader of classloader: "
-                + this.getClass().getClassLoader());
         synchronized (getClassLoadingLock(name)) {
             Class<?> cls = findLoadedClass(name);
             if (cls == null) {
-                System.out.println("loading class: " + name);
-                //
-                // Delegate the loading of excluded classes to the 
-                // standard class loader.
-                //
-                if (isExcluded(name)) {
-                    System.out.println("is excluded");
-                    try {
-                        // finds using the SystemClassLoader which is the parent of this classloader 
-                        // because we used the default construtor. 
-                        cls = findSystemClass(name);
-                    } catch (ClassNotFoundException e) { // NOPMD 
-                        System.out.println(
-                                "keep searching **** although excluded. ");
-                        // keep searching **** although excluded. 
-                    }
-                } else {
-                    cls = findClass(name);
-                }
+                // The system class loader is the parent 
+                cls = isExcluded(name) ? findSystemClass(name) : findClass(name);
             }
             if (resolve) {
                 resolveClass(cls);
