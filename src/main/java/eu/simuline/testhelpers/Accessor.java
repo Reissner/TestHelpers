@@ -1354,16 +1354,16 @@ public final class Accessor<T> {
 		    ("Constructor " + aClass.getName() + 
 		     paramsToString(getParamCls(parameters)) + 
 		     " is not unique: cannot distinguish " + result + 
-		     " from " + cands[i] + ". ");
+		     " from " + aConstr + ". ");
 	    }
 	    // cands[i] is the first constructor that matches. 
 
 	    try {
 		// one would just write result = (Constructor<T>)cands[i];
 		result = aClass
-		    .getDeclaredConstructor(cands[i].getParameterTypes());
+		    .getDeclaredConstructor(aConstr.getParameterTypes());
 		// not assert result == cands[i]
-		assert result.equals(cands[i]); 
+		assert result.equals(aConstr);
 		// **** the cast is a weakness in the jdk5 (reported)
 		// because cands is an array and these cannot be generified 
 		// **** in jdk6 hardly any improvement (to be rep.) 
@@ -1375,7 +1375,7 @@ public final class Accessor<T> {
 	} // for all cands 
 
 	if (result != null) {
-	    result.setAccessible(true);
+	    result.setAccessible(true);// NOPMD
 	}
 	return result;
     }
@@ -1418,8 +1418,8 @@ public final class Accessor<T> {
     public static Class<?> getInnerClass(Class<?> enclosingCls,
 					 String[] pathToInner) {
 	Class<?> result = enclosingCls;
-	for (int i = 0; i < pathToInner.length; i++) {
-	    result = getInnerClass(result, pathToInner[i]);
+	for (String clsName : pathToInner) {
+	    result = getInnerClass(result, clsName);
 	}
 	return result;
     }
@@ -1473,9 +1473,9 @@ public final class Accessor<T> {
 	    cands = candCls.getDeclaredClasses();
 	    candClsName = candCls.getName() + INNER_SEPARATOR;
 
-	    for (int i = 0; i < cands.length; i++) {
-		if (cands[i].getName().equals(candClsName + innerClsName)) {
-		    return cands[i];
+	    for (Class<?> aClass : cands) {
+		if (aClass.getName().equals(candClsName + innerClsName)) {
+		    return aClass;
 		}
 	    }
 	    // prepare search in superclass. 
