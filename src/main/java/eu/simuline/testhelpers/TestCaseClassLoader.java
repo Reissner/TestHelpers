@@ -176,29 +176,37 @@ public final class TestCaseClassLoader extends ClassLoader {
         return defineClass(name, clsData, 0, clsData.length);
     }
 
+    /**
+     * Returns the class given by <code>className</code> as a byte array, if possible. 
+     * 
+     * @param className
+     *    The name of the class to be loaded. 
+     * @return
+     *    The class description as a byte array. 
+     * @throws ClassNotFoundException
+     *    if the class could not be loaded, either: 
+     *    not found according file or not readable. 
+     */
     private byte[] loadClassData(String className)
             throws ClassNotFoundException {
-        try {
-            File classFile = this.jPath.getFile(className);
-            System.out.println("class file: " + classFile);
-            InputStream inStream = this.jPath.getInputStream(className);
-            if (inStream == null) {
-                throw new ClassNotFoundException();
-            }
-
+        File classFile = this.jPath.getFile(className);
+        System.out.println("class file: " + classFile);
+        try (InputStream inStream = this.jPath.getInputStream(className);
             ByteArrayOutputStream outStream =
-                    new ByteArrayOutputStream(LEN_CLS_STREAM);
+                    new ByteArrayOutputStream(LEN_CLS_STREAM)) {
+            if (inStream == null) {
+                throw new ClassNotFoundException
+                ("Class file for '" + className + "' not found. ");
+            }
             byte[] data = new byte[LEN_CLS_STREAM];
             int numRead;
             while ((numRead = inStream.read(data)) != -1) {
                 outStream.write(data, 0, numRead);
             }
-            inStream.close();
-            outStream.close();
             return outStream.toByteArray();
         } catch (IOException e) {
-            throw new ClassNotFoundException
-            ("Class '" + className + "' not found. "); // NOPMD
+            throw new ClassNotFoundException(// NOPMD
+                    "Class file for '" + className + "' not readable. ", e);
         }
     }
 
@@ -233,44 +241,39 @@ public final class TestCaseClassLoader extends ClassLoader {
 
         String excludesPathProp = System.getProperty(PROP_KEY_NO_CLS_RELOAD);
         if (excludesPathProp != null) {
-            String[] excludesProp = excludesPathProp.split(":");
-            for (int i = 0; i < excludesProp.length; i++) {
-                this.excluded.add(excludesProp[i]);
+            String[] excludesProps = excludesPathProp.split(":");
+            for (String excludeProp : excludesProps) {
+                this.excluded.add(excludeProp);
             }
         }
 
-        InputStream inStream = getClass().getResourceAsStream(EXCLUDED_FILE);
         System.out.println("URL of excluded-file: " + getClass().getResource(EXCLUDED_FILE));
-        if (inStream == null) {
-            return;
-        }
-        //assert false;
-        prop = new Properties();
-        try {
-            prop.load(inStream);
-        } catch (IOException e) {
-            return;
-        } finally {
-            try {
-                inStream.close();
-            } catch (IOException e) { // NOPMD 
-                // already closed *****?
+        try (InputStream inStream =
+                getClass().getResourceAsStream(EXCLUDED_FILE)) {
+            if (inStream == null) {
+                return;
             }
+            //assert false;
+            prop = new Properties();
+            prop.load(inStream);
+
+            for (Enumeration<?> e = prop.propertyNames(); e
+                    .hasMoreElements();) {
+                String key = (String) e.nextElement();
+                if (key.startsWith("excluded.")) {
+                    String path = prop.getProperty(key);
+                    path = path.trim();
+                    if (path.endsWith("*")) {
+                        path = path.substring(0, path.length() - 1);
+                    }
+
+                    if (path.length() > 0) {
+                        this.excluded.add(path);
+                    }
+                } // if 
+            } // for 
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read excludes from file. ", e);
         }
-
-        for (Enumeration<?> e = prop.propertyNames(); e.hasMoreElements();) {
-            String key = (String) e.nextElement();
-            if (key.startsWith("excluded.")) {
-                String path = prop.getProperty(key);
-                path = path.trim();
-                if (path.endsWith("*")) {
-                    path = path.substring(0, path.length() - 1);
-                }
-
-                if (path.length() > 0) {
-                    this.excluded.add(path);
-                }
-            } // if 
-        } // for 
     } // readExcludedPackages() 
 }
