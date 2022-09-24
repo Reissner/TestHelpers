@@ -204,6 +204,9 @@ public final class TestCaseClassLoader extends ClassLoader {
 
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         byte[] clsData = loadClassData(name);
+        if (clsData == null) {
+            return null;
+        }
         return defineClass(name, clsData, 0, clsData.length);
     }
 
@@ -226,8 +229,7 @@ public final class TestCaseClassLoader extends ClassLoader {
             ByteArrayOutputStream outStream =
                     new ByteArrayOutputStream(LEN_CLS_STREAM)) {
             if (inStream == null) {
-                throw new ClassNotFoundException
-                ("Class file for '" + className + "' not found. ");
+                return null;// NOPMD
             }
             byte[] data = new byte[LEN_CLS_STREAM];
             int numRead;
