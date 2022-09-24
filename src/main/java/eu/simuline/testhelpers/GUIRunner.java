@@ -185,8 +185,10 @@ class GUIRunner {
      * the value of which points to the directory 
      * which is opened by the file chooser. 
      * This is the directory containing the test classes. 
+		 * Note that this is not declared <code>private</code> 
+		 * because it is used also in {@link TestCaseClassLoader}. 
      */
-    private static final String CHOOSE_CLASSPATH = "chooseClasspath";
+    static final String CHOOSE_CLASSPATH = "chooseClasspath";
 
     /**
      * The name of the system property 
