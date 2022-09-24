@@ -37,10 +37,13 @@ import java.net.URL;
 
 /**
  * A custom class loader which allows to reload classes for each test run. 
+ * This is done for classes to be tested determined by {@link #PROP_KEY_TB_TESTED_CLSPATH} 
+ * and by the classes performing the tests determined by {@link GUIRunner#CHOOSE_CLASSPATH}. 
+ * Any class but these are loaded by delegating to the system class loader. 
+ * Classes loaded by the system class loader will be shared across test runs. 
+ * <p>
  * The class loader can be configured with a list of package paths 
- * that should be excluded from loading. 
- * The loading of these packages is delegated to the system class loader. 
- * They will be shared across test runs. 
+ * that should be excluded from loading and delegated to the system class loader also. 
  * <p>
  * The list of excluded package paths 
  * is either hardcoded in {@link #defaultExclusions}, 
@@ -64,6 +67,14 @@ public final class TestCaseClassLoader extends ClassLoader {
     /* -------------------------------------------------------------------- *
      * class constants. *
      * -------------------------------------------------------------------- */
+
+     /**
+      * Key of a property containing the classes to be tested. 
+      * This does not include the testclasses performing the tests. 
+      * The latter are from {@link GUIRunner#CHOOSE_CLASSPATH}. 
+      * Together they point to the classes to be reloaded by this class loader. 
+      */
+    private static final String PROP_KEY_TB_TESTED_CLSPATH = "tbTestedClasspath";
 
     /**
      * Key of system property 
@@ -98,13 +109,13 @@ public final class TestCaseClassLoader extends ClassLoader {
     /**
      * Holds the excluded paths. 
      * This is initialized by {@link #readExcludedPackages} 
-     * and used by {@link #isExcluded}. 
+     * and used by {@link #isIncluded}. 
      */
     private List<String> excluded;
 
     /** 
      * Default excluded paths. 
-     * @see #isExcluded
+     * @see #isIncluded
      */
     private final String[] defaultExclusions =
             {"junit.", "org.", "java.", "javax.", "com.", "sun."};
@@ -115,11 +126,23 @@ public final class TestCaseClassLoader extends ClassLoader {
 
     /**
      * Constructs a TestCaseLoader with the system class loader as its parent. 
-     * It scans the class path and the excluded package paths. 
+     * It loads the classes given by {@link #PROP_KEY_TB_TESTED_CLSPATH} 
+     * and in {@link GUIRunner#CHOOSE_CLASSPATH}, except if excluded explicitly ***; 
+     * the rest is delegated to be loaded by the according system class loader. 
+     * 
+     * @throws IllegalArgumentException
+     *    If the test runner is not invoked with the options 
+     *    defining tested classes and testing classes. 
      */
     public TestCaseClassLoader() {
-        String classPath = System.getProperty("java.class.path");
-        this.jPath = new JavaPath(classPath);
+        String    clsPath = System.getProperty(PROP_KEY_TB_TESTED_CLSPATH);
+        String tstClsPath = System.getProperty(GUIRunner.CHOOSE_CLASSPATH);
+        if (clsPath == null || tstClsPath == null) {
+            throw new IllegalArgumentException
+            ("Classpaths for tested code '" + clsPath +
+            " 'and for testing code '" + tstClsPath + "' are not both given. ");
+        }
+        this.jPath = new JavaPath(clsPath + ":" + tstClsPath);
         readExcludedPackages();
     }
 
@@ -137,9 +160,9 @@ public final class TestCaseClassLoader extends ClassLoader {
 
     /**
      * Returns whether the name with the given name 
-     * is excluded from being loaded. 
+     * is included; else class loading is delegated to the parent class loader 
+     * which is the system class loader. 
      * 
-     *
      * @param name 
      *    the fully qualified name of a class as a <code>String</code>. 
      * @return 
@@ -163,7 +186,14 @@ public final class TestCaseClassLoader extends ClassLoader {
             Class<?> cls = findLoadedClass(name);
             if (cls == null) {
                 // The system class loader is the parent 
-                cls = isIncluded(name) ? findClass(name) : findSystemClass(name);
+                if (isIncluded(name)) {
+                    cls = findClass(name);
+                    if (cls == null) {
+                        cls = findSystemClass(name);
+                    }
+                } else {
+                    cls = findSystemClass(name);
+                }
             }
             if (resolve) {
                 resolveClass(cls);

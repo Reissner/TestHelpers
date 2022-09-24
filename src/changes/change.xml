@@ -16,8 +16,7 @@
   <body>
 <!-- TBD: restore the icons for open, run, stop, break and exit. -->
 <!-- release plan:
-  - eliminate GUI as it is no longer needed
-    doubt this: maybe some time update to JavaFX even 
+  - update GUI: JavaFX 
   - in GUI add a label showing the current version and build time. 
   - add time consumption and memory consumption to the outputs. 
     This shall be done for the leaves of the test tree and also accumulation for the other nodes. 
@@ -33,7 +32,8 @@
   - add history and a bit of user guidance. 
   - make mvn site-deploy functional
   - eliminate warnings, in particular PMD
-  - in eu.simuline.testhelpers.DTestHelper.createPower2() try with return value int instead of double. 
+  - in eu.simuline.testhelpers.DTestHelper.createPower2() 
+    try with return value int instead of double. 
     This unveils weaknesses in L2R, concerning testcases 
     but also concerning overflow of correction and tolerance. 
   - add a mechanism to avoid script and the pom unaligned. 
@@ -44,7 +44,10 @@
   - ClassLoader: avoid excluding classes explicitly from reload. 
     Instead reload all classes from main and from test. 
     The others never. Just delegate. 
-  - ClassLoader: the way this is overwritten seems to be unusual. Correct. 
+  - ClassLoader: if loading of a class to be reloaded fails for some reason, 
+    it is tried to be loaded by the system class loader which is likely to work also. 
+    Then it is not reloaded without any notification. 
+    This sounds very dangerous. 
 -->
 
 <release version="1.2" date="2022-01-01"
