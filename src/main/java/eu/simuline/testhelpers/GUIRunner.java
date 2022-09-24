@@ -358,15 +358,6 @@ class GUIRunner {
 	 * constructors.                                                    *
 	 * ---------------------------------------------------------------- */
 
-	/**
-	 * Creates a new <code>TestTreeCellRenderer</code> instance.
-	 * The user objects of the tree nodes are always testcases. 
-	 * We display essentially the icon 
-	 * attached to {@link TestCase#getQuality}. 
-	 */
-	TestTreeCellRenderer() {
-	    // is empty. 
-	}
 
 	/* ---------------------------------------------------------------- *
 	 * methods.                                                         *
@@ -891,7 +882,7 @@ class GUIRunner {
 				     pathArrNew, 0,
 				     pathArrNew.length);
 		    treePath = new TreePath(pathArrNew);
-		    assert treePath.getLastPathComponent() == pathArr[idx];
+		    assert treePath.getLastPathComponent() == pathArr[idx];// NOPMD
 		    this.hierarchyTree.collapsePath(treePath);
 		}
 	    } // for 
@@ -1042,39 +1033,38 @@ class GUIRunner {
 	    // one path: either selected or deselected 
 	    assert paths.length == 1 || paths.length == 2;
 
-	    for (int i = 0; i < paths.length; i++) {
+			for (TreePath path : paths) {
+				// set singleSelectedNode 
+				if (selEvent.isAddedPath(path)) {
+					// Here, paths[i] has been selected 
+					this.singleSelectedNode =
+							(DefaultMutableTreeNode) path.getLastPathComponent();
+				} else {
+					// Here, paths[i] has been deselected 
+					if (paths.length == 2) {
+						// Here, the other path is selected 
+						// which handles all we need 
+						continue;
+					}
 
-		// set singleSelectedNode 
-		if (selEvent.isAddedPath(paths[i])) {
-		    // Here, paths[i] has been selected 
-		    this.singleSelectedNode = (DefaultMutableTreeNode)
-			paths[i].getLastPathComponent();
-		} else {
-		    // Here, paths[i] has been deselected 
-		    if (paths.length == 2) {
-			// Here, the other path is selected 
-			// which handles all we need 
-			continue;
-		    }
+					// Here, the deselection is the only change 
+					assert paths.length == 1;
+					// treat as if root was selected 
+					// **** this is merely a copy! 
+					this.singleSelectedNode =
+							(DefaultMutableTreeNode) path.getPathComponent(0);
+				}
 
-		    // Here, the deselection is the only change 
-		    assert paths.length == 1;
-		    // treat as if root was selected 
-		    // **** this is merely a copy! 
-		    this.singleSelectedNode = (DefaultMutableTreeNode)
-			paths[i].getPathComponent(0);
-		}
+				setFilter();
 
-		setFilter();
-
-		if (this.singleSelectedNode.isLeaf()) {
-		    TestCase testCase = (TestCase)
-			this.singleSelectedNode.getUserObject();
-		    this.selector.setSelection(testCase.getIdx());
-		} else {
-		    this.selector.clearSelection();
-		}
-	    } // for
+				if (this.singleSelectedNode.isLeaf()) {
+					TestCase testCase =
+							(TestCase) this.singleSelectedNode.getUserObject();
+					this.selector.setSelection(testCase.getIdx());
+				} else {
+					this.selector.clearSelection();
+				}
+			} // for
 	}
 
     } // class HierarchyWrapper 
@@ -1548,14 +1538,6 @@ class GUIRunner {
 	 * constructor.                                                       *
 	 * ------------------------------------------------------------------ */
 
-	/**
-	 * Constructs a special renderer object 
-	 * consisting of a label and a location within java code 
-	 * for an item in a failure list. 
-	 */
-	TestListCellRenderer() {
-	    super();
-	}
 
 	/* ------------------------------------------------------------------ *
 	 * methods.                                                           *
@@ -1727,7 +1709,11 @@ class GUIRunner {
 
 	// maybe remove from failureListMod only 
 	// what is in desc 
+	/**
+	 * TBD: clarify why needed
+	 */
 	void startTestRun() {
+		// TBD: explain why this method is necessary and its body is empty 
 	}
 
 	/**
@@ -2001,8 +1987,8 @@ class GUIRunner {
 	    this.thrw = thrw;
 	    this.thrwMessager.setText(this.thrw.toString());
 	    StackTraceElement[] stack = this.thrw.getStackTrace();
-	    for (int i = 0; i < stack.length; i++) {
-		this.stacktrace.addElement(stack[i].toString());
+	    for (StackTraceElement elem : stack) {
+				this.stacktrace.addElement(elem.toString());
 	    }
 	}
 
