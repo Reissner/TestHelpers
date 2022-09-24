@@ -147,13 +147,14 @@ public final class TestCaseClassLoader extends ClassLoader {
      *    starts with one of the prefixes given by {@link #excluded}. 
      *    In this case the corresponding class is not loaded. 
      */
-    private boolean isExcluded(String name) {
+    private boolean isIncluded(String name) {
         for (int i = 0; i < this.excluded.size(); i++) {
             if (name.startsWith(this.excluded.get(i))) {
-                return true;
+                return false;
             }
         }
-        return false;
+        //new JavaPath(System.getProperty(GUIRunner.CHOOSE_CLASSPATH, null)+":"))
+        return true;
     }
 
     public synchronized Class<?> loadClass(String name, boolean resolve)
@@ -162,7 +163,7 @@ public final class TestCaseClassLoader extends ClassLoader {
             Class<?> cls = findLoadedClass(name);
             if (cls == null) {
                 // The system class loader is the parent 
-                cls = isExcluded(name) ? findSystemClass(name) : findClass(name);
+                cls = isIncluded(name) ? findClass(name) : findSystemClass(name);
             }
             if (resolve) {
                 resolveClass(cls);
