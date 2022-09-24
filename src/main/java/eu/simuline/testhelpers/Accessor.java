@@ -375,14 +375,14 @@ public final class Accessor<T> {
 	do {
 	    // look for the specified field in candClass. 
 	    cands = candClass.getDeclaredFields();
-	    for (int i = 0; i < cands.length; i++) {
-		if (cands[i].getName().equals(fieldName)) {
-		    cands[i].setAccessible(true);
+	    for (Field aField : cands) {
+		if (aField.getName().equals(fieldName)) {
+		    aField.setAccessible(true);// NOPMD
 		    // Here, aField is not null 
 		    // (if no field: Exception thrown). 
 
 		    if (shouldBeStatic != 
-			Modifier.isStatic(cands[i].getModifiers())) {
+			Modifier.isStatic(aField.getModifiers())) {
 			throw new IllegalArgumentException
 			    ("The specified field '" + fieldName + 
 			     "' should " + 
@@ -390,7 +390,7 @@ public final class Accessor<T> {
 			     "be static. ");
 		    }
 
-		    return cands[i];
+		    return aField;
 		}
 	    }
 	    // Here, no such field is found. 
@@ -965,7 +965,7 @@ public final class Accessor<T> {
 	    if (Modifier.isAbstract(toBeInvoked.getModifiers())) {
 		return null;
 	    }
-	    toBeInvoked.setAccessible(true);
+	    toBeInvoked.setAccessible(true);// NOPMD
 	    return toBeInvoked; // NOPMD 
 	}
 	// Here, the desired method is not found. 
@@ -1132,7 +1132,7 @@ public final class Accessor<T> {
 		("Constructor " + aClass.getName() + 
 		 paramsToString(paramCls) + STR_DNE);
 	}
-	toBeInvoked.setAccessible(true);
+	toBeInvoked.setAccessible(true);// NOPMD
 	return create(toBeInvoked, parameters);
     }
 
@@ -1293,8 +1293,8 @@ public final class Accessor<T> {
 	// "null" means that no method or constructor has been found so far. 
 	Method result = null;
 
-	for (int i = 0; i < cands.length; i++) {
-	    if (!methodMatches(cands[i], methodName, parameters)) {
+	for (Method aMethod : cands) {
+	    if (!methodMatches(aMethod, methodName, parameters)) {
 		continue;
 	    }
 
@@ -1304,14 +1304,14 @@ public final class Accessor<T> {
 		    ("Method " + aClass.getName() + "." + methodName + 
 		     paramsToString(getParamCls(parameters)) + 
 		     " is not unique: cannot distinguish " + result + 
-		     " from " + cands[i] + ". ");
+		     " from " + aMethod + ". ");
 	    }
-	    // cands[i] is the first method that matches. 
-	    result = cands[i];
+	    // aMethod is the first method that matches. 
+	    result = aMethod;
 	} // for all cands 
 
 	if (result != null) {
-	    result.setAccessible(true);
+	    result.setAccessible(true);// NOPMD
 	}
 	return result;
     }
@@ -1343,8 +1343,8 @@ public final class Accessor<T> {
 	// "null" means that no method or constructor has been found so far. 
 	Constructor<T> result = null;
 
-	for (int i = 0; i < cands.length; i++) {
-	    if (!constructorMatches(cands[i], parameters)) {
+	for (Constructor<?> aConstr : cands) {
+	    if (!constructorMatches(aConstr, parameters)) {
 		continue;
 	    }
 
