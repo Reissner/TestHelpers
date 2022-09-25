@@ -1994,43 +1994,50 @@ class GUIRunner {
 	    }
 	}
 
-	/**
-	 * If an entry is selected, move with {@link #editor} to the according place. 
-	 */
-	// api-docs inherited from ListSelectionListener 
-	public void valueChanged(ListSelectionEvent lse) {
+		/**
+		 * If an entry is selected, move with {@link #editor} to the according place. 
+		 */
+		// api-docs inherited from ListSelectionListener 
+		public void valueChanged(ListSelectionEvent lse) {
 	    // ***Here, the stacktrace cannot be empty. *** not right. 
 	    int selIndex = this.stackElemSelection.getMinSelectionIndex();
 	    if (selIndex == -1) {
-		// this can come only from invoking clear. 
-		// *** not ok because event is fired although nothing happened 
-		//assert this.stacktrace.getSize() == 0;
-		return;
+			// this can come only from invoking clear. 
+			// *** not ok because event is fired although nothing happened 
+			//assert this.stacktrace.getSize() == 0;
+				return;
 	    }
 
 	    StackTraceElement location = this.thrw.getStackTrace()[selIndex];
 	    System.out.println("location: " + location);
 	    JavaPath jPath = new JavaPath(System.getProperty(SOURCEPATH));
-	    File toBeLoaded = jPath.getFile(location.getClassName(),
-					    JavaPath.ClsSrc.Source);
-	    if (toBeLoaded == null) {
-		return;
-	    }
+			File toBeLoaded = null;
+			try {
+	    	toBeLoaded = jPath.getFile(location.getClassName(),
+																		    JavaPath.ClsSrc.Source);
+	    	if (toBeLoaded == null) {
+					return;
+	    	}
+			} catch(IOException ioe) {
+				System.out.println("Could not load source for class '"
+													+ location.getClassName() + "'. ");
+			}
+			assert toBeLoaded != null;
 
 	    // move with the given editor to the selected position 
 	    try {
 				String[] cmdLine = this.editor.invocation(toBeLoaded.getPath(), 
 					location.getLineNumber());
-		Runtime.getRuntime().exec(cmdLine,
+				Runtime.getRuntime().exec(cmdLine,
 		    // environment variables and working directory 
 		    // inherited from the current process 
 		    null, null);
 	    } catch (IOException ioe) {
-		System.err.println("Failed to invoke " + this.editor + ". ");
-		ioe.printStackTrace();
+				System.err.println("Failed to invoke " + this.editor + ". ");
+				ioe.printStackTrace();
 	    }
-	}
-    } // class StackTraceLister 
+		}
+  } // class StackTraceLister 
 
     /**
      * A listener to the switching of a tab in the foreground; 

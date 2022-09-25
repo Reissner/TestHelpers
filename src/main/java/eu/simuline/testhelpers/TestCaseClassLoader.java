@@ -29,7 +29,6 @@ import java.util.Enumeration;
 
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 
 import java.net.URL;
@@ -223,8 +222,6 @@ public final class TestCaseClassLoader extends ClassLoader {
      */
     private byte[] loadClassData(String className)
             throws ClassNotFoundException {
-        File classFile = this.jPath.getFile(className);
-        System.out.println("class file: " + classFile);
         try (InputStream inStream = this.jPath.getInputStream(className);
             ByteArrayOutputStream outStream =
                     new ByteArrayOutputStream(LEN_CLS_STREAM)) {
