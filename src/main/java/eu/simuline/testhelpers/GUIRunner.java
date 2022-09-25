@@ -352,26 +352,26 @@ class GUIRunner {
      * To render a cell of the hierarchy tree. 
      * The icon represents the state of the {@link TestCase}. 
      */
-    static class TestTreeCellRenderer extends DefaultTreeCellRenderer {
+  static class TestTreeCellRenderer extends DefaultTreeCellRenderer {
 
-	private static final long serialVersionUID = -2479143000061671589L;
+		private static final long serialVersionUID = -2479143000061671589L;
 
-	/* ---------------------------------------------------------------- *
-	 * constructors.                                                    *
-	 * ---------------------------------------------------------------- */
+		/* ---------------------------------------------------------------- *
+		 * constructors.                                                    *
+		 * ---------------------------------------------------------------- */
 
 
-	/* ---------------------------------------------------------------- *
-	 * methods.                                                         *
-	 * ---------------------------------------------------------------- */
+		/* ---------------------------------------------------------------- *
+		 * methods.                                                         *
+		 * ---------------------------------------------------------------- */
 
-	/**
-	 * Renders the <code>value</code> interpreting it as Node 
-	 * the user object of which is a {@link TestCase}. 
-	 * Rendering is by setting the icon 
-	 * associated with the state of the @link TestCase}. 
-	 */
-	public Component getTreeCellRendererComponent(JTree tree, 
+		/**
+		 * Renders the <code>value</code> interpreting it as Node 
+		 * the user object of which is a {@link TestCase}. 
+		 * Rendering is by setting the icon 
+		 * associated with the state of the @link TestCase}. 
+		 */
+		public Component getTreeCellRendererComponent(JTree tree,
 						      Object value,
 						      boolean sel, 
 						      boolean expanded, 
@@ -383,8 +383,8 @@ class GUIRunner {
 	    TestCase userObj = (TestCase) node.getUserObject();
 	    assert userObj != null;
 	    if (userObj.getQuality() != null) {
-		// node is a leaf 
-		setLeafIcon(userObj.getQuality().getIcon());
+				// node is a leaf 
+				setLeafIcon(userObj.getQuality().getIcon());
 	    }
 
 	    return super.getTreeCellRendererComponent(tree, 
@@ -394,8 +394,8 @@ class GUIRunner {
 						      leaf, 
 						      row, 
 						      hasFocus);
-	}
-    } // class TestTreeCellRenderer 
+		}
+  } // class TestTreeCellRenderer 
 
     /**
      * Minimal interface for notifying about singular selection events. 
