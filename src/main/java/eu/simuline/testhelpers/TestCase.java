@@ -538,7 +538,8 @@ class TestCase {
 
     /**
      * Returns the string representation of {@link #desc} for suites 
-     * and a representation including {@link #qual} for singular tests. 
+     * and a representation 
+     * including {@link #qual} and {@link #time} for singular tests. 
      */
     public String toString() {
 	// StringBuilder res = new StringBuilder();
@@ -562,9 +563,29 @@ class TestCase {
 
 
 	assert isTest() == (this.qual != null);
-	return isTest() 
-	    ? this.qual + ": " + this.desc.toString()
-	:                        this.desc.toString();
+    // U231b: not yet started 
+    // U23F3: running
+    // rest: finished and so has an elapsed time. 
+    if (!isTest()) {
+        return this.desc.toString();
+    }
+    String timeStr = null;
+    switch (this.qual.lifePhase()) {
+        case 0:
+            timeStr = "\u231b";
+            break;
+        case 1:
+            timeStr = "\u23f3";
+            break;
+        case 2:
+            timeStr = this.time + "ms";
+            break;
+        default:
+            throw new IllegalStateException
+                ("Found unknown lifePhase " + this.qual.lifePhase() + ". ");
+    }
+    assert timeStr != null;
+    return this.qual + " " + timeStr + ": " + this.desc.toString();
     }
 
 } // class TestCase 
