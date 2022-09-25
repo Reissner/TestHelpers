@@ -113,13 +113,6 @@ public final class TestCaseClassLoader extends ClassLoader {
      */
     private List<String> excluded;
 
-    /** 
-     * Default excluded paths. 
-     * @see #isIncluded
-     */
-    private final String[] defaultExclusions =
-            {"junit.", "org.", "java.", "javax.", "com.", "sun."};
-
     /* -------------------------------------------------------------------- *
      * constructor. *
      * -------------------------------------------------------------------- */
@@ -316,18 +309,15 @@ public final class TestCaseClassLoader extends ClassLoader {
     }
 
     /**
-     * Initializes {@link #excluded} using {@link #defaultExclusions}, 
+     * Initializes {@link #excluded} using 
      * {@link #PROP_KEY_NO_CLS_RELOAD} and {@link #EXCLUDED_FILE}. 
      * <ol>
      * <li>
-     * First the entries of {@link #defaultExclusions} 
-     * are added to {@link #excluded}. 
-     * <li>
-     * Then {@link #PROP_KEY_NO_CLS_RELOAD} is interpreted 
+     * First {@link #PROP_KEY_NO_CLS_RELOAD} is interpreted 
      * as a ":"-seprated list of entries 
      * each of which is added to {@link #excluded}. 
      * <li>
-     * Finally, {@link #EXCLUDED_FILE} is interpreted as filename 
+     * Then, {@link #EXCLUDED_FILE} is interpreted as filename 
      * and the file is interpreted as Properties File with property keys 
      * starting with <code>excluded.</code>; 
      * all the other properties are ignored. 
@@ -339,10 +329,6 @@ public final class TestCaseClassLoader extends ClassLoader {
     @SuppressWarnings("PMD.NPathComplexity")
     private void readExcludedPackages() {
         this.excluded = new ArrayList<String>();
-        for (int i = 0; i < this.defaultExclusions.length; i++) {
-            this.excluded.add(defaultExclusions[i]);
-        }
-        Properties prop;
 
         String excludesPathProp = System.getProperty(PROP_KEY_NO_CLS_RELOAD);
         if (excludesPathProp != null) {
@@ -352,7 +338,9 @@ public final class TestCaseClassLoader extends ClassLoader {
             }
         }
 
-        System.out.println("URL of excluded-file: " + getClass().getResource(EXCLUDED_FILE));
+        System.out.println("URL of excluded-file: "
+            + getClass().getResource(EXCLUDED_FILE));
+        Properties prop;
         try (InputStream inStream =
                 getClass().getResourceAsStream(EXCLUDED_FILE)) {
             if (inStream == null) {
@@ -378,7 +366,8 @@ public final class TestCaseClassLoader extends ClassLoader {
                 } // if 
             } // for 
         } catch (IOException e) {
-            throw new RuntimeException("Could not read excludes from file. ", e);
+            throw new RuntimeException
+                ("Could not read excludes from file. ", e);
         }
     } // readExcludedPackages() 
 }
