@@ -44,16 +44,15 @@ import java.net.URL;
  * The class loader can be configured with a list of package paths 
  * that should be excluded from loading and delegated to the system class loader also. 
  * <p>
- * The list of excluded package paths 
- * is either hardcoded in {@link #defaultExclusions}, 
- * specified as property with key {@link #PROP_KEY_NO_CLS_RELOAD}. 
+ * Excluded package paths 
+ * can be specified as property with key {@link #PROP_KEY_NO_CLS_RELOAD} and
  * in a properties file {@link #EXCLUDED_FILE} 
  * that is located in the same place as the TestCaseClassLoader class.
  * <p>
  * <b>Known limitation:</b> 
  * <ul>
  * <li>
- * the TestCaseClassLoader cannot load classes from jar files. 
+ * the TestCaseClassLoader cannot load classes from jar files. TBD: clarify whether this is true. 
  * <li>
  * service providers must be excluded from reloading. 
  * </ul>
@@ -71,9 +70,11 @@ public final class TestCaseClassLoader extends ClassLoader {
       * Key of a property containing the classes to be tested. 
       * This does not include the testclasses performing the tests. 
       * The latter are from {@link GUIRunner#CHOOSE_CLASSPATH}. 
-      * Together they point to the classes to be reloaded by this class loader. 
+      * Together, 
+      * they point to the classes to be reloaded by this class loader. 
       */
-    private static final String PROP_KEY_TB_TESTED_CLSPATH = "tbTestedClasspath";
+    private static final String PROP_KEY_TB_TESTED_CLSPATH = 
+        "tbTestedClasspath";
 
     /**
      * Key of system property 
@@ -126,7 +127,8 @@ public final class TestCaseClassLoader extends ClassLoader {
     /**
      * Constructs a TestCaseLoader with the system class loader as its parent. 
      * It loads the classes given by {@link #PROP_KEY_TB_TESTED_CLSPATH} 
-     * and in {@link GUIRunner#CHOOSE_CLASSPATH}, except if excluded explicitly ***; 
+     * and in {@link GUIRunner#CHOOSE_CLASSPATH}, 
+     * except if excluded explicitly (see {@link #readExcludedPackages()}); 
      * the rest is delegated to be loaded by the according system class loader. 
      * 
      * @throws IllegalArgumentException
@@ -139,7 +141,8 @@ public final class TestCaseClassLoader extends ClassLoader {
         if (clsPath == null || tstClsPath == null) {
             throw new IllegalArgumentException
             ("Classpaths for tested code '" + clsPath +
-            " 'and for testing code '" + tstClsPath + "' are not both given. ");
+            " 'and for testing code '" + tstClsPath +
+            "' are not both given. ");
         }
         this.jPath = new JavaPath(clsPath + ":" + tstClsPath);
         readExcludedPackages();
@@ -158,8 +161,8 @@ public final class TestCaseClassLoader extends ClassLoader {
     }
 
     /**
-     * Returns whether the name with the given name 
-     * is included; else class loading is delegated to the parent class loader 
+     * Returns whether the name with the given name is included; 
+     * else class loading is delegated to the parent class loader 
      * which is the system class loader. 
      * 
      * @param name 
@@ -175,10 +178,60 @@ public final class TestCaseClassLoader extends ClassLoader {
                 return false;
             }
         }
-        //new JavaPath(System.getProperty(GUIRunner.CHOOSE_CLASSPATH, null)+":"))
         return true;
     }
 
+    /**
+     * Loads a class with the specified binary name <code>name</code> 
+     * as usual for {@link ClassLoader#loadClass(String, boolean)} 
+     * and resolve if specified so. 
+     * Internal loading is reserved to classes 
+     * which should be reloaded after modification. 
+     * These are the classes to be tested and those performing the tests. 
+     * Since all classes are loadable by the system class loader 
+     * (because tests ares started from the main method of the testing classes), 
+     * the loading strategy must be trying to load internally 
+     * <em>before</em> delegating to the parent class loader 
+     * which is the system class loader. 
+     * <p>
+     * While loading internally by accident is not so problematic, 
+     * unintended delegation is quite error prone, 
+     * because then silently the classes are not reloaded although expected. 
+     * Thus an exception must be thrown for reloadable classes if internal loading fails 
+     * due to an IO issue, preventing delegation which would maybe succeed. 
+     * As a consequence, 
+     * meaning of the exception is a bit special but conform with the spec. 
+     * 
+     * @param name
+     *   The binary name of the class
+     * @param resolve
+     *   whether to resolve the class
+     * @return
+     *   the class with the given name, 
+     *   internally loaded if to be reloaded each run; 
+     *   else by the parent classloader. 
+     * @throws ClassNotFoundException
+     *   If either internal loading did not work because of some IO issues 
+     *   or caused by the system class loader. 
+     *   Note that if during searching the class an IO exception is thrown, 
+     *   this results in a ClassNotFoundException 
+     *   even if the system class loader would find that class. 
+     *   It means that there is a risk that the class is not found at proper place. 
+     *   That way it is avoided that a tested class or a testing class 
+     *   is erroneously loaded by the system classloader 
+     *   and is thus <em>silently</em> not reloaded 
+     *   when modifying and recompiling that class. 
+     *   This would be a dangerous situation. 
+     *   <p>
+     *   If in contrast the class to be loaded 
+     *   is not found among the classes to be tested and testing, 
+     *   although the paths are searched completely 
+     *   without throwing an exception, 
+     *   then this ensures that the class is not to be reloaded 
+     *   and so delegating to the system classloader is not dangerous. 
+     *   Still then an exception could be thrown 
+     *   but then it comes from the system classloader. 
+     */
     public synchronized Class<?> loadClass(String name, boolean resolve)
         throws ClassNotFoundException {
         synchronized (getClassLoadingLock(name)) {
@@ -186,12 +239,15 @@ public final class TestCaseClassLoader extends ClassLoader {
             if (cls == null) {
                 // The system class loader is the parent 
                 if (isIncluded(name)) {
+                    // may throw ClassNotFoundException
                     cls = findClass(name);
                     if (cls == null) {
+                        // may throw ClassNotFoundException
                         cls = findSystemClass(name);
                     }
                 } else {
-                    cls = findSystemClass(name);
+                   // may throw ClassNotFoundException
+                   cls = findSystemClass(name);
                 }
             }
             if (resolve) {
@@ -201,24 +257,43 @@ public final class TestCaseClassLoader extends ClassLoader {
         } // end synchronized 
     }
 
+    /**
+     * Finds the given class if possible. 
+     * 
+     * @param name
+     *   the name of the class. 
+     * @return
+     *   If the class is not at the locations given by this constructor, 
+     *   returns <code>null</code>, else the class as returned by 
+     *   {@link ClassLoader#defineClass(String, byte[], int, int)}. 
+     * @throws ClassNotFoundException
+     *   if while searching the class, a file is not readable. 
+     *   This need not be a file containing the class actually searched for. 
+     */
     protected Class<?> findClass(String name) throws ClassNotFoundException {
+        // may throw ClassNotFoundException
         byte[] clsData = loadClassData(name);
         if (clsData == null) {
             return null;
         }
+        // may throw ClassFormatError, but unchecked 
         return defineClass(name, clsData, 0, clsData.length);
     }
 
     /**
-     * Returns the class given by <code>className</code> as a byte array, if possible. 
+     * Returns the class given by <code>className</code> as a byte array, 
+     * if possible. 
+     * If not found returns <code>null</code>; 
+     * if not readable throws an exception. 
      * 
      * @param className
-     *    The name of the class to be loaded. 
+     *   The name of the class to be loaded. 
      * @return
-     *    The class description as a byte array. 
+     *   The class description as a byte array 
+     *   or <code>null</code> if not found. 
      * @throws ClassNotFoundException
-     *    if the class could not be loaded, either: 
-     *    not found according file or not readable. 
+     *   if while searching the class, a file is not readable. 
+     *   This need not be a file containing the class actually searched for. 
      */
     private byte[] loadClassData(String className)
             throws ClassNotFoundException {

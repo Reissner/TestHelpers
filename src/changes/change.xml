@@ -31,7 +31,6 @@
     emacs: after-save-hook
   - add history and a bit of user guidance. 
   - make mvn site-deploy functional
-  - eliminate warnings, in particular PMD
   - in eu.simuline.testhelpers.DTestHelper.createPower2() 
     try with return value int instead of double. 
     This unveils weaknesses in L2R, concerning testcases 
@@ -41,13 +40,6 @@
     or avoid the script altogether.
     A suggestion to implement would be to have a plugin. 
     Either the plugin writes the script or it fires the GUI itself. 
-  - ClassLoader: avoid excluding classes explicitly from reload. 
-    Instead reload all classes from main and from test. 
-    The others never. Just delegate. 
-  - ClassLoader: if loading of a class to be reloaded fails for some reason, 
-    it is tried to be loaded by the system class loader which is likely to work also. 
-    Then it is not reloaded without any notification. 
-    This sounds very dangerous. 
 -->
 
 <release version="1.2" date="2022-01-01"
