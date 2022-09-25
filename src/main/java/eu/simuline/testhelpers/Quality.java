@@ -98,7 +98,7 @@ enum Quality {
      * @see #Started
      * @see #Ignored
      */
-    Scheduled(0) {
+    Scheduled(0, 0) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.sun.gtk.File.class);
 	}
@@ -126,7 +126,7 @@ enum Quality {
      * Thus it is neither clear whether the execution succeeds 
      * nor the outcoming of the test. 
      */
-    Started(0) {
+    Started(0, 1) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.junit.New.class);
 	}
@@ -165,7 +165,7 @@ enum Quality {
      * The execution of the testcase finished and the test succeeded (passed): 
      * All assertions hold and no throwable has been thrown. 
      */
-    Success(0) {
+    Success(0, 2) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.junit.Ok.class);
 	}
@@ -182,7 +182,7 @@ enum Quality {
      * before maybe running into further exceptions or errors 
      * and is thus invalidated. 
      */
-    Invalidated(1) {
+    Invalidated(1, 2) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(AssumptionFailure.class);
 	}
@@ -195,7 +195,7 @@ enum Quality {
      * but then decided not to start execution. 
      * In particular, nothing can be said about the course of the test run. 
      */
-    Ignored(1) {
+    Ignored(1, 2) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.junit.Ignored.class);
 	}
@@ -217,7 +217,7 @@ enum Quality {
      * indicated by an {@link AssertionFailedError}. 
      * This excludes further throwables. 
      */
-    Failure(2) {
+    Failure(2, 2) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.junit.Failure.class);
 	}
@@ -231,7 +231,7 @@ enum Quality {
      * other than {@link AssertionFailedError}. 
      * Thus there is no valid test result. 
      */
-    Error(2) {
+    Error(2, 2) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.junit.Error.class);
 	}
@@ -250,16 +250,28 @@ enum Quality {
      * <ul>
      * <li><code>2</code> if something went wrong: 
      *     {@link #Error} or {@link #Failure}.  
-     * <li><code>1</code> if something was ignored 
+     * <li><code>1</code> if something was ignored or invalidated 
+     *     (not clear whether the test really would have had a real error)
      *     {@link #Ignored} or {@link #Invalidated}. 
      * <li><code>0</code> else: 
      *     {@link #Scheduled}, {@link #Started} or {@link #Success}. 
+     *     The outcoming is open or successful so no worries yet. 
      * </ul>
      * This is used to define the color of the progress bar. 
      *
      * @see #max(Quality)
      */
-    private int level;
+    private int level;// TBD: replace by enum. Also with max. 
+
+    /**
+     * Encoding how far the testcase is proceeded; 
+     * <ul>
+     * <li> <code>0</code> scheduled (not even started)
+     * <li> <code>1</code> started (but not finished in any way)
+     * <li> <code>2</code> finished, either successfully, 
+     * </ul>
+     */
+    private int lifePhase;
 
     /* -------------------------------------------------------------------- *
      * constructors.                                                        *
@@ -268,8 +280,9 @@ enum Quality {
     /**
      * Creates another Quality with the given level {@link #level}. 
      */
-    Quality(int level) {
+    Quality(int level, int lifePhase) {
 	this.level = level;
+    this.lifePhase = lifePhase;
     }
 
  
@@ -371,7 +384,7 @@ enum Quality {
     }
 
     /**
-     * Returns  the next phase 
+     * Returns the next phase 
      * when {@link RunListener#testFailure(Failure)} is invoked. 
      *
      * @param thrw
@@ -424,7 +437,18 @@ enum Quality {
      * @see GUIRunner.TestProgressBar#noteReportResult(TestCase)
      */
     Quality max(Quality other) {
-	return (this.level > other.level) ? this : other;
+	    return (this.level > other.level) ? this : other;// NOPMD
+    }
+
+    /**
+     * Returns the life phase representing completeness: 
+     * not yet started, running, finished in any form. 
+     * 
+     * @return
+     *   the life phase according to {@link #lifePhase}. 
+     */
+    int lifePhase() {
+        return this.lifePhase;
     }
 
     /**
@@ -477,7 +501,7 @@ enum Quality {
      *    </ul>
      */
     long setTime(long time) {
-	return System.currentTimeMillis() - time;
+	    return System.currentTimeMillis() - time;
     }
 
 
@@ -513,6 +537,16 @@ enum Quality {
      */
     boolean isNeutral() {
 	return this.level == 0;
+    }
+
+    /**
+     * Whether this testcase completed in any way. 
+     * 
+     * @return
+     *   completeness according to {@link #lifePhase}. 
+     */
+    boolean isCompleted() {
+        return this.lifePhase == 2;
     }
 
     /**
