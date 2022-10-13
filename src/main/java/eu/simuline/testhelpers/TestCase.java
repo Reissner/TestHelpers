@@ -111,25 +111,6 @@ class TestCase {
      */
     private Failure failure;
 
-    // must be negative and different 
-    private static final long TIME_SUITE = -3;
-    // must be negative and different 
-    static final long TIME_SCHEDULED = -1;
-
-    /**
-     * If this testcase is a single testcase which has been finished, 
-     * this is the span of time required to run this test. 
-     * For single ignored tests, this is <code>0</code> 
-     * and in the other cases, the value is negative. 
-     * If this testcase is a suite, the result is {@link #TIME_SUITE}; 
-     * otherwise if scheduled it is {@link #TIME_SCHEDULED}, 
-     * both negative. 
-     *
-     * @see Quality#setTime(long)
-     */
-    // **** really needed? **** 
-    private long time;
-
     /* -------------------------------------------------------------------- *
      * constructor. *
      * -------------------------------------------------------------------- */
@@ -176,10 +157,6 @@ class TestCase {
             this.qual = Quality.Scheduled;
             this.failure = null;
             assert this.qual.hasFailure() == (this.failure != null);
-            // For Quality.Scheduled, the result of setTime 
-            // is always TIME_SCHEDULED
-            // this.time = this.qual.setTime(this.time);
-            this.time = TIME_SCHEDULED;
         } else {
             this.children = new ArrayList<TestCase>();
             for (Description descChild : desc.getChildren()) {
@@ -189,7 +166,6 @@ class TestCase {
             this.idxTest = -1;
             this.qual = null;
             this.failure = null;
-            this.time = TIME_SUITE;
         }
     }
 
@@ -363,8 +339,6 @@ class TestCase {
             this.qual = this.qual.setScheduled();
             this.failure = null;
             assert this.qual.hasFailure() == (this.failure != null);
-            this.time = TIME_SCHEDULED;//this.qual.setTime(this.time);
-
             return;
         }
         // Here, this is a suite 
@@ -404,7 +378,6 @@ class TestCase {
                 // throws IllegalStateException for this.qual == Started 
                 this.qual = this.qual.setStarted();
                 assert Benchmarker.isStarted();
-                this.time = this.qual.setTime(this.time);
                 break;
             case Ignored:
                 // throws IllegalStateException for this.qual != Scheduled 
@@ -466,7 +439,6 @@ class TestCase {
         this.qual = this.qual.setFailure(thrw);
         assert !Benchmarker.isStarted();
         this.time2 = Benchmarker.getTimeMs();
-        this.time = this.qual.setTime(this.time);
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
         // deferred to setFinished() 
@@ -511,7 +483,6 @@ class TestCase {
         this.qual = this.qual.setAssumptionFailure();
         assert Benchmarker.isStarted();
         this.time2 = Benchmarker.getTimeMs();
-        this.time = this.qual.setTime(this.time);
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
         // deferred to setFinished() 
@@ -545,7 +516,6 @@ class TestCase {
         // does not change anything if there has been a failure. 
         this.qual = this.qual.setFinished();
         this.time2 = Benchmarker.getTimeMs();
-        this.time = this.qual.setTime(this.time);
         assert this.qual.hasFailure() == (this.failure != null);
     }
 
@@ -579,9 +549,8 @@ class TestCase {
         if (!isTest()) {
             return this.desc.toString();
         }
-        System.out.println(" time benchmarker: " + this.time2
-                + " time internal: " + this.time);
-        String timeStr = this.qual.lifePhase().timeString(this.time);
+        System.out.println(" time benchmarker: " + this.time2);
+        String timeStr = this.qual.lifePhase().timeString(this.time2);
         return this.qual + " " + timeStr + ": " + this.desc.toString();
     }
 

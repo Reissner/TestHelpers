@@ -128,10 +128,6 @@ enum Quality {
         String getMessage() {
             return "Scheduled";
         }
-
-        long setTime(long time) {
-            return TestCase.TIME_SCHEDULED;
-        }
     },
 
     /**
@@ -167,10 +163,6 @@ enum Quality {
 
         String getMessage() {
             return "started";
-        }
-
-        long setTime(long time) {
-            return System.currentTimeMillis();
         }
 
         Quality setAssumptionFailure() {
@@ -230,10 +222,6 @@ enum Quality {
     Ignored(Deficiency.Indifferent, Phase.Incomplete) {
         ImageIcon getIcon() {
             return GifResource.getIcon(eu.simuline.junit.Ignored.class);
-        }
-
-        long setTime(long time) {
-            return 0;
         }
 
         Quality setFinished() {
@@ -630,35 +618,6 @@ enum Quality {
     Color getColor() {
         return this.deficiency.getColor();
     }
-
-    /**
-     * Returns the difference of the current time in milliseconds. 
-     *
-     * @param time
-     *    some time in milliseconds. 
-     *    The details depend on this: 
-     *    <ul>
-     *    <li>{@link #Scheduled}, {@link #Ignored} and {@link #Started} 
-     *        ignore that parameter. 
-     *    <li>{@link #Failure},  {@link #Invalidated}, {@link #Error} and 
-     *        {@link #Success} interprete <code>time</code> 
-     *        as the start time of the underlying testcase. 
-     *    </ul>
-     * @return
-     *    <ul>
-     *    <li><code>-1</code> for {@link #Scheduled}. 
-     *    <li><code>-0</code> for {@link #Ignored}. 
-     *    <li>The current time {@link System#currentTimeMillis()} 
-     *        for {@link #Started}. 
-     *    <li>the span of time the underlying testcase took 
-     *        from start to finish 
-     *    </ul>
-     */
-    long setTime(long time) {
-        return System.currentTimeMillis() - time;
-    }
-
-
 
     // /**
     //  * Whether the run of the underlying testcase stopped irregularly. 
