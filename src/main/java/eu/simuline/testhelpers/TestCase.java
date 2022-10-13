@@ -3,8 +3,8 @@ package eu.simuline.testhelpers;
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunNotifier; //; for javadoc only 
-//import eu.simuline.util.Benchmarker;
+import org.junit.runner.notification.RunNotifier; // ; for javadoc only
+// import eu.simuline.util.Benchmarker;
 import junit.framework.AssertionFailedError; // NOPMD
 
 import java.util.List;
@@ -59,7 +59,7 @@ import java.util.ArrayList;
 class TestCase {
 
     /* -------------------------------------------------------------------- *
-     * fields.                                                              *
+     * fields. *
      * -------------------------------------------------------------------- */
 
     /**
@@ -129,7 +129,7 @@ class TestCase {
     private long time;
 
     /* -------------------------------------------------------------------- *
-     * constructor.                                                         *
+     * constructor. *
      * -------------------------------------------------------------------- */
 
     /**
@@ -146,7 +146,7 @@ class TestCase {
      *    This may be singular or a test suite. 
      */
     TestCase(Description desc) {
-	this(desc, 0);
+        this(desc, 0);
     }
 
     /**
@@ -166,34 +166,34 @@ class TestCase {
      *    To create the root of 
      */
     private TestCase(Description desc, int idxTest) {
-	this.desc = desc;
+        this.desc = desc;
 
-	if (desc.isTest()) {
-	    this.children = null;
-	    this.idxTest = idxTest;
-	    this.qual = Quality.Scheduled;
-	    this.failure = null;
-	    assert this.qual.hasFailure() == (this.failure != null);
-	    // For Quality.Scheduled, the result of setTime 
-	    // is always TIME_SCHEDULED
-	    // this.time = this.qual.setTime(this.time);
-	    this.time = TIME_SCHEDULED;
-	} else {
-	    this.children = new ArrayList<TestCase>();
-	    for (Description descChild : desc.getChildren()) {
-		this.children.add(new TestCase(descChild, idxTest));
-		idxTest += descChild.testCount();
-	    }
-	    this.idxTest = -1;
-	    this.qual    = null;
-	    this.failure = null;
-	    this.time    = TIME_SUITE;
-	}
+        if (desc.isTest()) {
+            this.children = null;
+            this.idxTest = idxTest;
+            this.qual = Quality.Scheduled;
+            this.failure = null;
+            assert this.qual.hasFailure() == (this.failure != null);
+            // For Quality.Scheduled, the result of setTime 
+            // is always TIME_SCHEDULED
+            // this.time = this.qual.setTime(this.time);
+            this.time = TIME_SCHEDULED;
+        } else {
+            this.children = new ArrayList<TestCase>();
+            for (Description descChild : desc.getChildren()) {
+                this.children.add(new TestCase(descChild, idxTest));
+                idxTest += descChild.testCount();
+            }
+            this.idxTest = -1;
+            this.qual = null;
+            this.failure = null;
+            this.time = TIME_SUITE;
+        }
     }
 
 
     /* -------------------------------------------------------------------- *
-     * methods.                                                             *
+     * methods. *
      * -------------------------------------------------------------------- */
 
 
@@ -204,8 +204,8 @@ class TestCase {
      * @return
      *    {@link #desc}. 
      */
-     Description getDesc() {
-    	return this.desc;
+    Description getDesc() {
+        return this.desc;
     }
 
     /**
@@ -218,7 +218,7 @@ class TestCase {
      * @see Description#isTest()
      */
     boolean isTest() {
-	return this.desc.isTest();
+        return this.desc.isTest();
     }
 
     /**
@@ -232,7 +232,7 @@ class TestCase {
      * @see Description#testCount()
      */
     int testCount() {
-	return this.desc.testCount();
+        return this.desc.testCount();
     }
 
     /**
@@ -246,7 +246,7 @@ class TestCase {
      *    </ul>
      */
     List<TestCase> getChildren() {
-	return this.children;
+        return this.children;
     }
 
     /**
@@ -256,7 +256,7 @@ class TestCase {
      *    {@link #idxTest}
      */
     int getIdx() {
-	return this.idxTest;
+        return this.idxTest;
     }
 
     /**
@@ -266,7 +266,7 @@ class TestCase {
      *    {@link #qual}
      */
     Quality getQuality() {
-	return this.qual;
+        return this.qual;
     }
 
     /**
@@ -281,9 +281,9 @@ class TestCase {
      * @see #getThrown()
      */
     boolean hasFailed() {
-	assert isTest();
-	assert this.qual.hasFailure() == (getThrown() != null);
-	return getThrown() != null;
+        assert isTest();
+        assert this.qual.hasFailure() == (getThrown() != null);
+        return getThrown() != null;
     }
 
     /**
@@ -301,24 +301,26 @@ class TestCase {
      * @see Failure#getException()
      */
     Throwable getThrown() {
-	assert this.qual.hasFailure() == (this.failure != null);
- 	return this.failure == null ? null : this.failure.getException();
+        assert this.qual.hasFailure() == (this.failure != null);
+        return this.failure == null ? null : this.failure.getException();
     }
 
     // **** nowhere needed. 
     /*
-     * If this testcase is a single testcase which has been finished, 
-     * this is the span of time required to run this test. 
-     * For single ignored tests, this is <code>0</code> 
-     * and in the other cases, the value is negative. 
-     * If this testcase is a suite, the result is <code>{@link #TIME_SUITE}=-3</code>. 
+     * If this testcase is a single testcase which has been finished,
+     * this is the span of time required to run this test.
+     * For single ignored tests, this is <code>0</code>
+     * and in the other cases, the value is negative.
+     * If this testcase is a suite, the result is <code>{@link
+     * #TIME_SUITE}=-3</code>.
      *
      * @return
-     *    {@link #time}
+     * {@link #time}
+     * 
      * @see Quality#setTime(long)
      */
     // long getTime() {
-	// return this.time;
+    // return this.time;
     // }
 
     /**
@@ -328,18 +330,18 @@ class TestCase {
      *    whether this test including all sub-tests succeeded. 
      */
     boolean fullSuccess() {
-	if (isTest()) {
-	    return getQuality() == Quality.Success;
-	}
-	assert !isTest();
-	for (TestCase child : this.children) {
-	    if (!child.fullSuccess()) {
-		// Here, at least one child did not have full success 
-		return false;
-	    }
-	}
-	// Here, all children had full success 
-	return true;
+        if (isTest()) {
+            return getQuality() == Quality.Success;
+        }
+        assert !isTest();
+        for (TestCase child : this.children) {
+            if (!child.fullSuccess()) {
+                // Here, at least one child did not have full success 
+                return false;
+            }
+        }
+        // Here, all children had full success 
+        return true;
     }
 
     /**
@@ -354,20 +356,20 @@ class TestCase {
      *    according to {@link Quality#setScheduled()}. 
      */
     void setScheduledRec() {
-	if (this.isTest()) {
-	    assert this.qual != null;
-	    this.qual = this.qual.setScheduled();
-	    this.failure = null;
-	    assert this.qual.hasFailure() == (this.failure != null);
- 	    this.time = TIME_SCHEDULED;//this.qual.setTime(this.time);
+        if (this.isTest()) {
+            assert this.qual != null;
+            this.qual = this.qual.setScheduled();
+            this.failure = null;
+            assert this.qual.hasFailure() == (this.failure != null);
+            this.time = TIME_SCHEDULED;//this.qual.setTime(this.time);
 
-	    return;
-	}
-	// Here, this is a suite 
-	assert this.children != null;
-	for (TestCase child : this.children) {
-	    child.setScheduledRec();
-	}
+            return;
+        }
+        // Here, this is a suite 
+        assert this.children != null;
+        for (TestCase child : this.children) {
+            child.setScheduledRec();
+        }
     }
 
     /**
@@ -389,33 +391,33 @@ class TestCase {
      *    if this is a test suite and thus {@link #qual} is <code>null</code>. 
      */
     void setQualStartedIgnored(Quality qual) {
-	// The following assertions are not allowed 
-	// because conditions are checked in the code 
-	// assert this.qual == Quality.Scheduled;
-	// assert qual == Quality.Started || qual == Quality.Ignored;
+        // The following assertions are not allowed 
+        // because conditions are checked in the code 
+        // assert this.qual == Quality.Scheduled;
+        // assert qual == Quality.Started || qual == Quality.Ignored;
 
-	// set this.qual or throw an exception. 
-	switch (qual) {
-	case Started:
-	    // throws IllegalStateException for this.qual == Started 
-	    this.qual = this.qual.setStarted();
-        this.time = this.qual.setTime(this.time);
-	    break;
-	case Ignored:
-	    // throws IllegalStateException for this.qual != Scheduled 
-	    this.qual = this.qual.setIgnored();
-	    break;
-	default:
-	    throw new IllegalStateException
-		("Unexpected phase transition to " + qual + ". ");
-	}
-	// Here, setting qual succeeded 
-	assert this.qual == qual;
+        // set this.qual or throw an exception. 
+        switch (qual) {
+            case Started:
+                // throws IllegalStateException for this.qual == Started 
+                this.qual = this.qual.setStarted();
+                this.time = this.qual.setTime(this.time);
+                break;
+            case Ignored:
+                // throws IllegalStateException for this.qual != Scheduled 
+                this.qual = this.qual.setIgnored();
+                break;
+            default:
+                throw new IllegalStateException(
+                        "Unexpected phase transition to " + qual + ". ");
+        }
+        // Here, setting qual succeeded 
+        assert this.qual == qual;
 
-	this.failure = null;
-	assert this.qual.hasFailure() == (this.failure != null);
-	//this.time = this.qual.setTime(this.time);
-     }
+        this.failure = null;
+        assert this.qual.hasFailure() == (this.failure != null);
+        //this.time = this.qual.setTime(this.time);
+    }
 
     /**
      * Triggers a transition of the current phase 
@@ -449,23 +451,23 @@ class TestCase {
      * @see Quality#setFailure(Throwable)
      */
     void setFailure(Failure failure) {
-	assert failure != null;
-	//assert this.desc == this.failure.getDescription();
-	this.failure = failure;
-	Throwable thrw = failure.getException();
-	if (thrw instanceof AssumptionViolatedException) {
-	    throw new IllegalStateException
-		("Found unexpected AssumptionViolatedException. ");
-	}
-	this.qual = this.qual.setFailure(thrw);
-    //this.time2 = Benchmarker.getTimeMs();
-	this.time = this.qual.setTime(this.time);
- 	assert this.qual.hasFailure();
-	assert this.qual.hasFailure() == (this.failure != null);
-	// deferred to setFinished() 
-  }
+        assert failure != null;
+        //assert this.desc == this.failure.getDescription();
+        this.failure = failure;
+        Throwable thrw = failure.getException();
+        if (thrw instanceof AssumptionViolatedException) {
+            throw new IllegalStateException(
+                    "Found unexpected AssumptionViolatedException. ");
+        }
+        this.qual = this.qual.setFailure(thrw);
+        //this.time2 = Benchmarker.getTimeMs();
+        this.time = this.qual.setTime(this.time);
+        assert this.qual.hasFailure();
+        assert this.qual.hasFailure() == (this.failure != null);
+        // deferred to setFinished() 
+    }
 
-   double time2;
+    double time2;
 
     /**
      * Triggers a transition of the current phase 
@@ -493,20 +495,20 @@ class TestCase {
      * @see #setFailure(Failure)
      */
     void setAssumptionFailure(Failure failure) {
-	assert failure != null;
-	//assert this.desc == this.failure.getDescription();
-	if (!(failure.getException() instanceof AssumptionViolatedException)) {
-	    throw new IllegalStateException
-		("Expected AssumptionViolatedException but found " + 
-		 failure.getException() + ". ");
-	}
-	this.failure = failure;
-	this.qual = this.qual.setAssumptionFailure();
-    //this.time2 = Benchmarker.getTimeMs();
-	this.time = this.qual.setTime(this.time);
-	assert this.qual.hasFailure();
-	assert this.qual.hasFailure() == (this.failure != null);
-	// deferred to setFinished() 
+        assert failure != null;
+        //assert this.desc == this.failure.getDescription();
+        if (!(failure.getException() instanceof AssumptionViolatedException)) {
+            throw new IllegalStateException(
+                    "Expected AssumptionViolatedException but found "
+                            + failure.getException() + ". ");
+        }
+        this.failure = failure;
+        this.qual = this.qual.setAssumptionFailure();
+        //this.time2 = Benchmarker.getTimeMs();
+        this.time = this.qual.setTime(this.time);
+        assert this.qual.hasFailure();
+        assert this.qual.hasFailure() == (this.failure != null);
+        // deferred to setFinished() 
     }
 
     /**
@@ -533,12 +535,12 @@ class TestCase {
      * @see #setFailure(Failure)
      */
     void setFinished() {
-	assert this.qual.hasFailure() == (this.failure != null);
-	// does not change anything if there has been a failure. 
-	this.qual = this.qual.setFinished();
-    //this.time2 = Benchmarker.getTimeMs();
-	this.time = this.qual.setTime(this.time);
-    assert this.qual.hasFailure() == (this.failure != null);
+        assert this.qual.hasFailure() == (this.failure != null);
+        // does not change anything if there has been a failure. 
+        this.qual = this.qual.setFinished();
+        //this.time2 = Benchmarker.getTimeMs();
+        this.time = this.qual.setTime(this.time);
+        assert this.qual.hasFailure() == (this.failure != null);
     }
 
     /**
@@ -547,36 +549,34 @@ class TestCase {
      * including {@link #qual} and {@link #time} for singular tests. 
      */
     public String toString() {
-	// StringBuilder res = new StringBuilder();
-	// if (isTest()) {
-	//     res.append("<Test desc='");
-	//     res.append(this.desc);
-	//     res.append("' idxTest='");
-	//     res.append(this.idxTest);
-	//     res.append("' qual='");
-	//     res.append(this.qual);
-	//     res.append("'/>");
-	//     // **** rework needed. 
-	//     return res.toString();
-	// }
-	// // Here, this is a suite. 
-	// res.append("<Suite>");
-	// for (TestCase child : this.children) {
-	//     res.append(child.toString());
-	// }
-	// res.append("</Suite>");
+        // StringBuilder res = new StringBuilder();
+        // if (isTest()) {
+        //     res.append("<Test desc='");
+        //     res.append(this.desc);
+        //     res.append("' idxTest='");
+        //     res.append(this.idxTest);
+        //     res.append("' qual='");
+        //     res.append(this.qual);
+        //     res.append("'/>");
+        //     // **** rework needed. 
+        //     return res.toString();
+        // }
+        // // Here, this is a suite. 
+        // res.append("<Suite>");
+        // for (TestCase child : this.children) {
+        //     res.append(child.toString());
+        // }
+        // res.append("</Suite>");
 
 
-	assert isTest() == (this.qual != null);
-    // U231b: not yet started 
-    // U23F3: running
-    // rest: finished and so has an elapsed time. 
-    if (!isTest()) {
-        return this.desc.toString();
-    }
-    System.out.println(" time benchmarker: " + this.time2 + " time internal: " + this.time);
-    String timeStr = this.qual.lifePhase().timeString(this.time);
-    return this.qual + " " + timeStr + ": " + this.desc.toString();
+        assert isTest() == (this.qual != null);
+        if (!isTest()) {
+            return this.desc.toString();
+        }
+        System.out.println(" time benchmarker: " + this.time2
+                + " time internal: " + this.time);
+        String timeStr = this.qual.lifePhase().timeString(this.time);
+        return this.qual + " " + timeStr + ": " + this.desc.toString();
     }
 
 } // class TestCase 

@@ -1,6 +1,6 @@
 package eu.simuline.testhelpers;
 
-//import eu.simuline.util.Benchmarker;
+// import eu.simuline.util.Benchmarker;
 import eu.simuline.util.images.GifResource;
 
 import eu.simuline.junit.AssumptionFailure;
@@ -11,8 +11,8 @@ import java.awt.Color;
 
 import javax.swing.ImageIcon;
 
-import org.junit.runner.notification.RunListener; // for javadoc only 
-import org.junit.runner.notification.Failure; // for javadoc only 
+import org.junit.runner.notification.RunListener; // for javadoc only
+import org.junit.runner.notification.Failure; // for javadoc only
 
 import org.junit.AssumptionViolatedException;
 
@@ -94,7 +94,7 @@ import org.junit.AssumptionViolatedException;
 enum Quality {
 
     /* -------------------------------------------------------------------- *
-     * constant constructors.                                               *
+     * constant constructors. *
      * -------------------------------------------------------------------- */
 
 
@@ -107,26 +107,31 @@ enum Quality {
      * @see #Ignored
      */
     Scheduled(Deficiency.SoFarOk, Phase.Waiting) {
-	ImageIcon getIcon() {
-	    return GifResource.getIcon(eu.simuline.sun.gtk.File.class);
-	}
-	Quality setStarted() {
-        //Benchmarker.mtic();
-	    return Started;
-	}
-	Quality setFinished() {
-	    throw new IllegalStateException
-		("Found testcase finished before started. ");
-	}
-	Quality setIgnored() {
-	    return Ignored;
-	}
-	String getMessage() {
-	    return "Scheduled";
-	}
-	long setTime(long time) {
-	    return TestCase.TIME_SCHEDULED;
-	}
+        ImageIcon getIcon() {
+            return GifResource.getIcon(eu.simuline.sun.gtk.File.class);
+        }
+
+        Quality setStarted() {
+            //Benchmarker.mtic();
+            return Started;
+        }
+
+        Quality setFinished() {
+            throw new IllegalStateException(
+                    "Found testcase finished before started. ");
+        }
+
+        Quality setIgnored() {
+            return Ignored;
+        }
+
+        String getMessage() {
+            return "Scheduled";
+        }
+
+        long setTime(long time) {
+            return TestCase.TIME_SCHEDULED;
+        }
     },
 
     /**
@@ -136,58 +141,68 @@ enum Quality {
      * nor the outcoming of the test. 
      */
     Started(Deficiency.SoFarOk, Phase.Running) {
-	ImageIcon getIcon() {
-	    return GifResource.getIcon(eu.simuline.junit.New.class);
-	}
-	Quality setFinished() {
-        //Benchmarker.mtoc();
-	    return Success;
-	}
-	Quality setIgnored() {
-	    throw new IllegalStateException
-		("Found testcase to be ignored while running. ");
-	}
-	Quality setScheduled() {
-	    throw new IllegalStateException
-		("Found testcase scheduled before started. ");
-	}
-	Quality setStarted() {
-	    throw new IllegalStateException
-		("Found testcase started while running. ");
-	}
-	String getMessage() {
-	    return "started";
-	}
-	long setTime(long time) {
-	    return System.currentTimeMillis();
-	}
-	Quality setAssumptionFailure() {
-        //Benchmarker.mtoc();
-        return Invalidated;
-	}
-	// **** should be based on AssertionFailedError only, 
-	// but junit does not admit this. 
- 	Quality setFailure(Throwable thrw) {
-        //Benchmarker.mtoc();
-        return thrw instanceof AssertionFailedError
-		|| thrw instanceof AssertionError ? Failure : Error;
-	}
+        ImageIcon getIcon() {
+            return GifResource.getIcon(eu.simuline.junit.New.class);
+        }
+
+        Quality setFinished() {
+            //Benchmarker.mtoc();
+            return Success;
+        }
+
+        Quality setIgnored() {
+            throw new IllegalStateException(
+                    "Found testcase to be ignored while running. ");
+        }
+
+        Quality setScheduled() {
+            throw new IllegalStateException(
+                    "Found testcase scheduled before started. ");
+        }
+
+        Quality setStarted() {
+            throw new IllegalStateException(
+                    "Found testcase started while running. ");
+        }
+
+        String getMessage() {
+            return "started";
+        }
+
+        long setTime(long time) {
+            return System.currentTimeMillis();
+        }
+
+        Quality setAssumptionFailure() {
+            //Benchmarker.mtoc();
+            return Invalidated;
+        }
+
+        // **** should be based on AssertionFailedError only, 
+        // but junit does not admit this. 
+        Quality setFailure(Throwable thrw) {
+            //Benchmarker.mtoc();
+            return thrw instanceof AssertionFailedError
+                    || thrw instanceof AssertionError ? Failure : Error;
+        }
     },
     /**
      * The execution of the testcase finished and the test succeeded (passed): 
      * All assertions hold and no throwable has been thrown. 
      */
     Success(Deficiency.SoFarOk, Phase.Finished) {
-	ImageIcon getIcon() {
-	    return GifResource.getIcon(eu.simuline.junit.Ok.class);
-	}
-	Quality setFinished() {
-	    throw new IllegalStateException
-		("Found testcase successful before finished. ");
-	}
-	String getMessage() {
-	    return "succeeded";
-	}
+        ImageIcon getIcon() {
+            return GifResource.getIcon(eu.simuline.junit.Ok.class);
+        }
+
+        Quality setFinished() {
+            throw new IllegalStateException(
+                    "Found testcase successful before finished. ");
+        }
+
+        String getMessage() {
+            return "succeeded";
+        }
     },
     /**
      * The execution of the testcase ran onto an hurt assumption 
@@ -195,36 +210,41 @@ enum Quality {
      * and is thus invalidated. 
      */
     Invalidated(Deficiency.Indifferent, Phase.Finished) {
-	ImageIcon getIcon() {
-	    return GifResource.getIcon(AssumptionFailure.class);
-	}
-	String getMessage() {
-	    return "invalidated by failed assumption";
-	}
-    boolean hasFailure() {
-        return true;
-    }
-     },
+        ImageIcon getIcon() {
+            return GifResource.getIcon(AssumptionFailure.class);
+        }
+
+        String getMessage() {
+            return "invalidated by failed assumption";
+        }
+
+        boolean hasFailure() {
+            return true;
+        }
+    },
     /**
      * The testcase was ignored, i.e. was scheduled for execution 
      * but then decided not to start execution. 
      * In particular, nothing can be said about the course of the test run. 
      */
     Ignored(Deficiency.Indifferent, Phase.Finished) {
-	ImageIcon getIcon() {
-	    return GifResource.getIcon(eu.simuline.junit.Ignored.class);
-	}
-	long setTime(long time) {
-	    return 0;
-	}
-	Quality setFinished() {
-	    throw new IllegalStateException
-		("Found testcase finished and ignored. ");
-	}
-	String getMessage() {
-	    return "was ignored";
-	}
-    }, 
+        ImageIcon getIcon() {
+            return GifResource.getIcon(eu.simuline.junit.Ignored.class);
+        }
+
+        long setTime(long time) {
+            return 0;
+        }
+
+        Quality setFinished() {
+            throw new IllegalStateException(
+                    "Found testcase finished and ignored. ");
+        }
+
+        String getMessage() {
+            return "was ignored";
+        }
+    },
     /**
      * The execution of the testcase finished gracefully 
      * but did not succeed: 
@@ -233,16 +253,18 @@ enum Quality {
      * This excludes further throwables. 
      */
     Failure(Deficiency.Failed, Phase.Finished) {
-	ImageIcon getIcon() {
-	    return GifResource.getIcon(eu.simuline.junit.Failure.class);
-	}
-	String getMessage() {
-	    return "failed";
-	}
-    boolean hasFailure() {
-        return true;
-    }
-     },
+        ImageIcon getIcon() {
+            return GifResource.getIcon(eu.simuline.junit.Failure.class);
+        }
+
+        String getMessage() {
+            return "failed";
+        }
+
+        boolean hasFailure() {
+            return true;
+        }
+    },
     /**
      * The execution of the testcase failed 
      * indicated by finishing with exception or error 
@@ -250,19 +272,21 @@ enum Quality {
      * Thus there is no valid test result. 
      */
     Error(Deficiency.Failed, Phase.Finished) {
-	ImageIcon getIcon() {
-	    return GifResource.getIcon(eu.simuline.junit.Error.class);
-	}
-	String getMessage() {
-	    return "had an error";
-	}
-    boolean hasFailure() {
-        return true;
-    }
+        ImageIcon getIcon() {
+            return GifResource.getIcon(eu.simuline.junit.Error.class);
+        }
+
+        String getMessage() {
+            return "had an error";
+        }
+
+        boolean hasFailure() {
+            return true;
+        }
     };
 
     /* -------------------------------------------------------------------- *
-     * inner enums.                                                              *
+     * inner enums. *
      * -------------------------------------------------------------------- */
 
     enum Phase {
@@ -296,12 +320,14 @@ enum Quality {
             String timeString(long time) {
                 return time + "ms";
             }
+
             boolean isCompleted() {
                 return true;
             }
-                };
+        };
 
         abstract String timeString(long time);
+
         boolean isCompleted() {
             return false;
         }
@@ -341,11 +367,12 @@ enum Quality {
                 return Color.red;
             }
         };
-        abstract  Color getColor();
+
+        abstract Color getColor();
     } // enum Deficiency 
 
     /* -------------------------------------------------------------------- *
-     * fields.                                                              *
+     * fields. *
      * -------------------------------------------------------------------- */
 
     /**
@@ -381,7 +408,7 @@ enum Quality {
     private Phase lifePhase;
 
     /* -------------------------------------------------------------------- *
-     * constructors.                                                        *
+     * constructors. *
      * -------------------------------------------------------------------- */
 
     /**
@@ -389,13 +416,13 @@ enum Quality {
      * {@link #deficiency} and {@link #lifePhase}. 
      */
     Quality(Deficiency deficiency, Phase lifePhase) {
-	this.deficiency = deficiency;
-    this.lifePhase = lifePhase;
+        this.deficiency = deficiency;
+        this.lifePhase = lifePhase;
     }
 
 
     /* -------------------------------------------------------------------- *
-     * methods for phase transitions.                                       *
+     * methods for phase transitions. *
      * -------------------------------------------------------------------- */
 
     /**
@@ -410,7 +437,7 @@ enum Quality {
      *    **** it is a decision to disallow rescheduling a running testcase. 
      */
     Quality setScheduled() {
-	return Scheduled;
+        return Scheduled;
     }
 
     /**
@@ -423,8 +450,8 @@ enum Quality {
      *    except if this is {@link #Scheduled}
      */
     Quality setStarted() {
-	throw new IllegalStateException
-	    ("Found testcase started but not scheduled. ");
+        throw new IllegalStateException(
+                "Found testcase started but not scheduled. ");
     }
 
     /**
@@ -437,8 +464,8 @@ enum Quality {
      *    except for {@link #Scheduled}. 
      */
     Quality setIgnored() {
-	throw new IllegalStateException
-	    ("Found testcase ignored but not scheduled. ");
+        throw new IllegalStateException(
+                "Found testcase ignored but not scheduled. ");
     }
 
     /**
@@ -457,7 +484,7 @@ enum Quality {
     Quality setFinished() {
         assert false;
         //Benchmarker.mtoc();
-	return this;
+        return this;
     }
 
     /**
@@ -470,8 +497,8 @@ enum Quality {
      *    for all but {@link #Started}. 
      */
     Quality setAssumptionFailure() {
-	throw new IllegalStateException
-	    ("Found testcase with assumtion failure which is not started. ");
+        throw new IllegalStateException(
+                "Found testcase with assumtion failure which is not started. ");
     }
 
     /**
@@ -492,20 +519,20 @@ enum Quality {
      *    but <code>failure</code> is an {@link AssumptionViolatedException}. 
      */
     Quality setFailure(Throwable thrw) {
-	throw new IllegalStateException
-	    ("Found testcase with failure which is not started. ");
+        throw new IllegalStateException(
+                "Found testcase with failure which is not started. ");
     }
 
     /* -------------------------------------------------------------------- *
-     * methods for phase representation.                                    *
+     * methods for phase representation. *
      * -------------------------------------------------------------------- */
 
-     /**
-     * Returns an icon representing this phase on the GUI. 
-     *
-     * @return
-     *    an icon representing this phase on the GUI. 
-     */
+    /**
+    * Returns an icon representing this phase on the GUI. 
+    *
+    * @return
+    *    an icon representing this phase on the GUI. 
+    */
     abstract ImageIcon getIcon();
 
     /**
@@ -528,7 +555,8 @@ enum Quality {
      * @see GUIRunner.TestProgressBar#noteReportResult(TestCase)
      */
     Quality max(Quality other) {
-	    return (this.deficiency.ordinal() > other.deficiency.ordinal()) ? this : other;// NOPMD
+        return (this.deficiency.ordinal() > other.deficiency.ordinal()) ? this
+                : other;// NOPMD
     }
 
     /**
@@ -582,7 +610,7 @@ enum Quality {
      *    </ul>
      */
     long setTime(long time) {
-	    return System.currentTimeMillis() - time;
+        return System.currentTimeMillis() - time;
     }
 
 
@@ -604,7 +632,7 @@ enum Quality {
     // 	return this.level == 1;
     // }
 
-   /**
+    /**
      * Returns whether the underlying testcase is 
      * neither finished unsuccessfully nor ignored. 
      * This is <code>false</code> 
@@ -617,7 +645,7 @@ enum Quality {
      *    neither finished unsuccessfully nor ignored. 
      */
     boolean isNeutral() {
-	return this.deficiency == Deficiency.SoFarOk;
+        return this.deficiency == Deficiency.SoFarOk;
     }
 
     // seems currently unused 
