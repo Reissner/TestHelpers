@@ -4,7 +4,7 @@ import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier; //; for javadoc only 
-
+//import eu.simuline.util.Benchmarker;
 import junit.framework.AssertionFailedError; // NOPMD
 
 import java.util.List;
@@ -241,7 +241,7 @@ class TestCase {
      * @return
      *    <ul>
      *    <li><code>null</code>
-     *    if this is a test suite according to {@link #isTest()}. 
+     *    if this is a test according to {@link #isTest()}. 
      *    <li> the list of children of this suite otherwise. 
      *    </ul>
      */
@@ -306,21 +306,20 @@ class TestCase {
     }
 
     // **** nowhere needed. 
-    /**
+    /*
      * If this testcase is a single testcase which has been finished, 
      * this is the span of time required to run this test. 
      * For single ignored tests, this is <code>0</code> 
      * and in the other cases, the value is negative. 
-     * If this testcase is a suite, the result is <code>-3</code>. 
+     * If this testcase is a suite, the result is <code>{@link #TIME_SUITE}=-3</code>. 
      *
      * @return
      *    {@link #time}
      * @see Quality#setTime(long)
      */
-    // **** nowhere used. **** 
-    long getTime() {
-	return this.time;
-    }
+    // long getTime() {
+	// return this.time;
+    // }
 
     /**
      * Returns whether this test including all sub-tests succeeded. 
@@ -360,7 +359,7 @@ class TestCase {
 	    this.qual = this.qual.setScheduled();
 	    this.failure = null;
 	    assert this.qual.hasFailure() == (this.failure != null);
- 	    this.time = this.qual.setTime(this.time);
+ 	    this.time = TIME_SCHEDULED;//this.qual.setTime(this.time);
 
 	    return;
 	}
@@ -400,6 +399,7 @@ class TestCase {
 	case Started:
 	    // throws IllegalStateException for this.qual == Started 
 	    this.qual = this.qual.setStarted();
+        this.time = this.qual.setTime(this.time);
 	    break;
 	case Ignored:
 	    // throws IllegalStateException for this.qual != Scheduled 
@@ -414,7 +414,7 @@ class TestCase {
 
 	this.failure = null;
 	assert this.qual.hasFailure() == (this.failure != null);
-	this.time = this.qual.setTime(this.time);
+	//this.time = this.qual.setTime(this.time);
      }
 
     /**
@@ -458,11 +458,14 @@ class TestCase {
 		("Found unexpected AssumptionViolatedException. ");
 	}
 	this.qual = this.qual.setFailure(thrw);
-	assert this.qual.hasFailure();
+    //this.time2 = Benchmarker.getTimeMs();
+	this.time = this.qual.setTime(this.time);
+ 	assert this.qual.hasFailure();
 	assert this.qual.hasFailure() == (this.failure != null);
 	// deferred to setFinished() 
-	// this.time = this.qual.setTime(this.time);
-   }
+  }
+
+   double time2;
 
     /**
      * Triggers a transition of the current phase 
@@ -499,10 +502,11 @@ class TestCase {
 	}
 	this.failure = failure;
 	this.qual = this.qual.setAssumptionFailure();
+    //this.time2 = Benchmarker.getTimeMs();
+	this.time = this.qual.setTime(this.time);
 	assert this.qual.hasFailure();
 	assert this.qual.hasFailure() == (this.failure != null);
 	// deferred to setFinished() 
-	// this.time = this.qual.setTime(this.time);
     }
 
     /**
@@ -532,8 +536,9 @@ class TestCase {
 	assert this.qual.hasFailure() == (this.failure != null);
 	// does not change anything if there has been a failure. 
 	this.qual = this.qual.setFinished();
-	assert this.qual.hasFailure() == (this.failure != null);
+    //this.time2 = Benchmarker.getTimeMs();
 	this.time = this.qual.setTime(this.time);
+    assert this.qual.hasFailure() == (this.failure != null);
     }
 
     /**
@@ -569,22 +574,8 @@ class TestCase {
     if (!isTest()) {
         return this.desc.toString();
     }
-    String timeStr = null;
-    switch (this.qual.lifePhase()) {
-        case 0:
-            timeStr = "\u231b";
-            break;
-        case 1:
-            timeStr = "\u23f3";
-            break;
-        case 2:
-            timeStr = this.time + "ms";
-            break;
-        default:
-            throw new IllegalStateException
-                ("Found unknown lifePhase " + this.qual.lifePhase() + ". ");
-    }
-    assert timeStr != null;
+    System.out.println(" time benchmarker: " + this.time2 + " time internal: " + this.time);
+    String timeStr = this.qual.lifePhase().timeString(this.time);
     return this.qual + " " + timeStr + ": " + this.desc.toString();
     }
 

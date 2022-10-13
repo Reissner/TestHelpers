@@ -1,5 +1,6 @@
 package eu.simuline.testhelpers;
 
+//import eu.simuline.util.Benchmarker;
 import eu.simuline.util.images.GifResource;
 
 import eu.simuline.junit.AssumptionFailure;
@@ -22,8 +23,14 @@ import org.junit.AssumptionViolatedException;
  * or via {@link #Started} to finished 
  * which means either {@link #Invalidated}, {@link #Success}, 
  * {@link #Failure} or even {@link #Error}. 
+ * To be more precise {@link Quality} is a combination of {@link Quality.Phase} 
+ * and {@link Quality.Deficiency}. 
+ * On the other hand Quality is more than those aspects 
+ * which becomes apparent becaue {@link Quality#Error} and {@link Quality#Failure} 
+ * have the same combination of phase and deficiency 
+ * and so  have {@link Quality#Invalidated} and {@link Quality#Ignored}. 
  * <p>
- * The phase transitions are triggered by the events 
+ * The quality-phase transitions are triggered by the events 
  * notified by a {@link RunListener} as depicted below. 
 
  * <pre>
@@ -62,7 +69,7 @@ import org.junit.AssumptionViolatedException;
  * {@link #setFailure(Throwable)} 
  * after the test finished. 
  * All these methods prevent invalid phase transitions 
- * throwin an {@link IllegalStateException}. 
+ * thrown in an {@link IllegalStateException}. 
  * 
  * <p>
  * For each of these phases, there are methods to represent the quality 
@@ -71,6 +78,7 @@ import org.junit.AssumptionViolatedException;
  * <li>a separate icon given by {@link #getIcon()}, 
  * <li>a status message given by {@link #getMessage()} 
  * <li>a color {@link #getColor()} influencing the color of the progress bar 
+ * This refers to the maximum encountered {#link Quality.Deficiency}. 
  * <li>a method {@link #setTime(long)} to compute the time 
  * required for a test run.
  * </ul>
@@ -98,11 +106,12 @@ enum Quality {
      * @see #Started
      * @see #Ignored
      */
-    Scheduled(0, 0) {
+    Scheduled(Deficiency.SoFarOk, Phase.Waiting) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.sun.gtk.File.class);
 	}
 	Quality setStarted() {
+        //Benchmarker.mtic();
 	    return Started;
 	}
 	Quality setFinished() {
@@ -126,11 +135,12 @@ enum Quality {
      * Thus it is neither clear whether the execution succeeds 
      * nor the outcoming of the test. 
      */
-    Started(0, 1) {
+    Started(Deficiency.SoFarOk, Phase.Running) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.junit.New.class);
 	}
 	Quality setFinished() {
+        //Benchmarker.mtoc();
 	    return Success;
 	}
 	Quality setIgnored() {
@@ -152,12 +162,14 @@ enum Quality {
 	    return System.currentTimeMillis();
 	}
 	Quality setAssumptionFailure() {
-	    return Invalidated;
+        //Benchmarker.mtoc();
+        return Invalidated;
 	}
 	// **** should be based on AssertionFailedError only, 
 	// but junit does not admit this. 
  	Quality setFailure(Throwable thrw) {
-	    return thrw instanceof AssertionFailedError 
+        //Benchmarker.mtoc();
+        return thrw instanceof AssertionFailedError
 		|| thrw instanceof AssertionError ? Failure : Error;
 	}
     },
@@ -165,7 +177,7 @@ enum Quality {
      * The execution of the testcase finished and the test succeeded (passed): 
      * All assertions hold and no throwable has been thrown. 
      */
-    Success(0, 2) {
+    Success(Deficiency.SoFarOk, Phase.Finished) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.junit.Ok.class);
 	}
@@ -182,20 +194,23 @@ enum Quality {
      * before maybe running into further exceptions or errors 
      * and is thus invalidated. 
      */
-    Invalidated(1, 2) {
+    Invalidated(Deficiency.Indifferent, Phase.Finished) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(AssumptionFailure.class);
 	}
 	String getMessage() {
 	    return "invalidated by failed assumption";
 	}
-    },
+    boolean hasFailure() {
+        return true;
+    }
+     },
     /**
      * The testcase was ignored, i.e. was scheduled for execution 
      * but then decided not to start execution. 
      * In particular, nothing can be said about the course of the test run. 
      */
-    Ignored(1, 2) {
+    Ignored(Deficiency.Indifferent, Phase.Finished) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.junit.Ignored.class);
 	}
@@ -217,29 +232,117 @@ enum Quality {
      * indicated by an {@link AssertionFailedError}. 
      * This excludes further throwables. 
      */
-    Failure(2, 2) {
+    Failure(Deficiency.Failed, Phase.Finished) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.junit.Failure.class);
 	}
 	String getMessage() {
 	    return "failed";
 	}
-    }, 
+    boolean hasFailure() {
+        return true;
+    }
+     },
     /**
      * The execution of the testcase failed 
      * indicated by finishing with exception or error 
      * other than {@link AssertionFailedError}. 
      * Thus there is no valid test result. 
      */
-    Error(2, 2) {
+    Error(Deficiency.Failed, Phase.Finished) {
 	ImageIcon getIcon() {
 	    return GifResource.getIcon(eu.simuline.junit.Error.class);
 	}
 	String getMessage() {
 	    return "had an error";
 	}
+    boolean hasFailure() {
+        return true;
+    }
     };
 
+    /* -------------------------------------------------------------------- *
+     * inner enums.                                                              *
+     * -------------------------------------------------------------------- */
+
+    enum Phase {
+        /**
+         * The testcase is waiting to run. 
+         * This is either {@link Quality#Scheduled}. 
+         */
+        Waiting {
+            String timeString(long time) {
+                return "\u231b";
+            }
+        },
+        /**
+         * The testcase is running. 
+         * This is the phase for {@link Quality#Started}. 
+         */
+        Running {
+            String timeString(long time) {
+                return "\u23f3";
+            }
+        },
+        /**
+         * The testcase is finished, i.e. does not run and will not run. 
+         * This applies to {@link Quality#Ignored} 
+         * even though this implies not started. 
+         * The other options are 
+         * {@link Quality#Invalidated}, {@link Quality#Failure}, 
+         * {@link Quality#Error} and {@link Quality#Success}. 
+         */
+        Finished {
+            String timeString(long time) {
+                return time + "ms";
+            }
+            boolean isCompleted() {
+                return true;
+            }
+                };
+
+        abstract String timeString(long time);
+        boolean isCompleted() {
+            return false;
+        }
+    } // enum Phases 
+
+    // CAUTION: ordering is vital!
+    enum Deficiency {
+        /**
+         * The testcase neither failed 
+         * nor will not run nor is interrupted 
+         * without failing. 
+         * The options are {@link Quality#Scheduled}, 
+         * {@link Quality#Started} and {@link Quality#Success}. 
+         */
+        SoFarOk {
+            Color getColor() {
+                return Color.green;
+            }
+        },
+        /**
+         * The testcase will never pass or fail. 
+         * This is the case for {@link Quality#Ignored} 
+         * and for {@link Quality#Invalidated}. 
+         */
+        Indifferent {
+            Color getColor() {
+                return Color.yellow;
+            }
+        },
+        /**
+         * The testcase failed in some sense, 
+         * i.e. the options are {@link Quality#Failure} and
+         * {@link Quality#Error}. 
+         */
+        Failed {
+            Color getColor() {
+                return Color.red;
+            }
+        };
+        abstract  Color getColor();
+    } // enum Deficiency 
 
     /* -------------------------------------------------------------------- *
      * fields.                                                              *
@@ -261,49 +364,35 @@ enum Quality {
      *
      * @see #max(Quality)
      */
-    private int level;// TBD: replace by enum. Also with max. 
+    private Deficiency deficiency;// TBD: replace by enum. Also with max. 
 
     /**
      * Encoding how far the testcase is proceeded; 
      * <ul>
-     * <li> <code>0</code> scheduled (not even started)
-     * <li> <code>1</code> started (but not finished in any way)
-     * <li> <code>2</code> finished, either successfully, 
+     * <li> <code>0</code> not even started 
+     *      ({@link #Scheduled} or {@link #Ignored})
+     * <li> <code>1</code> started (but not finished in any way), 
+     *      ({@link #Started})
+     * <li> <code>2</code> finished, either successfully, or not 
+     *      ({@link #Error}, {@link #Failure}, {@link #Invalidated} 
+     *    or {@link #Success}). 
      * </ul>
      */
-    private int lifePhase;
+    private Phase lifePhase;
 
     /* -------------------------------------------------------------------- *
      * constructors.                                                        *
      * -------------------------------------------------------------------- */
 
     /**
-     * Creates another Quality with the given level {@link #level}. 
+     * Creates another Quality with the given 
+     * {@link #deficiency} and {@link #lifePhase}. 
      */
-    Quality(int level, int lifePhase) {
-	this.level = level;
+    Quality(Deficiency deficiency, Phase lifePhase) {
+	this.deficiency = deficiency;
     this.lifePhase = lifePhase;
     }
 
- 
-    /* -------------------------------------------------------------------- *
-     * class constants.                                                     *
-     * -------------------------------------------------------------------- */
-
-    /**
-     * Represents a failed testcase. 
-     */
-    private static final Color COLOR_FAIL    = Color.red;
-
-    /**
-     * Represents a testcase which did neither failed. 
-     */
-    private static final Color COLOR_OK      = Color.green;
-
-    /**
-     * Represents an ignored testcase. 
-     */
-    private static final Color COLOR_IGNORED = Color.yellow;
 
     /* -------------------------------------------------------------------- *
      * methods for phase transitions.                                       *
@@ -366,6 +455,8 @@ enum Quality {
      *    for {@link #Scheduled}, {@link #Success} and {@link #Ignored}. 
      */
     Quality setFinished() {
+        assert false;
+        //Benchmarker.mtoc();
 	return this;
     }
 
@@ -437,7 +528,7 @@ enum Quality {
      * @see GUIRunner.TestProgressBar#noteReportResult(TestCase)
      */
     Quality max(Quality other) {
-	    return (this.level > other.level) ? this : other;// NOPMD
+	    return (this.deficiency.ordinal() > other.deficiency.ordinal()) ? this : other;// NOPMD
     }
 
     /**
@@ -447,7 +538,7 @@ enum Quality {
      * @return
      *   the life phase according to {@link #lifePhase}. 
      */
-    int lifePhase() {
+    Phase lifePhase() {
         return this.lifePhase;
     }
 
@@ -464,17 +555,7 @@ enum Quality {
      * @see #max(Quality)
      */
     Color getColor() {
-	switch (this.level) {
-	case 0:
-	    return COLOR_OK;
-	case 1:
-	    return COLOR_IGNORED;
-	case 2:
-	    return COLOR_FAIL;
-	default:
-	    throw new IllegalStateException
-		("Found undefined level " + this.level + ". ");
-	}
+        return this.deficiency.getColor();
     }
 
     /**
@@ -536,9 +617,10 @@ enum Quality {
      *    neither finished unsuccessfully nor ignored. 
      */
     boolean isNeutral() {
-	return this.level == 0;
+	return this.deficiency == Deficiency.SoFarOk;
     }
 
+    // seems currently unused 
     /**
      * Whether this testcase completed in any way. 
      * 
@@ -546,9 +628,10 @@ enum Quality {
      *   completeness according to {@link #lifePhase}. 
      */
     boolean isCompleted() {
-        return this.lifePhase == 2;
+        return this.lifePhase.isCompleted();
     }
 
+    // Currently used for assertions only. 
     /**
      * Returns whether the given state is tied to a throwable. 
      *
@@ -557,17 +640,7 @@ enum Quality {
      *    {@link #Invalidated}, {@link #Failure} or {@link #Error}. 
      */
     boolean hasFailure() {
-	switch (this.level) {
-	case 0:
-	    return false;
-	case 1:
-	    return this == Invalidated;
-	case 2:
-	    return true;
-	default:
-	    throw new IllegalStateException
-		("Found undefined level " + this.level + ". ");
-	}
+        return false;
     }
 
 } // enum Quality 
