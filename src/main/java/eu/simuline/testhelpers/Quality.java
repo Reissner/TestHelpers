@@ -190,7 +190,7 @@ enum Quality {
      * The execution of the testcase finished and the test succeeded (passed): 
      * All assertions hold and no throwable has been thrown. 
      */
-    Success(Deficiency.SoFarOk, Phase.Finished) {
+    Success(Deficiency.SoFarOk, Phase.Completed) {
         ImageIcon getIcon() {
             return GifResource.getIcon(eu.simuline.junit.Ok.class);
         }
@@ -209,7 +209,7 @@ enum Quality {
      * before maybe running into further exceptions or errors 
      * and is thus invalidated. 
      */
-    Invalidated(Deficiency.Indifferent, Phase.Finished) {
+    Invalidated(Deficiency.Indifferent, Phase.Incomplete) {
         ImageIcon getIcon() {
             return GifResource.getIcon(AssumptionFailure.class);
         }
@@ -227,7 +227,7 @@ enum Quality {
      * but then decided not to start execution. 
      * In particular, nothing can be said about the course of the test run. 
      */
-    Ignored(Deficiency.Indifferent, Phase.Finished) {
+    Ignored(Deficiency.Indifferent, Phase.Incomplete) {
         ImageIcon getIcon() {
             return GifResource.getIcon(eu.simuline.junit.Ignored.class);
         }
@@ -252,7 +252,7 @@ enum Quality {
      * indicated by an {@link AssertionFailedError}. 
      * This excludes further throwables. 
      */
-    Failure(Deficiency.Failed, Phase.Finished) {
+    Failure(Deficiency.Failed, Phase.Completed) {
         ImageIcon getIcon() {
             return GifResource.getIcon(eu.simuline.junit.Failure.class);
         }
@@ -271,7 +271,7 @@ enum Quality {
      * other than {@link AssertionFailedError}. 
      * Thus there is no valid test result. 
      */
-    Error(Deficiency.Failed, Phase.Finished) {
+    Error(Deficiency.Failed, Phase.Completed) {
         ImageIcon getIcon() {
             return GifResource.getIcon(eu.simuline.junit.Error.class);
         }
@@ -292,10 +292,18 @@ enum Quality {
     enum Phase {
         /**
          * The testcase is waiting to run. 
-         * This is either {@link Quality#Scheduled}. 
+         * This is the phase for {@link Quality#Scheduled}. 
          */
         Waiting {
-            String timeString(long time) {
+           /**
+             * Returns a time string 
+             * indicating that the testcase is waiting for the run: 
+             * an according sandclock. 
+             * 
+             * @return
+             *   <code>&#x231b</code>. 
+             */
+            String timeString(long timeMs) {
                 return "\u231b";
             }
         },
@@ -304,21 +312,46 @@ enum Quality {
          * This is the phase for {@link Quality#Started}. 
          */
         Running {
-            String timeString(long time) {
+            /**
+             * Returns a time string 
+             * indicating that the testcase is running: 
+             * an according sandclock. 
+             * 
+             * @return
+             *   <code>&#x23f3</code>. 
+             */
+            String timeString(long timeMs) {
                 return "\u23f3";
             }
         },
         /**
-         * The testcase is finished, i.e. does not run and will not run. 
-         * This applies to {@link Quality#Ignored} 
-         * even though this implies not started. 
-         * The other options are 
-         * {@link Quality#Invalidated}, {@link Quality#Failure}, 
+         * The testcase is completed. 
+         * This applies whether completion was successful or not. 
+         * This applies to {@link Quality#Failure}, 
          * {@link Quality#Error} and {@link Quality#Success}. 
          */
-        Finished {
-            String timeString(long time) {
-                return time + "ms";
+        Completed {
+            String timeString(long timeMs) {
+                return timeMs + "ms";
+            }
+
+            boolean isCompleted() {
+                return true;
+            }
+        },
+        /**
+         * The testcase in neither of the other phases. 
+         * This applies to {@link Quality#Ignored} and {@link Quality#Invalidated}. 
+         */
+        Incomplete {
+            /**
+             * Returns the string indicating that the time is unknown. 
+             * 
+             * @return
+             *   <code>??ms</code>. 
+             */
+            String timeString(long timeMs) {
+                return "??ms";
             }
 
             boolean isCompleted() {
@@ -326,7 +359,16 @@ enum Quality {
             }
         };
 
-        abstract String timeString(long time);
+        /**
+         * Returns a string representing the time <code>timeMs</code> 
+         * if the test is {@link Completed}; 
+         * else a symbol indicating the phase. 
+         * 
+         * @param timeMs
+         *    The time in miliseconds. 
+         * @return
+         */
+        abstract String timeString(long timeMs);
 
         boolean isCompleted() {
             return false;
