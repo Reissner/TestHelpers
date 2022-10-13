@@ -1,6 +1,6 @@
 package eu.simuline.testhelpers;
 
-// import eu.simuline.util.Benchmarker;
+import eu.simuline.util.Benchmarker;
 import eu.simuline.util.images.GifResource;
 
 import eu.simuline.junit.AssumptionFailure;
@@ -112,7 +112,7 @@ enum Quality {
         }
 
         Quality setStarted() {
-            //Benchmarker.mtic();
+            Benchmarker.mtic();
             return Started;
         }
 
@@ -146,7 +146,7 @@ enum Quality {
         }
 
         Quality setFinished() {
-            //Benchmarker.mtoc();
+            Benchmarker.mtoc();
             return Success;
         }
 
@@ -174,14 +174,14 @@ enum Quality {
         }
 
         Quality setAssumptionFailure() {
-            //Benchmarker.mtoc();
+            Benchmarker.mtoc();
             return Invalidated;
         }
 
         // **** should be based on AssertionFailedError only, 
         // but junit does not admit this. 
         Quality setFailure(Throwable thrw) {
-            //Benchmarker.mtoc();
+            Benchmarker.mtoc();
             return thrw instanceof AssertionFailedError
                     || thrw instanceof AssertionError ? Failure : Error;
         }
@@ -479,6 +479,9 @@ enum Quality {
      *    **** it is a decision to disallow rescheduling a running testcase. 
      */
     Quality setScheduled() {
+        if (Benchmarker.isStarted()) {
+            Benchmarker.mtoc();
+        }
         return Scheduled;
     }
 
@@ -525,7 +528,7 @@ enum Quality {
      */
     Quality setFinished() {
         assert false;
-        //Benchmarker.mtoc();
+        Benchmarker.mtoc();
         return this;
     }
 
@@ -597,8 +600,8 @@ enum Quality {
      * @see GUIRunner.TestProgressBar#noteReportResult(TestCase)
      */
     Quality max(Quality other) {
-        return (this.deficiency.ordinal() > other.deficiency.ordinal()) ? this
-                : other;// NOPMD
+        return this.deficiency.ordinal() > other.deficiency.ordinal() 
+            ? this : other;// NOPMD
     }
 
     /**

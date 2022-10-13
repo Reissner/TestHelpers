@@ -1,10 +1,12 @@
 package eu.simuline.testhelpers;
 
+import eu.simuline.util.Benchmarker;
+
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier; // ; for javadoc only
-// import eu.simuline.util.Benchmarker;
+
 import junit.framework.AssertionFailedError; // NOPMD
 
 import java.util.List;
@@ -401,11 +403,13 @@ class TestCase {
             case Started:
                 // throws IllegalStateException for this.qual == Started 
                 this.qual = this.qual.setStarted();
+                assert Benchmarker.isStarted();
                 this.time = this.qual.setTime(this.time);
                 break;
             case Ignored:
                 // throws IllegalStateException for this.qual != Scheduled 
                 this.qual = this.qual.setIgnored();
+                assert !Benchmarker.isStarted();
                 break;
             default:
                 throw new IllegalStateException(
@@ -460,14 +464,15 @@ class TestCase {
                     "Found unexpected AssumptionViolatedException. ");
         }
         this.qual = this.qual.setFailure(thrw);
-        //this.time2 = Benchmarker.getTimeMs();
+        assert !Benchmarker.isStarted();
+        this.time2 = Benchmarker.getTimeMs();
         this.time = this.qual.setTime(this.time);
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
         // deferred to setFinished() 
     }
 
-    double time2;
+    long time2;
 
     /**
      * Triggers a transition of the current phase 
@@ -504,7 +509,8 @@ class TestCase {
         }
         this.failure = failure;
         this.qual = this.qual.setAssumptionFailure();
-        //this.time2 = Benchmarker.getTimeMs();
+        assert Benchmarker.isStarted();
+        this.time2 = Benchmarker.getTimeMs();
         this.time = this.qual.setTime(this.time);
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
@@ -538,7 +544,7 @@ class TestCase {
         assert this.qual.hasFailure() == (this.failure != null);
         // does not change anything if there has been a failure. 
         this.qual = this.qual.setFinished();
-        //this.time2 = Benchmarker.getTimeMs();
+        this.time2 = Benchmarker.getTimeMs();
         this.time = this.qual.setTime(this.time);
         assert this.qual.hasFailure() == (this.failure != null);
     }
