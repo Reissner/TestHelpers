@@ -111,6 +111,12 @@ class TestCase {
      */
     private Failure failure;
 
+    /**
+     * If this testcase is finished, this is the time elapsed in ms; 
+     * else it is not significant. 
+     */
+    long timeMs;
+
     /* -------------------------------------------------------------------- *
      * constructor. *
      * -------------------------------------------------------------------- */
@@ -438,13 +444,11 @@ class TestCase {
         }
         this.qual = this.qual.setFailure(thrw);
         assert !Benchmarker.isStarted();
-        this.time2 = Benchmarker.getTimeMs();
+        this.timeMs = Benchmarker.getTimeMs();
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
         // deferred to setFinished() 
     }
-
-    long time2;
 
     /**
      * Triggers a transition of the current phase 
@@ -482,7 +486,7 @@ class TestCase {
         this.failure = failure;
         this.qual = this.qual.setAssumptionFailure();
         assert Benchmarker.isStarted();
-        this.time2 = Benchmarker.getTimeMs();
+        this.timeMs = Benchmarker.getTimeMs();
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
         // deferred to setFinished() 
@@ -515,7 +519,7 @@ class TestCase {
         assert this.qual.hasFailure() == (this.failure != null);
         // does not change anything if there has been a failure. 
         this.qual = this.qual.setFinished();
-        this.time2 = Benchmarker.getTimeMs();
+        this.timeMs = Benchmarker.getTimeMs();
         assert this.qual.hasFailure() == (this.failure != null);
     }
 
@@ -549,8 +553,8 @@ class TestCase {
         if (!isTest()) {
             return this.desc.toString();
         }
-        System.out.println(" time benchmarker: " + this.time2);
-        String timeStr = this.qual.lifePhase().timeString(this.time2);
+        System.out.println(" time benchmarker: " + this.timeMs);
+        String timeStr = this.qual.lifePhase().timeString(this.timeMs);
         return this.qual + " " + timeStr + ": " + this.desc.toString();
     }
 
