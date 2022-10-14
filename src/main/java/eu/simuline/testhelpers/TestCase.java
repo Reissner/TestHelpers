@@ -462,7 +462,7 @@ class TestCase {
         }
         this.qual = this.qual.setFailure(thrw);
         assert !Benchmarker.isStarted();
-        this.timeMs = Benchmarker.getTimeMsP();
+        this.timeMs = Benchmarker.getTimeMs();
         this.memMB = Benchmarker.getMemoryMB();
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
@@ -538,7 +538,7 @@ class TestCase {
         assert this.qual.hasFailure() == (this.failure != null);
         // does not change anything if there has been a failure. 
         this.qual = this.qual.setFinished();
-        this.timeMs = Benchmarker.getTimeMsP();
+        this.timeMs = Benchmarker.getTimeMs();
         this.memMB = Benchmarker.getMemoryMB();
         assert this.qual.hasFailure() == (this.failure != null);
     }
