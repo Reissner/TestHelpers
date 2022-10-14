@@ -78,9 +78,7 @@ import org.junit.AssumptionViolatedException;
  * <li>a separate icon given by {@link #getIcon()}, 
  * <li>a status message given by {@link #getMessage()} 
  * <li>a color {@link #getColor()} influencing the color of the progress bar 
- * This refers to the maximum encountered {#link Quality.Deficiency}. 
- * <li>a method {@link #setTime(long)} to compute the time 
- * required for a test run.
+ * This refers to the maximum encountered {@link Quality.Deficiency}. 
  * </ul>
  *
  * Finally, there are further methods to ask for certain properties 
@@ -611,12 +609,8 @@ enum Quality {
     }
 
     /**
-     * Returns the color associated with this phase: 
-     * If this phase represents an irregular ending testcase, 
-     * {@link #COLOR_FAIL} is returned. 
-     * Else if this phase represents an ignored testcase, 
-     * {@link #COLOR_IGNORED} is returned. 
-     * Else {@link #COLOR_OK} is returned. 
+     * Returns the color associated with this phase 
+     * this is uniform with the color of the icon of that quality. 
      *
      * @return
      *    the color associated with this phase. 

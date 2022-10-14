@@ -207,11 +207,13 @@ class GUIRunner {
 
     /**
      * The progress bar indicating how much of the testcases already passed. 
+		 * The color of the progress bar 
+		 * is determined by {@link Quality.Deficiency#getColor()}. 
      * After the first testcase ending irregular, 
-     * the bar takes {@link Quality#COLOR_FAIL}. 
+     * the the color is given by {@link Quality.Deficiency#Failed}. 
      * Else after the first ignored testscase, 
-     * the bar takes {@link Quality#COLOR_IGNORED}. 
-     * Else, the bar takes {@link Quality#COLOR_OK}. 
+     * the color is given by {@link Quality.Deficiency#Indifferent}. 
+     * Else, the color is given by {@link Quality.Deficiency#SoFarOk}. 
      */
     static class TestProgressBar extends JProgressBar {
 

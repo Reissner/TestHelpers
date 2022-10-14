@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * {@link Quality#Started} or finished in some sense. 
  * If finished, the test may be {@link Quality#Success} 
  * or it has been interrupted by an exception wrapped in a {@link #failure}. 
- * Also a timestamp {@link #time} is provided 
+ * Also a timestamp {@link #timeMs} is provided 
  * which indicates the running time of a singular test 
  * if it has been started and finished. 
  * <p>
@@ -40,7 +40,7 @@ import java.util.ArrayList;
  * getter methods and their convenience methods like 
  * {@link #getDesc()}, {@link #isTest()}, {@link #testCount()}, 
  * {@link #getChildren()}, {@link #getIdx()}, {@link #getQuality()}, 
- * {@link #hasFailed()}, {@link #getThrown()} and {@link #getTime()}. 
+ * {@link #hasFailed()} and {@link #getThrown()}. 
  * <li>
  * The special method {@link #fullSuccess()} 
  * indicating whether this testcase including all testcases succeeded. 
@@ -350,7 +350,7 @@ class TestCase {
      * Recursively 
      * triggers a transition of the current phase to {@link Quality#Scheduled}: 
      * If this is a test, just set {@link #qual} to {@link Quality#Scheduled} 
-     * if possible updating {@link #failure} and {@link #time}. 
+     * if possible updating {@link #failure} and {@link #timeMs}. 
      * If this is a suite, go recursively into the {@link #children}. 
      *
      * @throws IllegalStateException 
@@ -521,7 +521,7 @@ class TestCase {
      * {@link Quality#Invalidated} and {@link Quality#Error}  
      * <li>{@link Quality#Success} for current phase {@link Quality#Started}. 
      * </ul>
-     * Note that this sets {@link #time} 
+     * Note that this sets {@link #timeMs} 
      * to the time required to run this testcase. 
      *
      * @throws IllegalStateException
@@ -546,7 +546,7 @@ class TestCase {
     /**
      * Returns the string representation of {@link #desc} for suites 
      * and a representation 
-     * including {@link #qual} and {@link #time} for singular tests. 
+     * including {@link #qual} and {@link #timeMs} for singular tests. 
      */
     public String toString() {
         // StringBuilder res = new StringBuilder();
