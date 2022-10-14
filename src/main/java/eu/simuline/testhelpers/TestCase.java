@@ -112,10 +112,28 @@ class TestCase {
     private Failure failure;
 
     /**
-     * If this testcase is finished, this is the time elapsed in ms; 
+     * If this testcase is singular, i.e. no suite and is is finished, 
+     * this is the time elapsed in ms; 
      * else it is not significant. 
      */
-    long timeMs;
+    private long timeMs;
+
+    /**
+     * If this testcase is singular, i.e. no suite and is is finished, 
+     * this is the memory elapsed in MB; 
+     * else it is not significant. 
+     * The memory allocated is the difference 
+     * between memory when starting the test and when finishing. 
+     * So this may well be negative. 
+     * Memory is determined after the garbage collector is triggered. 
+     * Since there is no way to force the VM to perform a complete garbage collection, 
+     * this value is may not be very precise. 
+     * In an extreme case, the garbage collector is not run at all 
+     * and so the result is not very significant. 
+     * It does not say anything about the maximum memory needed during the test run, 
+     * but it is a kind of sticky memory required. 
+     */
+    private double memMB;
 
     /* -------------------------------------------------------------------- *
      * constructor. *
@@ -445,6 +463,7 @@ class TestCase {
         this.qual = this.qual.setFailure(thrw);
         assert !Benchmarker.isStarted();
         this.timeMs = Benchmarker.getTimeMs();
+        this.memMB = Benchmarker.getMemoryMB();
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
         // deferred to setFinished() 
@@ -486,7 +505,7 @@ class TestCase {
         this.failure = failure;
         this.qual = this.qual.setAssumptionFailure();
         assert Benchmarker.isStarted();
-        this.timeMs = Benchmarker.getTimeMs();
+        //this.timeMs = Benchmarker.getTimeMs();
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
         // deferred to setFinished() 
@@ -520,6 +539,7 @@ class TestCase {
         // does not change anything if there has been a failure. 
         this.qual = this.qual.setFinished();
         this.timeMs = Benchmarker.getTimeMs();
+        this.memMB = Benchmarker.getMemoryMB();
         assert this.qual.hasFailure() == (this.failure != null);
     }
 
@@ -553,8 +573,8 @@ class TestCase {
         if (!isTest()) {
             return this.desc.toString();
         }
-        System.out.println(" time benchmarker: " + this.timeMs);
-        String timeStr = this.qual.lifePhase().timeString(this.timeMs);
+        System.out.println(" time: " + this.timeMs + " mem" + this.memMB);
+        String timeStr = this.qual.lifePhase().timeMemString(this.timeMs, this.memMB);
         return this.qual + " " + timeStr + ": " + this.desc.toString();
     }
 

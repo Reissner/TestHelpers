@@ -284,14 +284,14 @@ enum Quality {
          */
         Waiting {
            /**
-             * Returns a time string 
+             * Returns a time/memory string 
              * indicating that the testcase is waiting for the run: 
              * an according sandclock. 
              * 
              * @return
              *   <code>&#x231b</code>. 
              */
-            String timeString(long timeMs) {
+            String timeMemString(long timeMs, double memMB) {
                 return "\u231b";
             }
         },
@@ -301,14 +301,14 @@ enum Quality {
          */
         Running {
             /**
-             * Returns a time string 
+             * Returns a time/memory string 
              * indicating that the testcase is running: 
              * an according sandclock. 
              * 
              * @return
              *   <code>&#x23f3</code>. 
              */
-            String timeString(long timeMs) {
+            String timeMemString(long timeMs, double memMB) {
                 return "\u23f3";
             }
         },
@@ -319,8 +319,8 @@ enum Quality {
          * {@link Quality#Error} and {@link Quality#Success}. 
          */
         Completed {
-            String timeString(long timeMs) {
-                return timeMs + "ms";
+            String timeMemString(long timeMs, double memMB) {
+                return timeMs + "ms/" + memMB + "MB";
             }
 
             boolean isCompleted() {
@@ -338,8 +338,8 @@ enum Quality {
              * @return
              *   <code>??ms</code>. 
              */
-            String timeString(long timeMs) {
-                return "??ms";
+            String timeMemString(long timeMs, double memMB) {
+                return "??ms/??MB";
             }
 
             boolean isCompleted() {
@@ -349,14 +349,21 @@ enum Quality {
 
         /**
          * Returns a string representing the time <code>timeMs</code> 
+         * and the memory <code>memMB</code> 
          * if the test is {@link Completed}; 
          * else a symbol indicating the phase. 
          * 
          * @param timeMs
-         *    The time in miliseconds. 
+         *    The time elapsed in miliseconds. 
+         * @param memMB
+         *    The memory used in MB
          * @return
+         *    a string representation 
+         *    either indicating time and memory elapsed 
+         *    or indicating the current phase 
+         *    in which the latter would not not make sense. 
          */
-        abstract String timeString(long timeMs);
+        abstract String timeMemString(long timeMs, double memMB);
 
         boolean isCompleted() {
             return false;
