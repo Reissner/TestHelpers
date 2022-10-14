@@ -318,7 +318,7 @@ enum Quality {
          */
         Completed {
             String timeMemString(double timeMs, double memMB) {
-                return timeMs + "ms/" + memMB + "MB";
+                return String.format("%.0fms/%.3fMB", timeMs, memMB);
             }
 
             boolean isCompleted() {
