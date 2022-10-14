@@ -289,7 +289,7 @@ enum Quality {
              * @return
              *   <code>&#x231b</code>. 
              */
-            String timeMemString(long timeMs, double memMB) {
+            String timeMemString(double timeMs, double memMB) {
                 return "\u231b";
             }
         },
@@ -306,7 +306,7 @@ enum Quality {
              * @return
              *   <code>&#x23f3</code>. 
              */
-            String timeMemString(long timeMs, double memMB) {
+            String timeMemString(double timeMs, double memMB) {
                 return "\u23f3";
             }
         },
@@ -317,7 +317,7 @@ enum Quality {
          * {@link Quality#Error} and {@link Quality#Success}. 
          */
         Completed {
-            String timeMemString(long timeMs, double memMB) {
+            String timeMemString(double timeMs, double memMB) {
                 return timeMs + "ms/" + memMB + "MB";
             }
 
@@ -336,7 +336,7 @@ enum Quality {
              * @return
              *   <code>??ms</code>. 
              */
-            String timeMemString(long timeMs, double memMB) {
+            String timeMemString(double timeMs, double memMB) {
                 return "??ms/??MB";
             }
 
@@ -361,7 +361,7 @@ enum Quality {
          *    or indicating the current phase 
          *    in which the latter would not not make sense. 
          */
-        abstract String timeMemString(long timeMs, double memMB);
+        abstract String timeMemString(double timeMs, double memMB);
 
         boolean isCompleted() {
             return false;

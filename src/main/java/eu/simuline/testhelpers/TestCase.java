@@ -116,7 +116,7 @@ class TestCase {
      * this is the time elapsed in ms; 
      * else it is not significant. 
      */
-    private long timeMs;
+    private double timeMs;
 
     /**
      * If this testcase is singular, i.e. no suite and is is finished, 
