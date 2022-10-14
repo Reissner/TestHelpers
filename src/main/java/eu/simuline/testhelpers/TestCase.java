@@ -117,6 +117,7 @@ class TestCase {
      * else it is not significant. 
      */
     private double timeMs;
+    private double timeMsP;
 
     /**
      * If this testcase is singular, i.e. no suite and is is finished, 
@@ -463,6 +464,7 @@ class TestCase {
         this.qual = this.qual.setFailure(thrw);
         assert !Benchmarker.isStarted();
         this.timeMs = Benchmarker.getTimeMs();
+        this.timeMsP = Benchmarker.getTimeMsP();
         this.memMB = Benchmarker.getMemoryMB();
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
@@ -539,6 +541,7 @@ class TestCase {
         // does not change anything if there has been a failure. 
         this.qual = this.qual.setFinished();
         this.timeMs = Benchmarker.getTimeMs();
+        this.timeMsP = Benchmarker.getTimeMsP();
         this.memMB = Benchmarker.getMemoryMB();
         assert this.qual.hasFailure() == (this.failure != null);
     }
@@ -573,8 +576,8 @@ class TestCase {
         if (!isTest()) {
             return this.desc.toString();
         }
-        System.out.println(" time: " + this.timeMs + " mem" + this.memMB);
-        String timeStr = this.qual.lifePhase().timeMemString(this.timeMs, this.memMB);
+        System.out.println(" time: " + this.timeMs + "/" + this.timeMsP +" mem" + this.memMB);
+        String timeStr = this.qual.lifePhase().timeMemString(this.timeMsP, this.memMB);
         return this.qual + " " + timeStr + ": " + this.desc.toString();
     }
 
