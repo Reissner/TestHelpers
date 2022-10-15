@@ -1,6 +1,5 @@
 package eu.simuline.testhelpers;
 
-import eu.simuline.util.Benchmarker;
 import eu.simuline.util.images.GifResource;
 
 import eu.simuline.junit.AssumptionFailure;
@@ -110,7 +109,6 @@ enum Quality {
         }
 
         Quality setStarted() {
-            Benchmarker.mtic();
             return Started;
         }
 
@@ -140,7 +138,7 @@ enum Quality {
         }
 
         Quality setFinished() {
-            Benchmarker.mtoc();
+            //Benchmarker.mtoc();
             return Success;
         }
 
@@ -164,14 +162,12 @@ enum Quality {
         }
 
         Quality setAssumptionFailure() {
-            Benchmarker.mtoc();
             return Invalidated;
         }
 
         // **** should be based on AssertionFailedError only, 
         // but junit does not admit this. 
         Quality setFailure(Throwable thrw) {
-            Benchmarker.mtoc();
             return thrw instanceof AssertionFailedError
                     || thrw instanceof AssertionError ? Failure : Error;
         }
@@ -472,10 +468,7 @@ enum Quality {
      *    **** it is a decision to disallow rescheduling a running testcase. 
      */
     Quality setScheduled() {
-        if (Benchmarker.isStarted()) {
-            Benchmarker.mtoc();
-        }
-        return Scheduled;
+         return Scheduled;
     }
 
     /**
@@ -506,6 +499,8 @@ enum Quality {
                 "Found testcase ignored but not scheduled. ");
     }
 
+    // Overwritten for Started to return Success 
+    // Else overwritten to throw an exception 
     /**
      * Returns the next phase 
      * when {@link RunListener#testFinished(Description)} is invoked. 
@@ -520,8 +515,6 @@ enum Quality {
      *    for {@link #Scheduled}, {@link #Success} and {@link #Ignored}. 
      */
     Quality setFinished() {
-        assert false;
-        Benchmarker.mtoc();
         return this;
     }
 
@@ -536,7 +529,7 @@ enum Quality {
      */
     Quality setAssumptionFailure() {
         throw new IllegalStateException(
-                "Found testcase with assumtion failure which is not started. ");
+                "Found testcase with assumption failure which is not started. ");
     }
 
     /**

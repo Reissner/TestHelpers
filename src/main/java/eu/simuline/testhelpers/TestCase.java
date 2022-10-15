@@ -361,6 +361,9 @@ class TestCase {
         if (this.isTest()) {
             assert this.qual != null;
             this.qual = this.qual.setScheduled();
+            if (Benchmarker.isStarted()) {
+                Benchmarker.mtoc();
+            }
             this.failure = null;
             assert this.qual.hasFailure() == (this.failure != null);
             return;
@@ -401,6 +404,7 @@ class TestCase {
             case Started:
                 // throws IllegalStateException for this.qual == Started 
                 this.qual = this.qual.setStarted();
+                Benchmarker.mtic();
                 assert Benchmarker.isStarted();
                 break;
             case Ignored:
@@ -461,9 +465,7 @@ class TestCase {
                     "Found unexpected AssumptionViolatedException. ");
         }
         this.qual = this.qual.setFailure(thrw);
-        assert !Benchmarker.isStarted();
-        this.timeMs = Benchmarker.getTimeMs();
-        this.memMB = Benchmarker.getMemoryMB();
+
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
         // deferred to setFinished() 
@@ -504,8 +506,7 @@ class TestCase {
         }
         this.failure = failure;
         this.qual = this.qual.setAssumptionFailure();
-        assert Benchmarker.isStarted();
-        //this.timeMs = Benchmarker.getTimeMs();
+
         assert this.qual.hasFailure();
         assert this.qual.hasFailure() == (this.failure != null);
         // deferred to setFinished() 
@@ -515,14 +516,15 @@ class TestCase {
      * Triggers a transition of the current phase 
      * given by finishing the run of a singular testcase if possible 
      * as specified by {@link Quality#setFinished()}. 
-     * The new phase is 
+     * The new phase 
      * <ul>
      * <li>remains unchanged for phases {@link Quality#Failure}, 
      * {@link Quality#Invalidated} and {@link Quality#Error}  
-     * <li>{@link Quality#Success} for current phase {@link Quality#Started}. 
+     * <li>is {@link Quality#Success} for current phase {@link Quality#Started}. 
      * </ul>
      * Note that this sets {@link #timeMs} 
-     * to the time required to run this testcase. 
+     * to the time required to run this testcase 
+     * and {@link #memMB} to the additional memory consumed. 
      *
      * @throws IllegalStateException
      *    if this is a singular test and 
@@ -538,6 +540,8 @@ class TestCase {
         assert this.qual.hasFailure() == (this.failure != null);
         // does not change anything if there has been a failure. 
         this.qual = this.qual.setFinished();
+        Benchmarker.mtoc();
+        assert !Benchmarker.isStarted();
         this.timeMs = Benchmarker.getTimeMs();
         this.memMB = Benchmarker.getMemoryMB();
         assert this.qual.hasFailure() == (this.failure != null);
