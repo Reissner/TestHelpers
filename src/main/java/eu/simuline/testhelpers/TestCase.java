@@ -540,10 +540,10 @@ class TestCase {
         assert this.qual.hasFailure() == (this.failure != null);
         // does not change anything if there has been a failure. 
         this.qual = this.qual.setFinished();
-        Benchmarker.mtoc();
+        Benchmarker.Snapshot snap = Benchmarker.mtoc();
         assert !Benchmarker.isStarted();
-        this.timeMs = Benchmarker.getTimeMs();
-        this.memMB = Benchmarker.getMemoryMB();
+        this.timeMs = snap.getTimeMs();
+        this.memMB = snap.getMemoryMB();
         assert this.qual.hasFailure() == (this.failure != null);
     }
 
