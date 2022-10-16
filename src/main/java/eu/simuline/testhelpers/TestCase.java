@@ -111,31 +111,30 @@ class TestCase {
      */
     private Failure failure;
 
+    /**
+     * This is significant only if this testcase is singular, i.e. no suite. 
+     * It is non-null only if this testcase is finished. 
+     * Then the snapshot is stopped according to {@link Benchmarker#isStopped()} 
+     * and covers the time elapsed in ms and the memory elapsed in MB. 
+     * Note that these are span of time and difference in memory. 
+     * As garbage collection cannot be forced, 
+     * there are no guarantees on precision. 
+     * Moreover, this does not refer to the maximum memory elapsed 
+     * but only to the elapsed memory between start and end. 
+     * This may well be negative indicating that memory is freed. 
+     * Since a testcase is self-contained, 
+     * one may expect small absolute values. 
+     * <p>
+     * It is possible to add additional benchmarking in the testcases 
+     * using {@link Benchmarker}, as pausing but at the end, 
+     * there must be a resume. 
+     * Also futher {@link Benchmarker#mtic()} are allowed 
+     * but only when they come in pairs 
+     * with the according {@link Benchmarker#mtoc()}. 
+     * 
+     * @see Benchmarker.Snapshot#getMemoryMB()
+     */
     private Benchmarker.Snapshot snap;
-
-    // /**
-    //  * If this testcase is singular, i.e. no suite and is is finished, 
-    //  * this is the time elapsed in ms; 
-    //  * else it is not significant. 
-    //  */
-    // private double timeMs;
-
-    // /**
-    //  * If this testcase is singular, i.e. no suite and is is finished, 
-    //  * this is the memory elapsed in MB; 
-    //  * else it is not significant. 
-    //  * The memory allocated is the difference 
-    //  * between memory when starting the test and when finishing. 
-    //  * So this may well be negative. 
-    //  * Memory is determined after the garbage collector is triggered. 
-    //  * Since there is no way to force the VM to perform a complete garbage collection, 
-    //  * this value is may not be very precise. 
-    //  * In an extreme case, the garbage collector is not run at all 
-    //  * and so the result is not very significant. 
-    //  * It does not say anything about the maximum memory needed during the test run, 
-    //  * but it is a kind of sticky memory required. 
-    //  */
-    // private double memMB;
 
     /* -------------------------------------------------------------------- *
      * constructor. *
@@ -195,11 +194,9 @@ class TestCase {
         }
     }
 
-
     /* -------------------------------------------------------------------- *
      * methods. *
      * -------------------------------------------------------------------- */
-
 
     /**
      * Returns the description of this testcase given by {@link #desc}. 
@@ -363,10 +360,8 @@ class TestCase {
         if (this.isTest()) {
             assert this.qual != null;
             this.qual = this.qual.setScheduled();
-            if (Benchmarker.isStarted()) {
-                Benchmarker.mtoc();
-                this.snap = null;
-            }
+            Benchmarker.reset();
+            this.snap = null;
             this.failure = null;
             assert this.qual.hasFailure() == (this.failure != null);
             return;
@@ -409,12 +404,13 @@ class TestCase {
                 this.qual = this.qual.setStarted();
                 Benchmarker.mtic();
                 this.snap = null;
-                assert Benchmarker.isStarted();
+                assert  Benchmarker.numNestedMeasurements() > 0;
+                assert !Benchmarker.isStopped();
                 break;
             case Ignored:
                 // throws IllegalStateException for this.qual != Scheduled 
                 this.qual = this.qual.setIgnored();
-                assert !Benchmarker.isStarted();
+                //assert !Benchmarker.isStarted();
                 break;
             default:
                 throw new IllegalStateException(
