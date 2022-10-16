@@ -111,29 +111,31 @@ class TestCase {
      */
     private Failure failure;
 
-    /**
-     * If this testcase is singular, i.e. no suite and is is finished, 
-     * this is the time elapsed in ms; 
-     * else it is not significant. 
-     */
-    private double timeMs;
+    private Benchmarker.Snapshot snap;
 
-    /**
-     * If this testcase is singular, i.e. no suite and is is finished, 
-     * this is the memory elapsed in MB; 
-     * else it is not significant. 
-     * The memory allocated is the difference 
-     * between memory when starting the test and when finishing. 
-     * So this may well be negative. 
-     * Memory is determined after the garbage collector is triggered. 
-     * Since there is no way to force the VM to perform a complete garbage collection, 
-     * this value is may not be very precise. 
-     * In an extreme case, the garbage collector is not run at all 
-     * and so the result is not very significant. 
-     * It does not say anything about the maximum memory needed during the test run, 
-     * but it is a kind of sticky memory required. 
-     */
-    private double memMB;
+    // /**
+    //  * If this testcase is singular, i.e. no suite and is is finished, 
+    //  * this is the time elapsed in ms; 
+    //  * else it is not significant. 
+    //  */
+    // private double timeMs;
+
+    // /**
+    //  * If this testcase is singular, i.e. no suite and is is finished, 
+    //  * this is the memory elapsed in MB; 
+    //  * else it is not significant. 
+    //  * The memory allocated is the difference 
+    //  * between memory when starting the test and when finishing. 
+    //  * So this may well be negative. 
+    //  * Memory is determined after the garbage collector is triggered. 
+    //  * Since there is no way to force the VM to perform a complete garbage collection, 
+    //  * this value is may not be very precise. 
+    //  * In an extreme case, the garbage collector is not run at all 
+    //  * and so the result is not very significant. 
+    //  * It does not say anything about the maximum memory needed during the test run, 
+    //  * but it is a kind of sticky memory required. 
+    //  */
+    // private double memMB;
 
     /* -------------------------------------------------------------------- *
      * constructor. *
@@ -363,6 +365,7 @@ class TestCase {
             this.qual = this.qual.setScheduled();
             if (Benchmarker.isStarted()) {
                 Benchmarker.mtoc();
+                this.snap = null;
             }
             this.failure = null;
             assert this.qual.hasFailure() == (this.failure != null);
@@ -405,6 +408,7 @@ class TestCase {
                 // throws IllegalStateException for this.qual == Started 
                 this.qual = this.qual.setStarted();
                 Benchmarker.mtic();
+                this.snap = null;
                 assert Benchmarker.isStarted();
                 break;
             case Ignored:
@@ -540,10 +544,8 @@ class TestCase {
         assert this.qual.hasFailure() == (this.failure != null);
         // does not change anything if there has been a failure. 
         this.qual = this.qual.setFinished();
-        Benchmarker.Snapshot snap = Benchmarker.mtoc();
-        assert !Benchmarker.isStarted();
-        this.timeMs = snap.getTimeMs();
-        this.memMB = snap.getMemoryMB();
+        this.snap = Benchmarker.mtoc();
+
         assert this.qual.hasFailure() == (this.failure != null);
     }
 
@@ -577,8 +579,8 @@ class TestCase {
         if (!isTest()) {
             return this.desc.toString();
         }
-        System.out.println(" time: " + this.timeMs +" mem" + this.memMB);
-        String timeStr = this.qual.lifePhase().timeMemString(this.timeMs, this.memMB);
+        
+        String timeStr = this.qual.lifePhase().timeMemString(this.snap);
         return this.qual + " " + timeStr + ": " + this.desc.toString();
     }
 

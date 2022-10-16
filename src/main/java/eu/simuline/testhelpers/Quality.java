@@ -1,5 +1,6 @@
 package eu.simuline.testhelpers;
 
+import eu.simuline.util.Benchmarker;
 import eu.simuline.util.images.GifResource;
 
 import eu.simuline.junit.AssumptionFailure;
@@ -281,11 +282,13 @@ enum Quality {
              * Returns a time/memory string 
              * indicating that the testcase is waiting for the run: 
              * an according sandclock. 
+             * Checks that <code>snap</code> is null. 
              * 
              * @return
              *   <code>&#x231b</code>. 
              */
-            String timeMemString(double timeMs, double memMB) {
+            String timeMemString(Benchmarker.Snapshot snap) {
+                assert snap == null;
                 return "\u231b";
             }
         },
@@ -298,11 +301,13 @@ enum Quality {
              * Returns a time/memory string 
              * indicating that the testcase is running: 
              * an according sandclock. 
+             * Checks that <code>snap</code> is null. 
              * 
              * @return
              *   <code>&#x23f3</code>. 
              */
-            String timeMemString(double timeMs, double memMB) {
+            String timeMemString(Benchmarker.Snapshot snap) {
+                assert snap == null;
                 return "\u23f3";
             }
         },
@@ -313,8 +318,9 @@ enum Quality {
          * {@link Quality#Error} and {@link Quality#Success}. 
          */
         Completed {
-            String timeMemString(double timeMs, double memMB) {
-                return String.format("%.0fms/%.3fMB", timeMs, memMB);
+            String timeMemString(Benchmarker.Snapshot snap) {
+                // getTimeMs and getMemoryMB both ensure that snap is stopped. 
+                return String.format("%.0fms/%.3fMB", snap.getTimeMs(), snap.getMemoryMB());
             }
 
             boolean isCompleted() {
@@ -332,7 +338,8 @@ enum Quality {
              * @return
              *   <code>??ms</code>. 
              */
-            String timeMemString(double timeMs, double memMB) {
+            String timeMemString(Benchmarker.Snapshot snap) {
+                // here snap may be null or not. 
                 return "??ms/??MB";
             }
 
@@ -347,17 +354,15 @@ enum Quality {
          * if the test is {@link Completed}; 
          * else a symbol indicating the phase. 
          * 
-         * @param timeMs
-         *    The time elapsed in miliseconds. 
-         * @param memMB
-         *    The memory used in MB
+         * @param snap
+         *    a stopped snapshot or <code>null</code>
          * @return
          *    a string representation 
          *    either indicating time and memory elapsed 
          *    or indicating the current phase 
          *    in which the latter would not not make sense. 
          */
-        abstract String timeMemString(double timeMs, double memMB);
+        abstract String timeMemString(Benchmarker.Snapshot snap);
 
         boolean isCompleted() {
             return false;
