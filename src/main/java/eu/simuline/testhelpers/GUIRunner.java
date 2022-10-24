@@ -1916,6 +1916,10 @@ class GUIRunner {
 	 */
 	private final ListSelectionModel stackElemSelection;
 
+	/**
+	 * The editor used if the element of a stracktrace is selected 
+	 * to open the according java file at the given line. 
+	 */
 	private final Editor editor;
 
 	/* ---------------------------------------------------------------- *
