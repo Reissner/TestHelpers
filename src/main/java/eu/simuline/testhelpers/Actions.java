@@ -474,7 +474,7 @@ public final class Actions {
 			// fall through as the default is set already 
 				break;
 			case 1:
-				Pattern p = Pattern.compile("-editor=(?<emacs>(emacs)|(?<code>code))");
+				Pattern p = Pattern.compile("-editor=((?<emacs>emacs)|(?<code>code))");
 				Matcher m = p.matcher(args[0]);
 				if (!m.matches()) {
 					throw new IllegalArgumentException(
