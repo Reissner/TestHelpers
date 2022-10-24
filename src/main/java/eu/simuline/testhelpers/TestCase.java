@@ -136,6 +136,16 @@ class TestCase {
      */
     private Benchmarker.Snapshot snap;
 
+    /**
+     * The hash of a snapshot if a test has been started. 
+     * This is used solely to ensure that the snapshots are properly nested. 
+     * In other words, withint the test code, 
+     * {@link Benchmarker#tic()} and {@link Benchmarker#toc()} 
+     * may be used in pairs only. 
+     */
+    private int hashSnap;
+
+
     /* -------------------------------------------------------------------- *
      * constructor. *
      * -------------------------------------------------------------------- */
@@ -402,7 +412,7 @@ class TestCase {
             case Started:
                 // throws IllegalStateException for this.qual == Started 
                 this.qual = this.qual.setStarted();
-                Benchmarker.mtic();
+                this.hashSnap = Benchmarker.mtic();
                 this.snap = null;
                 assert  Benchmarker.numNestedMeasurements() > 0;
                 assert !Benchmarker.isStopped();
@@ -541,6 +551,8 @@ class TestCase {
         // does not change anything if there has been a failure. 
         this.qual = this.qual.setFinished();
         this.snap = Benchmarker.mtoc();
+        assert this.snap.hashCode() == this.hashSnap
+        : "Code consituting this test case uses unbalanced tic/toc. ";
 
         assert this.qual.hasFailure() == (this.failure != null);
     }
