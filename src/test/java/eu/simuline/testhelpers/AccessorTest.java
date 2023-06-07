@@ -6,11 +6,11 @@ package eu.simuline.testhelpers;
 // import static eu.simuline.testhelpers.Assert;
 
 import static org.junit.Assert.assertEquals;
-import org.junit.AssumptionViolatedException;
+//import org.junit.AssumptionViolatedException;
 // import static org.junit.Assert.assertTrue;
 // import static org.junit.Assert.assertNull;
 // import static org.junit.Assert.fail;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 import org.junit.Test;
 // import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -43,7 +43,7 @@ public class AccessorTest {
 			//  if(System.currentTimeMillis() != 0) {
 			//  	throw new AssumptionViolatedException("Intentionally violated assumption");
 			//  }
-			// assert false: "provoke exception in testing code.";
+			//assert false: "provoke exception in testing code.";
 			AccessorTest.TEST.testGetField();
 		}
 

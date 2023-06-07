@@ -293,7 +293,7 @@ public final class Accessor<T> {
     public static Object getField(Object target,
 				  String fieldName) 
 	throws NoSuchFieldException {
-
+        //assert false: "provoked exception in productive code.";
 	if (target == null) {
 	    throw new IllegalArgumentException
 		("Specified null-target. ");
