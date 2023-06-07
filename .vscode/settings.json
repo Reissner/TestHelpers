@@ -14,5 +14,8 @@
       "-DmCompilerProps=${workspaceFolder}/src/main/resources/package/inst/compiler.props"
     ]
   },
-  "java.test.defaultConfig": "myTestConfig"
+  "java.test.defaultConfig": "myTestConfig",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false
 }
