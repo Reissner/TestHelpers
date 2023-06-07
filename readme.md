@@ -12,7 +12,7 @@ The functionality is quite inhomogeneous:
 
 - an accessor class for white-box-tests,
 - a static class providing specialized assertions,
-- a [GUI](#ssGUI) to run tests and test suites selectively and interactively
+- a [GUI](#notes-on-the-gui) to run tests and test suites selectively and interactively
 
 Although most of the classes are outdated if using new junit5
 in combination with modern IDEs,
