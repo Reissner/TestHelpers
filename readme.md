@@ -12,13 +12,14 @@ The functionality is quite inhomogeneous:
 
 - an accessor class for white-box-tests,
 - a static class providing specialized assertions,
-- a GUI to run tests and test suites selectively and interactively
+- a [GUI](#ssGUI) to run tests and test suites selectively and interactively
 
 Although most of the classes are outdated if using new junit5
 in combination with modern IDEs,
 the `testhelpers` are still used at (www.simuline.eu). 
 This is because it is quite responsive and reaches stability 
 modern IDEs not always have. 
+There is even a [Backlog](#backlog) planing further development. 
 
 
 Originally, the GUI filled the gap for the IDE given by the GNU Emacs plugin `JDEE`.
@@ -155,7 +156,7 @@ As told above, the memory consumption is just the difference between memory at t
 To find out maximum memory consumption, one has to add additional paired tic and toc. 
 
 
-# Backlog 
+## Backlog 
 
 Although this package seemed outdated for a long span of time, 
 recently it came again into internal use 
