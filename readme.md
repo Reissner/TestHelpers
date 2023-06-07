@@ -44,19 +44,19 @@ and make sure that in the pom something like the following can be found
       ...
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-dependency-plugin</artifactId>
-  <version>3.0.2</version>
-  <executions>
-    <execution>
-      <goals>
-        <goal>build-classpath</goal>
-      </goals>
-      <configuration>
-        <outputFile>${project.build.directory}/classpath.txt</outputFile>
-      </configuration>
-    </execution>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.0.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>build-classpath</goal>
+            </goals>
+            <configuration>
+              <outputFile>${project.build.directory}/classpath.txt</outputFile>
+            </configuration>
+          </execution>
           ...
-  </executions>
+        </executions>
       </plugin>
       ...
    <plugins>
