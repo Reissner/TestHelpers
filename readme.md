@@ -28,7 +28,7 @@ Solely the accessor seems really up-to-date at the time of this writing.
 
 Anyway, if you want, feel free to use this piece of software.
 
-## Notes on the GUI <a id='ssGUI'></a>
+## Notes on the GUI 
 
 The GUI is intended to be used in a maven project.
 To that end, just place [runTest.sh](./runTest.sh) in the root directory of the project
